@@ -5,6 +5,7 @@ all:
 
 algo_basic_haar/: algo_basic_haar/main.cc | algo_basic_haar/build/
 	cd $@/build && ALGO=algo_basic_haar cmake .. && make
+	./algo_basic_haar/build/algo_basic_haar
 .PHONY: algo_basic_haar/
 
 algo_basic_haar/build/:
