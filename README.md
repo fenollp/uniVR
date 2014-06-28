@@ -12,7 +12,7 @@ Then it blows your mind, thank you.
 Johnny Chung Lee did this with his “[Head Tracking for Desktop VR Displays using the WiiRemote](http://www.youtube.com/watch?v=Jd3-eiid-Uw&t=2m30s)” project.
 He also did a [TED talk](http://youtu.be/0H1zrLZwPjQ?t=3m41s) about it.
 
-## Requierements
+## Requirements
 This code should compile | run with
 
 * cmake ≥ 2.8
