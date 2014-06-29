@@ -1,6 +1,6 @@
 #define ALGO "algo_detection_based_tracker"
 
-#include <opencv2/contrib/detection_based_tracker.hpp> // = EXPERIMENTAL
+#include <opencv2/objdetect/detection_based_tracker.hpp> // = EXPERIMENTAL
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -14,7 +14,7 @@ int
 main (int argc, const char* argv[])
 {
     std::vector<cv::Rect_<int> > faces; // Note "Rect_"
-    DetectionBasedTracker::Parameters param;
+    cv::DetectionBasedTracker::Parameters param;
     param.maxObjectSize = 400;
     param.maxTrackLifetime = 20;
     param.minDetectionPeriod = 7;
@@ -30,7 +30,7 @@ main (int argc, const char* argv[])
 
     while (true) {
         cap >> img;
-        cv::cvtColor(img, gray, CV_RGB2GRAY);
+        cv::cvtColor(img, gray, cv::COLOR_RGB2GRAY);
 
         auto s = std::chrono::high_resolution_clock::now();
         obj.process(gray);
@@ -41,7 +41,7 @@ main (int argc, const char* argv[])
 
         // if(faces.size() == 0) obj.resetTracking();
         for (const auto& face : faces)
-            cv::rectangle(img, face, CV_RGB(0,255,0), 3);
+            cv::rectangle(img, face, cv::Scalar(0,255,0), 3);
         cv::imshow(ALGO, img);
         if (cv::waitKey(10) >= 0)
             break;

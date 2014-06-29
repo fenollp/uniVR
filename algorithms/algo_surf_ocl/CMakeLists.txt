@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-project(algo_basic_haar CXX)
+project(algo_surf_ocl CXX)
 #set (CMAKE_VERBOSE_MAKEFILE true)
 
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 
-set(algo_basic_haar__src
+set(algo_surf_ocl__src
     main.cc
 )
 
@@ -27,6 +27,6 @@ endif()
 #   so set your CC & CXX (env variables) to clang & clang++ ('s paths) resp.
 
 
-add_executable(algo_basic_haar ${algo_basic_haar__src})
+add_executable(algo_surf_ocl ${algo_surf_ocl__src})
 
-target_link_libraries(algo_basic_haar ${OpenCV_LIBS})
+target_link_libraries(algo_surf_ocl ${OpenCV_LIBS})

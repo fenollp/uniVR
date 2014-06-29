@@ -1,4 +1,4 @@
-#define ALGO "algo_basic_haar"
+#define ALGO "algo_haar"
 
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -46,7 +46,7 @@ main (int argc, const char* argv[])
         cv::Mat gray, thumb(cvRound(frameCopy.rows / SCALE),
                             cvRound(frameCopy.cols / SCALE), CV_8UC1);
 
-        cv::cvtColor(frameCopy, gray, CV_BGR2GRAY);
+        cv::cvtColor(frameCopy, gray, cv::COLOR_BGR2GRAY);
         cv::resize(gray, thumb, thumb.size(), 0, 0, cv::INTER_LINEAR);
         cv::equalizeHist(thumb, thumb);
 
