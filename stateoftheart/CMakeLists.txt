@@ -9,7 +9,7 @@ endif()
 if(MSVC)
 #vc 2012 fix for vararg templates
     set(MSVC_COMPILER_DEFS "-D_VARIADIC_MAX=10")
-endif() 
+endif()
 #-------------------
 # set common include folder for module
 #-------------------
@@ -19,11 +19,11 @@ set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/ext)
 #-------------------
 # Module source
 #-------------------
-#set(PROJECT_LIB_NAME ${PROJECT_NAME_STR}_impl)
+set(PROJECT_LIB_NAME ${PROJECT_NAME_STR}_impl)
 
-#include_directories(${COMMON_INCLUDES})
-#file(GLOB SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-#add_library(${PROJECT_LIB_NAME} ${SRC_FILES})
+include_directories(${COMMON_INCLUDES})
+file(GLOB SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cc)
+add_library(${PROJECT_LIB_NAME} ${SRC_FILES})
 
 add_subdirectory(${EXT_PROJECTS_DIR}/gtest)
 
@@ -35,7 +35,7 @@ enable_testing()
 set(PROJECT_TEST_NAME ${PROJECT_NAME_STR}_test)
 include_directories(${GTEST_INCLUDE_DIRS} ${COMMON_INCLUDES})
 
-file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
+file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cc)
 add_executable(${PROJECT_TEST_NAME} ${TEST_SRC_FILES})
 add_dependencies(${PROJECT_TEST_NAME} googletest)
 
@@ -59,4 +59,3 @@ else()
 endif()
 
 add_test(test1 ${PROJECT_TEST_NAME})
-
