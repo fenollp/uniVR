@@ -12,9 +12,6 @@
 using namespace std;
 using namespace cv;
 
-// Config
-#define CASCADE_NAME "xml/lbpcascade_frontalface.xml"
-
 class CascadeDetectorAdapter: public DetectionBasedTracker::IDetector
 {
 public:
@@ -34,6 +31,9 @@ private:
     CascadeDetectorAdapter ();
     cv::Ptr<cv::CascadeClassifier> Detector;
 };
+
+// Config
+#define CASCADE_NAME "xml/lbpcascade_frontalface.xml"
 
 int
 main (int argc, const char* argv[])

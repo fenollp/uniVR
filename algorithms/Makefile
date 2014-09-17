@@ -3,6 +3,11 @@
 all:
 	@echo "Usage: make ‹algo folder›/"
 
+base/: base/main.cc | base/build/
+	cd $@/build && cmake .. && make
+	./$@/build/base
+.PHONY: base/
+
 algo_haar/: algo_haar/main.cc | algo_haar/build/
 	cd $@/build && cmake .. && make
 	./$@/build/algo_haar

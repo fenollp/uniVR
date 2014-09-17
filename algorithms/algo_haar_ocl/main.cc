@@ -7,12 +7,12 @@
 
 #include <iostream>
 
+void
+detectAndDraw (cv::UMat& img, cv::Mat& canvas, cv::CascadeClassifier& cascade);
+
 // Config
 #define CASCADE_NAME "xml/haarcascade_frontalface_alt.xml"
 #define SCALE 1.3
-
-void
-detectAndDraw (cv::UMat& img, cv::Mat& canvas, cv::CascadeClassifier& cascade);
 
 int
 main (int argc, const char* argv[])

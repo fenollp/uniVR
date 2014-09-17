@@ -25,3 +25,7 @@ This code should compile | run with
 `cd algorithms && make test`
 
 Those are tests comparing speed and accuracy of OpenCV's implementation of the state-of-the-art.
+
+### stateoftheart/*
+
+* Uses [Google Test](https://code.google.com/p/googletest/) & [its cmake binding](https://github.com/snikulov/google-test-examples)
