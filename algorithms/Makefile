@@ -1,12 +1,10 @@
-
-
 all:
 	@echo "Usage: make ‹algo folder›/"
 
-base/: base/main.cc | base/build/
+_/: _/main.cc | _/build/ outs/
 	cd $@/build && cmake .. && make
-	./$@/build/base
-.PHONY: base/
+	./$@/build/base 'xml/haarcascade_frontalface_alt.xml' '1.1' '../../videos/vid1.mp4' '../../outs/vid1.tsv'
+.PHONY: _/
 
 algo_haar/: algo_haar/main.cc | algo_haar/build/
 	cd $@/build && cmake .. && make
@@ -35,6 +33,9 @@ algo_surf_ocl/: algo_surf_ocl/main.cc | algo_surf_ocl/build/
 
 
 %/build/:
+	mkdir $@
+
+outs/:
 	mkdir $@
 
 # algo_%/:
