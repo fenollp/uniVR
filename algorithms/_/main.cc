@@ -20,10 +20,10 @@ main (int argc, const char* argv[])
     auto outFile = argv[4];
 
     // ALGOS
-    Algos algos = {/*"dbt",*/    "haar"};
-    Inits inits = {/*dbt_init,*/ haar_init};
-    Finds finds = {/*dbt_find,*/ haar_find};
-    Stops stops = {/*dbt_stop,*/ haar_stop};
+    Algos algos = {"camshift",    /*"dbt",*/    "haar",    "haarocl",     "surfocl"};
+    Inits inits = {camshift_init, /*dbt_init,*/ haar_init, haar_ocl_init, surf_ocl_init};
+    Finds finds = {camshift_find, /*dbt_find,*/ haar_find, haar_ocl_find, surf_ocl_find};
+    Stops stops = {camshift_stop, /*dbt_stop,*/ haar_stop, haar_ocl_stop, surf_ocl_stop};
 
     for (auto i = 0; i < algos.size(); ++i)
     {

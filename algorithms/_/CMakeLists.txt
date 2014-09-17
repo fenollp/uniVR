@@ -8,8 +8,11 @@ include_directories(include)
 
 set(base__src
     main.cc
+    algo_camshift.cc
 #    algo_detection_based_tracker.cc
     algo_haar.cc
+    algo_haar_ocl.cc
+    algo_surf_ocl.cc
 )
 
 include(CheckCXXCompilerFlag)
