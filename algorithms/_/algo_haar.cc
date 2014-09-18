@@ -2,10 +2,13 @@
 
 cv::CascadeClassifier cascade;
 
-void
+bool
 haar_init (const std::string& CASCADE_NAME, double SCALE) {
-    if (!cascade.load(CASCADE_NAME))
+    if (!cascade.load(CASCADE_NAME)) {
         std::cerr << "!load " << CASCADE_NAME << std::endl;
+        return false;
+    }
+    return true;
 }
 
 void

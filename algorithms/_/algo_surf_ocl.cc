@@ -36,8 +36,10 @@ struct SURFMatcher
 };
 
 
-void
+bool
 surf_ocl_init (const std::string& CASCADE_NAME, double SCALE) {
+    std::cerr << "!implemented surfocl callbacks" << std::endl;
+    return false;
 }
 
 void

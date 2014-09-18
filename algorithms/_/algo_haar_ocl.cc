@@ -1,13 +1,29 @@
-#include <opencv2/core/ocl.hpp>
 #include "_.hh"
+
+#if CV_VERSION_EPOCH != 3
+
+bool
+haar_ocl_init (const std::string& CASCADE_NAME, double SCALE) {
+    std::cerr << "!version: haarocl needs OpenCV 3" << std::endl;
+    return false;
+}
+
+void
+haar_ocl_find (cv::Mat& frame, Faces& faces, double SCALE) {
+}
+
+#else
+# include <opencv2/core/ocl.hpp>
 
 cv::CascadeClassifier cascade;
 
-void
+bool
 haar_ocl_init (const std::string& CASCADE_NAME, double SCALE) {
-    if (!cascade.load(CASCADE_NAME))
+    if (!cascade.load(CASCADE_NAME)) {
         std::cerr << "!load " << CASCADE_NAME << std::endl;
-    std::cout << "Using OpenCL? " << cv::ocl::useOpenCL() << std::endl;
+        return false;
+    }
+    return true;
 }
 
 void
@@ -27,6 +43,8 @@ haar_ocl_find (cv::Mat& frame, Faces& faces, double SCALE) {
                              | cv::CASCADE_SCALE_IMAGE,
                              cv::Size(30, 30));
 }
+
+#endif
 
 void
 haar_ocl_stop () {

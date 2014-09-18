@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(algo_haar_ocl CXX)
 #set (CMAKE_VERBOSE_MAKEFILE true)
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 3 REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 
 set(algo_haar_ocl__src

@@ -11,30 +11,33 @@
 typedef cv::Rect_<int> Face; //dbtracker
 typedef std::vector<Face> Faces;
 
+typedef bool (*f_init)(const std::string&, double);
+typedef void (*f_find)(cv::Mat&, Faces&, double);
+typedef void (*f_stop)();
+
 // CAMSHIFT
-void camshift_init (const std::string& CASCADE_NAME, double SCALE);
+bool camshift_init (const std::string& CASCADE_NAME, double SCALE);
 void camshift_find (cv::Mat& frame, Faces& faces, double);
 void camshift_stop ();
 
 // Detection-Based Tracker
-void dbt_init (const std::string& CASCADE_NAME, double SCALE);
+bool dbt_init (const std::string& CASCADE_NAME, double SCALE);
 void dbt_find (cv::Mat& frame, Faces& faces, double);
 void dbt_stop ();
 
 // Haar
-void haar_init (const std::string& CASCADE_NAME, double SCALE);
+bool haar_init (const std::string& CASCADE_NAME, double SCALE);
 void haar_find (cv::Mat& frame, Faces& faces, double SCALE);
 void haar_stop ();
 
 // Haar OCL
-void haar_ocl_init (const std::string& CASCADE_NAME, double SCALE);
+bool haar_ocl_init (const std::string& CASCADE_NAME, double SCALE);
 void haar_ocl_find (cv::Mat& frame, Faces& faces, double SCALE);
 void haar_ocl_stop ();
 
 // SURF OCL
-void surf_ocl_init (const std::string& CASCADE_NAME, double SCALE);
+bool surf_ocl_init (const std::string& CASCADE_NAME, double SCALE);
 void surf_ocl_find (cv::Mat& frame, Faces& faces, double SCALE);
 void surf_ocl_stop ();
-
 
 #endif /* !__HH */

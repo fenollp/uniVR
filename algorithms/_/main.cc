@@ -3,11 +3,6 @@
 void sep (std::ofstream& o, Faces& objs, double scale);
 int center (const Face& pt, double scale);
 
-typedef std::vector<std::string> Algos;
-typedef std::vector<void(*)(const std::string&,double)> Inits;
-typedef std::vector<void(*)(cv::Mat&,Faces&,double)> Finds;
-typedef std::vector<void(*)()> Stops;
-
 
 int
 main (int argc, const char* argv[])
@@ -20,10 +15,14 @@ main (int argc, const char* argv[])
     auto outFile = argv[4];
 
     // ALGOS
-    Algos algos = {"camshift",    /*"dbt",*/    "haar",    "haarocl",     "surfocl"};
-    Inits inits = {camshift_init, /*dbt_init,*/ haar_init, haar_ocl_init, surf_ocl_init};
-    Finds finds = {camshift_find, /*dbt_find,*/ haar_find, haar_ocl_find, surf_ocl_find};
-    Stops stops = {camshift_stop, /*dbt_stop,*/ haar_stop, haar_ocl_stop, surf_ocl_stop};
+    std::vector<std::string> algos =
+        {"camshift",    "dbt",   "haar",    "haarocl",      "surfocl"    };
+    std::vector<f_init> inits =
+        {camshift_init, dbt_init, haar_init, haar_ocl_init, surf_ocl_init};
+    std::vector<f_find> finds =
+        {camshift_find, dbt_find, haar_find, haar_ocl_find, surf_ocl_find};
+    std::vector<f_stop> stops =
+        {camshift_stop, dbt_stop, haar_stop, haar_ocl_stop, surf_ocl_stop};
 
     for (auto i = 0; i < algos.size(); ++i)
     {
@@ -40,7 +39,9 @@ main (int argc, const char* argv[])
             return 2;
         }
 
-        inits[i](cascade_name, scale);
+        bool inited = inits[i](cascade_name, scale);
+        if (!inited)
+            continue;
 
         size_t N;
         cv::Mat frame;
@@ -55,7 +56,7 @@ main (int argc, const char* argv[])
             auto f = std::chrono::high_resolution_clock::now();
             auto l = std::chrono::duration_cast<std::chrono::nanoseconds>(f-s);
 
-            out << N << '\t' << l.count() << '\t';
+            out << N << '\t' << l.count() << '\t' << objects.size() << '\t';
             sep(out, objects, scale);
             out << '\n';
             objects.clear();
