@@ -3,7 +3,7 @@ all:
 
 _/: _/main.cc | _/build/
 	cd $@/build && cmake .. && make
-	./$@/build/base 'xml/haarcascade_frontalface_alt.xml' '1.1' ~/wefwefwef/nvr/videos/vid1.mp4 ~/wefwefwef/nvr/outs/vid1.tsv
+	./compare.sh
 .PHONY: _/
 
 algo_haar/: algo_haar/main.cc | algo_haar/build/

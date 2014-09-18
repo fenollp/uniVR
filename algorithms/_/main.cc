@@ -31,13 +31,6 @@ main (int argc, const char* argv[])
 
     for (auto i = 0; i < algos.size(); ++i)
     {
-        auto tsvFile = outFile + algos[i];
-        std::ofstream out(tsvFile);
-        if (!out) {
-            std::cerr << "!open " << tsvFile << std::endl;
-            return 2;
-        }
-
         cv::VideoCapture video;
         if (!video.open(inFile)) {
             std::cerr << "!load " << inFile << std::endl;
@@ -47,6 +40,13 @@ main (int argc, const char* argv[])
         bool inited = inits[i](scale, video);
         if (!inited)
             continue;
+
+        auto tsvFile = outFile + algos[i];
+        std::ofstream out(tsvFile);
+        if (!out) {
+            std::cerr << "!open " << tsvFile << std::endl;
+            return 2;
+        }
 
         size_t N;
         cv::Mat frame;

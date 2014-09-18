@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-project(base CXX)
+project(_ CXX)
 #set (CMAKE_VERBOSE_MAKEFILE true)
 
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 include_directories(include)
 
-set(base__src
+set(___src
     main.cc
     algo_camshift.cc
     algo_detection_based_tracker.cc
@@ -33,6 +33,6 @@ endif()
 #   so set your CC & CXX (env variables) to clang & clang++ ('s paths) resp.
 
 
-add_executable(base ${base__src})
+add_executable(_ ${___src})
 
-target_link_libraries(base ${OpenCV_LIBS})
+target_link_libraries(_ ${OpenCV_LIBS})
