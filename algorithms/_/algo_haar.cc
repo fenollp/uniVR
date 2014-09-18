@@ -1,6 +1,6 @@
 #include "_.hh"
 
-cv::CascadeClassifier cascade;
+//cv::CascadeClassifier cascade;
 
 
 bool
