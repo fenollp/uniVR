@@ -3,7 +3,7 @@
 #if CV_VERSION_EPOCH != 3
 
 bool
-dbt_init (const std::string& CASCADE_NAME, double SCALE) {
+dbt_init (const std::string& CASCADE_NAME, double SCALE, cv::VideoCapture&) {
     std::cerr << "!version: DBT needs OpenCV 3" << std::endl;
     return false;
 }
@@ -22,7 +22,7 @@ dbt_stop () {
 auto obj;
 
 bool
-dbt_init (const std::string& CASCADE_NAME, double SCALE) {
+dbt_init (const std::string& CASCADE_NAME, double SCALE, cv::VideoCapture&) {
     cv::DetectionBasedTracker::Parameters param;
     param.maxObjectSize = 400;
     param.maxTrackLifetime = 20;

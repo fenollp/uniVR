@@ -39,7 +39,7 @@ main (int argc, const char* argv[])
             return 2;
         }
 
-        bool inited = inits[i](cascade_name, scale);
+        bool inited = inits[i](cascade_name, scale, video);
         if (!inited)
             continue;
 
