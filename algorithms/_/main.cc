@@ -24,6 +24,11 @@ main (int argc, const char* argv[])
     std::vector<f_stop> stops =
         {camshift_stop, dbt_stop, haar_stop, haar_ocl_stop, surf_ocl_stop};
 
+    if (!cascade.load(cascade_name)) {
+        std::cerr << "!load " << cascade_name << std::endl;
+        return 2;
+    }
+
     for (auto i = 0; i < algos.size(); ++i)
     {
         auto tsvFile = outFile + algos[i];
@@ -39,7 +44,7 @@ main (int argc, const char* argv[])
             return 2;
         }
 
-        bool inited = inits[i](cascade_name, scale, video);
+        bool inited = inits[i](scale, video);
         if (!inited)
             continue;
 

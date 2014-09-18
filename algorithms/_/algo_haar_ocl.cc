@@ -3,7 +3,7 @@
 #if CV_VERSION_EPOCH != 3
 
 bool
-haar_ocl_init (const std::string& CASCADE_NAME, double SCALE, cv::VideoCapture&) {
+haar_ocl_init (double SCALE, cv::VideoCapture&) {
     std::cerr << "!version: haarocl needs OpenCV 3" << std::endl;
     return false;
 }
@@ -18,11 +18,7 @@ haar_ocl_find (cv::Mat& frame, Faces& faces, double SCALE) {
 cv::CascadeClassifier cascade;
 
 bool
-haar_ocl_init (const std::string& CASCADE_NAME, double SCALE, cv::VideoCapture&) {
-    if (!cascade.load(CASCADE_NAME)) {
-        std::cerr << "!load " << CASCADE_NAME << std::endl;
-        return false;
-    }
+haar_ocl_init (double SCALE, cv::VideoCapture&) {
     return true;
 }
 

@@ -37,7 +37,7 @@ struct SURFMatcher
 
 
 bool
-surf_ocl_init (const std::string& CASCADE_NAME, double SCALE, cv::VideoCapture&) {
+surf_ocl_init (double SCALE, cv::VideoCapture&) {
     std::cerr << "!implemented surfocl callbacks" << std::endl;
     return false;
 }

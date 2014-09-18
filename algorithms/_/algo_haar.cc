@@ -2,12 +2,9 @@
 
 cv::CascadeClassifier cascade;
 
+
 bool
-haar_init (const std::string& CASCADE_NAME, double SCALE, cv::VideoCapture&) {
-    if (!cascade.load(CASCADE_NAME)) {
-        std::cerr << "!load " << CASCADE_NAME << std::endl;
-        return false;
-    }
+haar_init (double SCALE, cv::VideoCapture&) {
     return true;
 }
 
