@@ -21,7 +21,7 @@ main (int argc, char** argv) {
         if (argc == 1) {
             std::cout << "Call this program like this:" << std::endl;
             std::cout << "./nvr 68_face_landmarks.dat face.jpg" << std::endl;
-            return 0;
+            return 1;
         }
 
         // We need a face detector.  We will use this to get bounding boxes for
@@ -34,17 +34,28 @@ main (int argc, char** argv) {
         dlib::shape_predictor sp;
         dlib::deserialize(argv[1]) >> sp;
 
+        cv::VideoCapture capture;
+        if (!capture.open(0) || !capture.isOpened()) {
+            std::cerr << "!cap from webcam 0" << std::endl;
+            return 2;
+        }
+
         cv::namedWindow("nvr");
         cv::Mat frame;
 
-        // Loop over all the images provided on the command line.
-        for (int i = 2; i < argc; ++i) {
-            std::cout << "processing image " << argv[i] << std::endl;
-            dlib::array2d<dlib::rgb_pixel> img;
-            dlib::load_image(img, argv[i]);
+        while (true) {
+            capture >> frame;
+            if (frame.empty())
+                break;
+
+            // dlib::array2d<dlib::rgb_pixel>
+            //     img( dlib::mat<dlib::rgb_pixel>(
+            //              dlib::cv_image<dlib::rgb_pixel>(frame)) );
+            //dlib::array2d<dlib::rgb_pixel> img(frame.rows, frame.cols);
+            dlib::cv_image<dlib::bgr_pixel> cvimg(frame);
+            dlib::array2d<dlib::bgr_pixel> img(cvimg);
             // Make the image larger so we can detect small faces.
             dlib::pyramid_up(img);
-            frame = dlib::toMat<dlib::array2d<dlib::rgb_pixel> >(img);
 
             // Now tell the face detector to give us a list of bounding boxes
             // around all the faces in the image.
