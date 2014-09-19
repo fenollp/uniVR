@@ -79,6 +79,10 @@ main (int argc, const char* argv[])
 
 void
 sep (std::ofstream& o, Faces& objs, double scale) {
+    if (objs.empty()) {
+        o << "-1";
+        return;
+    }
     bool first = true;
     for (const auto& obj : objs) {
         if (first)

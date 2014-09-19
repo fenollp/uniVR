@@ -20,9 +20,17 @@ This code should compile | run with
 * Apple LLVM version 5.1 (clang-503.0.40) (based on LLVM 3.4svn)
 
 
+### nvr/*
+
+`cd nvr && make`
+
+* Uses [Face Alignment at 3000 FPS via Regressing Local Binary Features](http://research.microsoft.com/en-US/people/yichenw/cvpr14_facealignment.pdf)
+* Related database (of still images): [helen](http://www.ifp.illinois.edu/~vuongle2/helen/)
+
+
 ### algorithms/*
 
-`cd algorithms && make test`
+`cd algorithms && make _/ && ./compare.sh`
 
 Those are tests comparing speed and accuracy of OpenCV's implementation of the state-of-the-art.
 
