@@ -25,6 +25,7 @@ This code should compile | run with
 `cd nvr && make`
 
 * Uses [Face Alignment at 3000 FPS via Regressing Local Binary Features](http://research.microsoft.com/en-US/people/yichenw/cvpr14_facealignment.pdf)
+    * Really its public implementation [One Millisecond Face Alignment with an Ensemble of Regression Trees](http://www.csc.kth.se/~vahidk/papers/KazemiCVPR14.pdf)
 * Related database (of still images): [helen](http://www.ifp.illinois.edu/~vuongle2/helen/)
 
 
