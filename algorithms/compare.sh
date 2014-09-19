@@ -15,7 +15,7 @@ for vid in $videod/*; do
     i=0
     for xml in "${xmls[@]}"; do
         for scale in "${scales[@]}"; do
-            name=${names[$i]}_${scale}_${video}
+            name=${video}_${scale}_${names[$i]}
             echo $outd/$name
             ./_/build/_ xml/$xml $scale $videod/$video $outd/$name.tsv
         done
