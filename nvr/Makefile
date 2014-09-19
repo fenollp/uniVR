@@ -7,13 +7,15 @@ compile: deps/dlib/ build/
 
 build/:
 	mkdir build/
+deps/:
+	mkdir deps/
 
 DLIB_url = 'http://freefr.dl.sourceforge.net/project/dclib/dlib/v18.10/dlib-18.10.tar.bz2'
 DLIB_ver = 'dlib-18.10.tar.bz2'
 
-deps/dlib/:
+deps/dlib/: deps/
 	cd deps/ && wget -O $(DLIB_ver) $(DLIB_url) || rm $(DLIB_ver)
-	cd deps/ && tar jxf $(DLIB_ver) && mv dlib-* dlib/ && rm -f $(DLIB_ver)
+	cd deps/ && tar jxf $(DLIB_ver) && mv dlib-*/ dlib/ && rm -f $(DLIB_ver)
 
 
 clean:
