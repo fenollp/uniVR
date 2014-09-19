@@ -52,8 +52,13 @@ main (int argc, char** argv) {
             //     img( dlib::mat<dlib::rgb_pixel>(
             //              dlib::cv_image<dlib::rgb_pixel>(frame)) );
             //dlib::array2d<dlib::rgb_pixel> img(frame.rows, frame.cols);
-            dlib::cv_image<dlib::bgr_pixel> cvimg(frame);
-            dlib::array2d<dlib::bgr_pixel> img(cvimg);
+            // dlib::cv_image<dlib::bgr_pixel> cvimg(frame);
+            // dlib::array2d<dlib::bgr_pixel> img(cvimg);
+            typedef dlib::array2d<dlib::rgb_pixel>  rgb_2d;
+            typedef dlib::cv_image<dlib::bgr_pixel> rgb_cv;
+            rgb_2d img;
+            rgb_cv cvimg(frame);
+            dlib::assign_image<rgb_2d,rgb_cv>(img, frame);
             // Make the image larger so we can detect small faces.
             dlib::pyramid_up(img);
 

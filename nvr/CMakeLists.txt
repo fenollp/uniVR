@@ -28,7 +28,7 @@ add_definitions( -Wno-dev )
 
 
 # Tell cmake to link our target executable to dlib.
-include(deps/dlib/dlib/cmake)
+include(ext/dlib/dlib/cmake)
 TARGET_LINK_LIBRARIES(${target_name}
   ${OpenCV_LIBS}
   dlib
