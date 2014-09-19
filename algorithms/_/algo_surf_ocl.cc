@@ -35,11 +35,15 @@ struct SURFMatcher
     }
 };
 
+// This program demonstrates the usage of SURF_OCL.
+// use cpu findHomography interface to calculate the transformation matrix
+
 
 bool
 surf_ocl_init (double SCALE, cv::VideoCapture&) {
     std::cerr << "!implemented surfocl callbacks" << std::endl;
     return false;
+    // return true;
 }
 
 void

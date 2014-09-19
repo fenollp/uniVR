@@ -3,7 +3,6 @@ all:
 
 _/: _/main.cc | _/build/
 	cd $@/build && cmake .. && make
-	./compare.sh
 .PHONY: _/
 
 algo_haar/: algo_haar/main.cc | algo_haar/build/
