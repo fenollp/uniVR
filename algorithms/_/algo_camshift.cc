@@ -1,4 +1,4 @@
-#include <opencv/cv.h>
+#include <opencv2/video/tracking.hpp>
 #include "_.hh"
 
 void create_tracked_object (cv::Mat& image, Face& face_rect);
@@ -59,8 +59,7 @@ camshift_find (cv::Mat& frame, Faces& faces, double SCALE) {
 
     //use CamShift to find the center of the new face probability
     cv::RotatedRect tracked =
-        cv::CamShift(prob, trackWindow,
-                     cv::TermCriteria(
+        cv::CamShift(prob, trackWindow, cv::TermCriteria(
                          cv::TermCriteria::EPS|cv::TermCriteria::COUNT,10,1) );
 
     //tracking window
