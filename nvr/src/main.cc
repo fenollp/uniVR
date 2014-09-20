@@ -60,17 +60,17 @@ main (int argc, const char* argv[]) {
             // resize the image.
             // Note: cv::Mat -> BGR, dlib's -> RGB.
             dlib::cv_image<dlib::bgr_pixel> imgcv(frame);
-            dlib::array2d<dlib::rgb_pixel> img;
-            dlib::assign_image(img, imgcv);
+            //dlib::array2d<dlib::rgb_pixel> img;
+            //dlib::assign_image(img, imgcv);
             // Make the image larger so we can detect small faces.
-            ///dlib::pyramid_up(img);
+            ///dlib::pyramid_up(img); // Resizes image (use array2d with that)
 
             dets.clear();
             if (i % DROP_AMOUNT == 0) {
                 // Run the full detector every now and then
                 // Tell the face detector to give us a list of bounding boxes
                 // around all the faces in the image.
-                dets = detector(img);
+                dets = detector(imgcv);
                 std::cout << "# Faces detected: " << dets.size() << std::endl;
             } else {
                 // For most frames just guess where the face is
@@ -91,7 +91,7 @@ main (int argc, const char* argv[]) {
             // Now we will go ask the shape_predictor to tell us the pose of
             // each face we detected.
             for (const auto& det : dets) {
-                const auto& face = sp(img, det);
+                const auto& face = sp(imgcv, det);
                 for (size_t k = 0; k < face.num_parts(); ++k) {
                     const auto& p = face.part(k);
                     if (p == dlib::OBJECT_PART_NOT_PRESENT)

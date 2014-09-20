@@ -22,6 +22,14 @@ He also did a [TED talk](http://youtu.be/0H1zrLZwPjQ?t=3m41s) about it.
     * FAST > SURF > SIFT
     * BRIEF, FREAK faster but worse
     * for realtime: use GPU | BRIEF, FREAK
+* [A Comparison of Affine Region Detectors](http://www.robots.ox.ac.uk/~vgg/research/affine/det_eval_files/vibes_ijcv2004.pdf)
+    * MSER > Hessian-Affine >> Harris-Affine > EBR
+* Quick links to unread documentation
+    * [FREAK](http://www.ivpe.com/freak.htm)
+    * [MSER](http://www.robots.ox.ac.uk/~vgg/research/affine/det_eval_files/matas_bmvc2002.pdf)
+    * [Harris, Laplacian](http://www.robots.ox.ac.uk/~vgg/research/affine/det_eval_files/mikolajczyk_ijcv2004.pdf)
+    * [BRIEF](http://cvlabwww.epfl.ch/~lepetit/papers/calonder_eccv10.pdf)
+    * [qualitative overview](http://epubs.surrey.ac.uk/726872/1/Tuytelaars-FGV-2008.pdf)
 
 ## Requirements
 This code should compile | run with
