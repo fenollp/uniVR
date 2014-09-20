@@ -57,6 +57,7 @@ This code should compile | run with
         * Really its public implementation: [One Millisecond Face Alignment with an Ensemble of Regression Trees](http://www.csc.kth.se/~vahidk/papers/KazemiCVPR14.pdf)
         * Both papers dating 2014
     * Related database (of still images): [helen](http://www.ifp.illinois.edu/~vuongle2/helen/)
+* [dlib documentation](http://dlib.net/term_index.html)
 
 
 ### algorithms/*
@@ -69,3 +70,4 @@ Those are tests comparing speed and accuracy of OpenCV's implementation of the s
 ### stateoftheart/*
 
 * Uses [Google Test](https://code.google.com/p/googletest/) & [its cmake binding](https://github.com/snikulov/google-test-examples)
+* Actually moved to algorithms/
