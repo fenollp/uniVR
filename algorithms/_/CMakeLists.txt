@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-project(_ CXX)
+project(_)
 #set (CMAKE_VERBOSE_MAKEFILE true)
 
 find_package(OpenCV REQUIRED)
@@ -12,6 +12,7 @@ set(___src
     algo_detection_based_tracker.cc
     algo_haar.cc
     algo_haar_ocl.cc
+    algo_hog.cc
     algo_surf_ocl.cc
 )
 
@@ -32,7 +33,9 @@ endif()
 # …but GCC has issues recognising this option(wth),
 #   so set your CC & CXX (env variables) to clang & clang++ ('s paths) resp.
 
+# Tell cmake to link our target executable to dlib.
+include(ext/dlib/dlib/cmake)
+
 
 add_executable(_ ${___src})
-
-target_link_libraries(_ ${OpenCV_LIBS})
+target_link_libraries(_ ${OpenCV_LIBS} dlib)

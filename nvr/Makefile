@@ -6,15 +6,15 @@ compile: ext/dlib/ build/
 .PHONY: compile
 
 build/:
-	mkdir build/
+	mkdir $@
 ext/:
-	mkdir ext/
+	mkdir $@
 
 DLIB_url = 'http://freefr.dl.sourceforge.net/project/dclib/dlib/v18.10/dlib-18.10.tar.bz2'
-DLIB_ver = 'dlib-18.10.tar.bz2'
-
-ext/dlib: ext/
+DLIB_ver = dlib-18.10.tar.bz2
+ext/$(DLIB_ver): ext/
 	wget -O ext/$(DLIB_ver) $(DLIB_url) || rm ext/$(DLIB_ver)
+ext/dlib: ext/$(DLIB_ver)
 	cd ext/ && tar jxf $(DLIB_ver) && mv dlib-*/ dlib/ #&& rm -f $(DLIB_ver)
 
 

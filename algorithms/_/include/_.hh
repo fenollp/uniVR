@@ -35,6 +35,11 @@ bool haar_ocl_init (double SCALE, cv::VideoCapture& CAPTURE);
 void haar_ocl_find (cv::Mat& frame, Faces& faces, double SCALE);
 void haar_ocl_stop ();
 
+// HoG
+bool hog_init (double SCALE, cv::VideoCapture& CAPTURE);
+void hog_find (cv::Mat& frame, Faces& faces, double SCALE);
+void hog_stop ();
+
 // SURF OCL
 bool surf_ocl_init (double SCALE, cv::VideoCapture& CAPTURE);
 void surf_ocl_find (cv::Mat& frame, Faces& faces, double SCALE);

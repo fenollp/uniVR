@@ -35,7 +35,8 @@ He also did a [TED talk](http://youtu.be/0H1zrLZwPjQ?t=3m41s) about it.
 This code should compile | run with
 
 * cmake ≥ 2.8
-* OpenCV ≥ 2.4.8
+* OpenCV ≥ 2.4.9
+* Dlib ≥ 18.10
 * Apple LLVM version 5.1 (clang-503.0.40) (based on LLVM 3.4svn)
 
 

@@ -1,8 +1,8 @@
 all:
 	@echo "Usage: make ‹algo folder›/"
 
-_/: _/main.cc | _/build/
-	cd $@/build && cmake .. && make
+_/: _/main.cc | _/build/ _/ext/dlib
+	cd $@/build && cmake .. && cmake --build .
 .PHONY: _/
 
 algo_haar/: algo_haar/main.cc | algo_haar/build/
@@ -31,9 +31,6 @@ algo_surf_ocl/: algo_surf_ocl/main.cc | algo_surf_ocl/build/
 .PHONY: algo_surf_ocl/
 
 
-%/build/:
-	mkdir $@
-
 # algo_%/:
 # 	mkdir -p $@/build
 # 	cd $@/build/ && cmake .. && make
@@ -41,5 +38,27 @@ algo_surf_ocl/: algo_surf_ocl/main.cc | algo_surf_ocl/build/
 # .PHONY: algo_%/
 
 
-distclean:
-	rm -rf */build/
+%/build/:
+	mkdir $@
+_/ext/:
+	mkdir $@
+
+DLIB_url = 'http://freefr.dl.sourceforge.net/project/dclib/dlib/v18.10/dlib-18.10.tar.bz2'
+DLIB_ver = dlib-18.10.tar.bz2
+_/ext/$(DLIB_ver): _/ext/
+	wget -O $@ $(DLIB_url) || rm $@
+_/ext/dlib: _/ext/$(DLIB_ver)
+	cd _/ext/ && tar jxf $(DLIB_ver) && mv dlib-*/ dlib/ #&& rm -f $(DLIB_ver)
+
+# dat = 'shape_predictor_68_face_landmarks.dat'
+# dat_url = 'http://ftp.jaist.ac.jp/pub/sourceforge/d/dc/dclib/dlib/v18.10/'$(dat)'.bz2'
+# $(dat):
+# 	wget -O _/ext/$(dat).bz2 $(dat_url) || rm _/ext/$(dat).bz2
+# 	cd _/ext/ && tar jf $(dat).bz2
+
+
+clean:
+	$(if $(wildcard */build), rm -r */build)
+
+distclean: clean
+	$(if $(wildcard _/ext/*), rm -r _/ext/)

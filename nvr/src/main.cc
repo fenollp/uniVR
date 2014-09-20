@@ -6,7 +6,6 @@
 #include <dlib/image_processing/frontal_face_detector.h>
 #include <dlib/image_processing/render_face_detections.h>
 #include <dlib/image_processing.h>
-#include <dlib/gui_widgets.h>
 #include <dlib/image_io.h>
 
 #include <iostream>
@@ -64,6 +63,16 @@ main (int argc, const char* argv[]) {
             //dlib::assign_image(img, imgcv);
             // Make the image larger so we can detect small faces.
             ///dlib::pyramid_up(img); // Resizes image (use array2d with that)
+
+            // The detection is far and away the slowest part, so as long as
+            // you don't do it that often you should be fine.
+            // As for changing the detector, that is not so easy and would
+            // require a deep understanding of a lot of things so I wouldn't
+            // recommend it (except for changing the pyramid down part which
+            // you can play with and see how it changes things. You can also
+            // downsample an image using pyramid_down<2> pyr; pyr(img); and
+            // it will make it smaller than therefore faster for the detector
+            // to run. But you won't be able to detect small faces.
 
             dets.clear();
             if (i % DROP_AMOUNT == 0) {

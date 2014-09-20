@@ -16,13 +16,13 @@ main (int argc, const char* argv[])
 
     // ALGOS
     std::vector<std::string> algos =
-        {"camshift",    "dbt",   "haar",    "haarocl",      "surfocl"    };
+        {"camshift",   "dbt",    "haar",    "haarocl",     "hog",    "surfocl"     };
     std::vector<f_init> inits =
-        {camshift_init, dbt_init, haar_init, haar_ocl_init, surf_ocl_init};
+        {camshift_init, dbt_init, haar_init, haar_ocl_init, hog_init, surf_ocl_init};
     std::vector<f_find> finds =
-        {camshift_find, dbt_find, haar_find, haar_ocl_find, surf_ocl_find};
+        {camshift_find, dbt_find, haar_find, haar_ocl_find, hog_find, surf_ocl_find};
     std::vector<f_stop> stops =
-        {camshift_stop, dbt_stop, haar_stop, haar_ocl_stop, surf_ocl_stop};
+        {camshift_stop, dbt_stop, haar_stop, haar_ocl_stop, hog_stop, surf_ocl_stop};
 
     if (!cascade.load(cascade_name)) {
         std::cerr << "!load " << cascade_name << std::endl;
