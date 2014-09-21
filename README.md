@@ -30,6 +30,14 @@ He also did a [TED talk](http://youtu.be/0H1zrLZwPjQ?t=3m41s) about it.
     * [Harris, Laplacian](http://www.robots.ox.ac.uk/~vgg/research/affine/det_eval_files/mikolajczyk_ijcv2004.pdf)
     * [BRIEF](http://cvlabwww.epfl.ch/~lepetit/papers/calonder_eccv10.pdf)
     * [qualitative overview](http://epubs.surrey.ac.uk/726872/1/Tuytelaars-FGV-2008.pdf)
+    * Face Alignment
+	    * [Face Detection, Pose Estimation and Landmark Localization in the Wild](http://www.ics.uci.edu/~xzhu/face/)
+	    * [Facial Point Detection using Boosted Regression and Graph Models](http://www.doc.ic.ac.uk/~mvalstar/Documents/ValstarMartinezPantic_final.pdf)
+	    * [Feature Detection and Tracking with Constrained Local Models](http://www.isbe.man.ac.uk/~bim/Papers/BMVC06/cristinacce_bmvc06.pdf)
+	    * [Real-time Facial Feature Detection using Conditional Regression Forests](http://www.vision.ee.ethz.ch/~gfanelli/pubs/cvpr12.pdf)
+	    * [Deep Convolutional Network Cascade for Facial Point Detection](http://www.ee.cuhk.edu.hk/~xgwang/papers/sunWTcvpr13.pdf)
+	    * [SO: face alignment algorithm on images](http://stackoverflow.com/questions/12046462/face-alignment-algorithm-on-images)
+	    * [Q: What is the best method for face alignment?](http://www.quora.com/Computer-Vision/What-is-the-best-method-for-face-alignment)
 
 ## Requirements
 This code should compile | run with
