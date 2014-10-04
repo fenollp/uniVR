@@ -48,6 +48,14 @@ This code should compile | run with
 * Apple LLVM version 5.1 (clang-503.0.40) (based on LLVM 3.4svn)
 
 
+### motion/*
+
+`cd nvr && make && ./nvr shape_predictor_68_face_landmarks.dat`
+
+* **motion detection** as [explained here](http://blog.cedric.ws/opencv-simple-motion-detection)
+* **facial landmark extraction**
+
+
 ### nvr/*
 
 `cd nvr && make && ./nvr shape_predictor_68_face_landmarks.dat`
