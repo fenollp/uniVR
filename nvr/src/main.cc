@@ -11,7 +11,7 @@
 #include <iostream>
 
 #define WINDOW "nvr"
-#define DROP_AMOUNT 15
+#define DROP_AMOUNT 5
 
 
 int
@@ -45,6 +45,7 @@ main (int argc, const char* argv[]) {
         cv::Mat frame;
         cv::namedWindow(WINDOW, 1);
 
+        std::deque<dlib::cv_image<dlib::bgr_pixel> > prevs;
         std::vector<dlib::rectangle> dets;
         std::vector<dlib::full_object_detection> shapes;
         size_t i = 0;
@@ -59,8 +60,8 @@ main (int argc, const char* argv[]) {
             // resize the image.
             // Note: cv::Mat -> BGR, dlib's -> RGB.
             dlib::cv_image<dlib::bgr_pixel> imgcv(frame);
-            //dlib::array2d<dlib::rgb_pixel> img;
-            //dlib::assign_image(img, imgcv);
+            dlib::array2d<dlib::rgb_pixel> img;
+            dlib::assign_image(img, imgcv);
             // Make the image larger so we can detect small faces.
             ///dlib::pyramid_up(img); // Resizes image (use array2d with that)
 
@@ -73,13 +74,15 @@ main (int argc, const char* argv[]) {
             // downsample an image using pyramid_down<2> pyr; pyr(img); and
             // it will make it smaller than therefore faster for the detector
             // to run. But you won't be able to detect small faces.
+            dlib::pyramid_down<2> pyr;
+            pyr(img);
 
             dets.clear();
             if (i % DROP_AMOUNT == 0) {
                 // Run the full detector every now and then
                 // Tell the face detector to give us a list of bounding boxes
                 // around all the faces in the image.
-                dets = detector(imgcv);
+                dets = detector(img);
                 std::cout << "# Faces detected: " << dets.size() << std::endl;
             } else {
                 // For most frames just guess where the face is
@@ -101,8 +104,9 @@ main (int argc, const char* argv[]) {
             // each face we detected.
             for (const auto& det : dets) {
             // Say det is whole frame:
-            // const auto det = dlib::rectangle(imgcv.nc(), imgcv.nr());
-                const auto& face = sp(imgcv, det);
+            // const auto det = dlib::rectangle(img.nc(), img.nr());
+            std::cout << img.nc() << " " << img.nr() << std::endl;
+                const auto& face = sp(img, det);
                 for (size_t k = 0; k < face.num_parts(); ++k) {
                     const auto& p = face.part(k);
                     if (p == dlib::OBJECT_PART_NOT_PRESENT)
