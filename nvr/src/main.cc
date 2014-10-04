@@ -100,6 +100,8 @@ main (int argc, const char* argv[]) {
             // Now we will go ask the shape_predictor to tell us the pose of
             // each face we detected.
             for (const auto& det : dets) {
+            // Say det is whole frame:
+            // const auto det = dlib::rectangle(imgcv.nc(), imgcv.nr());
                 const auto& face = sp(imgcv, det);
                 for (size_t k = 0; k < face.num_parts(); ++k) {
                     const auto& p = face.part(k);
