@@ -13,11 +13,32 @@
 #define WINDOW "nvr"
 #define DROP_AMOUNT 1
 
-#define WHITE cv::Scalar(255,255,255)
+typedef cv::Mat Frame;
+
+void
+rectangle (Frame& frame, const dlib::rectangle& rect, size_t thickness) {
+    auto zone = cv::Rect(rect.left(), rect.top(), rect.width(), rect.height());
+    cv::rectangle(frame, zone, cv::Scalar(255,255,255), thickness, 8, 0);
+}
+
+void
+dot (Frame& frame, const dlib::point& p, size_t thickness) {
+    cv::Point pcv(p.x(), p.y());
+    cv::line(frame, pcv,pcv, cv::Scalar(255,255,255), thickness, 8, 0);
+}
+
+dlib::rectangle  // Get a square box centered on the nose
+head_hull (const dlib::full_object_detection& face) {
+    dlib::rectangle rect;
+    for (size_t j = 0; j < face.num_parts(); ++j)
+        rect += face.part(j);  // Enlarges rect's area
+    const auto& nose = face.part(30);
+    return dlib::centered_rect(nose, rect.width(), rect.width()); //MAY !square
+}
 
 bool
-find_movement (const cv::Mat& motion, std::vector<cv::Rect>& zones) {
-    //Check whether stddev[0] < Threshold ? numberOfChanges : 0
+find_movement (const Frame& motion, std::vector<dlib::rectangle>& found) {
+    //Check whether stddev[0] < Threshold?
     size_t numberOfChanges = 0;
     size_t minX = motion.cols, maxX = 0;
     size_t minY = motion.rows, maxY = 0;
@@ -36,8 +57,9 @@ find_movement (const cv::Mat& motion, std::vector<cv::Rect>& zones) {
         if (minY - 10 > 0)  minY -= 10;
         if (maxX + 10 < motion.cols - 1)  maxX += 10;
         if (maxY + 10 < motion.rows - 1)  maxY += 10;
-        auto zone = cv::Rect(cv::Point(minX,minY), cv::Point(maxX,maxY));
-        zones.push_back(zone);
+        // rectangle(left, top, right, bottom)
+        auto zone = dlib::rectangle(minX, maxY, maxX, minY);
+        found.push_back(zone);
         return true;
     }
     return false;
@@ -47,40 +69,31 @@ find_movement (const cv::Mat& motion, std::vector<cv::Rect>& zones) {
 int
 main (int argc, const char* argv[]) {
     try {
-        // Takes in a shape model file and then a list of images to
-        // process.  We will take these filenames in as command line arguments.
-        // Dlib comes with example images in the examples/faces folder so give
-        // those as arguments to this program.
         if (argc == 1) {
             std::cout << "Call this program like this:" << std::endl
                       << "./nvr 68_face_landmarks.dat" << std::endl;
             return 1;
         }
-
-        // We need a face detector.  We will use this to get bounding boxes for
-        // each face in an image.
-        auto detector = dlib::get_frontal_face_detector();
-        // We also need a shape_predictor. It will predict face landmark
-        // positions given an image and face bounding box.  Here we are loading
+        // A shape_predictor will predict face landmark positions given
+        //  an image and face bounding box.  Here we are loading
         // the model from the 68_face_landmarks.dat file given.
         dlib::shape_predictor sp;
         dlib::deserialize(argv[1]) >> sp;
 
+        Frame frame;
         cv::VideoCapture capture;
         if (!capture.open(0) || !capture.isOpened()) {
             std::cerr << "!cap from webcam 0" << std::endl;
             return 2;
         }
 
-        cv::Mat frame;
         cv::namedWindow(WINDOW, 1);
 
         cv::Mat erosionKernel =
             cv::getStructuringElement(cv::MORPH_RECT, cv::Size(9,9));
-        std::deque<cv::Mat> prevs;
-        std::vector<cv::Rect> zones;
+        std::deque<Frame> prevs;
+        std::vector<dlib::rectangle> zones;
 
-        std::vector<dlib::rectangle> dets;
         std::vector<dlib::full_object_detection> shapes;
         size_t i = 0;
         while (true) {
@@ -111,29 +124,7 @@ main (int argc, const char* argv[]) {
             // dlib::pyramid_down<2> pyr;
             // pyr(img);
 
-            dets.clear();
-            // if (i % DROP_AMOUNT == 0) {
-            //     // Run the full detector every now and then
-            //     // Tell the face detector to give us a list of bounding boxes
-            //     // around all the faces in the image.
-            //     dets = detector(imgcv);
-            //     std::cout << "# Faces detected: " << dets.size() << std::endl;
-            // } else {
-            //     // For most frames just guess where the face is
-            //     // based on the last one
-            //     for (const auto& face : shapes) {
-            //         // Get a square box centered on the nose
-            //         dlib::rectangle rect;
-            //         for (size_t j = 0; j < face.num_parts(); ++j)
-            //             rect += face.part(j);
-            //         const auto& nose = face.part(30);
-            //         dets.push_back( // ROI
-            //             dlib::centered_rect(nose, rect.width(), rect.width()));
-            //     }
-            //     std::cout << "Dropped frame" << std::endl;
-            // }
-
-            if (i % 5 == 0) {
+            if (i % DROP_AMOUNT == 0) {
                 cv::Mat gray(frame);
                 cv::cvtColor(frame, gray, CV_RGB2GRAY);
                 prevs.push_back(gray);
@@ -147,30 +138,23 @@ main (int argc, const char* argv[]) {
                 cv::bitwise_and(d1, d2, motion);
                 cv::threshold(motion, motion, 15, 255, CV_THRESH_BINARY);
                 cv::erode(motion, motion, erosionKernel);
-                if (find_movement(motion, zones)) {
-                    const auto& zone = zones.back();
-                    cv::rectangle(frame, zone, WHITE, 5, 8, 0);
-                }
+                if (find_movement(motion, zones))
+                    rectangle(frame, zones.back(), 5);
                 //cv::imshow(WINDOW, motion);
             }
 
-            shapes.clear();
-            // Now we will go ask the shape_predictor to tell us the pose of
-            // each face we detected.
-            for (const auto& det : dets) {
-            // Say det is whole frame:
-            // const auto det = dlib::rectangle(imgcv.nc(), imgcv.nr());
-            std::cout << imgcv.nc() << " " << imgcv.nr() << std::endl;
-                const auto& face = sp(imgcv, det);
-                for (size_t k = 0; k < face.num_parts(); ++k) {
-                    const auto& p = face.part(k);
-                    if (p == dlib::OBJECT_PART_NOT_PRESENT)
-                        continue;
-                    cv::Point pcv(p.x(), p.y());
-                    cv::line(frame, pcv,pcv, WHITE, 4, 8,0);
+            // shape_predictor -> face landmark extraction
+            /// for last of potential zones…
+            if (!zones.empty())
+                for (const auto& rect : {zones.back()}) {
+                    const auto& face = sp(imgcv, rect);
+                    for (size_t k = 0; k < face.num_parts(); ++k) {
+                        const auto& p = face.part(k);
+                        if (p == dlib::OBJECT_PART_NOT_PRESENT)
+                            continue;
+                        dot(frame, p, 4);
+                    }
                 }
-                shapes.push_back(face);
-            }
 
             cv::imshow(WINDOW, frame);
             //std::cin.get();
