@@ -83,6 +83,11 @@ main (int argc, const char* argv[]) {
                 // Tell the face detector to give us a list of bounding boxes
                 // around all the faces in the image.
                 dets = detector(img);
+                for (const auto& det : dets) {
+                    auto r = cv::Rect(det.left(), det.top(),
+                                         det.width(), det.height());
+                    cv::rectangle(frame, r, cv::Scalar(255,255,255), 1, 8, 0);
+                }
                 std::cout << "# Faces detected: " << dets.size() << std::endl;
             } else {
                 // For most frames just guess where the face is
