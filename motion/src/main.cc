@@ -94,7 +94,6 @@ main (int argc, const char* argv[]) {
         std::deque<Frame> prevs;
         std::vector<dlib::rectangle> zones;
 
-        std::vector<dlib::full_object_detection> shapes;
         size_t i = 0;
         while (true) {
             capture >> frame;
@@ -148,6 +147,7 @@ main (int argc, const char* argv[]) {
             if (!zones.empty())
                 for (const auto& rect : {zones.back()}) {
                     const auto& face = sp(imgcv, rect);
+                    rectangle(frame, head_hull(face), 2);
                     for (size_t k = 0; k < face.num_parts(); ++k) {
                         const auto& p = face.part(k);
                         if (p == dlib::OBJECT_PART_NOT_PRESENT)
