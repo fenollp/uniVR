@@ -11,7 +11,7 @@
 #include <iostream>
 
 #define WINDOW "nvr"
-#define DROP_AMOUNT 1
+#define DROP_AMOUNT 3
 
 typedef cv::Mat Frame;
 
@@ -51,13 +51,11 @@ find_movement (const Frame& motion, std::vector<dlib::rectangle>& found) {
                 if (maxY < y)  maxY = y;
                 ++numberOfChanges;
             }
-    if (numberOfChanges != 0) {
-        // Replace within boundaries
-        if (minX - 10 > 0)  minX -= 10;
-        if (minY - 10 > 0)  minY -= 10;
-        if (maxX + 10 < motion.cols - 1)  maxX += 10;
-        if (maxY + 10 < motion.rows - 1)  maxY += 10;
-        // rectangle(left, top, right, bottom)
+    if (numberOfChanges != 0) { // Place within boundaries
+        if (minX - 10 > 0)                minX -= 10; // left
+        if (minY - 10 > 0)                minY -= 10; // bottom
+        if (maxX + 10 < motion.cols - 1)  maxX += 10; // right
+        if (maxY + 10 < motion.rows - 1)  maxY += 10; // top
         auto zone = dlib::rectangle(minX, maxY, maxX, minY);
         found.push_back(zone);
         return true;
@@ -123,6 +121,7 @@ main (int argc, const char* argv[]) {
             // dlib::pyramid_down<2> pyr;
             // pyr(img);
 
+            // Detect motion
             if (i % DROP_AMOUNT == 0) {
                 cv::Mat gray(frame);
                 cv::cvtColor(frame, gray, CV_RGB2GRAY);
@@ -135,11 +134,23 @@ main (int argc, const char* argv[]) {
                 cv::absdiff(prevs[0], prevs[1], d1);
                 cv::absdiff(prevs[1], prevs[2], d2);
                 cv::bitwise_and(d1, d2, motion);
+                // Note: static threshold…
                 cv::threshold(motion, motion, 15, 255, CV_THRESH_BINARY);
                 cv::erode(motion, motion, erosionKernel);
-                if (find_movement(motion, zones))
-                    rectangle(frame, zones.back(), 5);
-                //cv::imshow(WINDOW, motion);
+                bool foundSomething = find_movement(motion, zones);
+                if (!zones.empty()) {
+                    const auto& found = zones.back();
+                    rectangle(frame, found, 1);
+                    if (foundSomething) {
+                        auto r = dlib::centered_rect(found,
+                                                     motion.rows / 2,
+                                                     motion.cols / 3);
+                        zones.pop_back();
+                        zones.push_back(r);
+                        rectangle(frame, r, 5);
+                    }
+                }
+                // cv::imshow(WINDOW, motion);
             }
 
             // shape_predictor -> face landmark extraction
