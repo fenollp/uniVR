@@ -89,7 +89,7 @@ main (int argc, const char* argv[]) {
                 shapes.pop_front();
             if (shapes.size() == 3) {
                 auto nrg = landmark_energy(shapes);
-                text(frame, std::to_string(nrg), 20);
+                text(frame, 0, std::to_string(nrg));
             }
 
 

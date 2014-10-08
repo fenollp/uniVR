@@ -100,7 +100,7 @@ main (int argc, const char* argv[]) {
                 faces_in_zones.pop_front();
             if (faces_in_zones.size() == 3) {
                 auto nrg = landmark_energy(faces_in_zones);
-                text(frame, std::to_string(nrg), 20);
+                text(frame, 20, std::to_string(nrg));
             }
 
             // shape_predictor -> face landmark extraction

@@ -27,7 +27,7 @@
     dots (Frame& img, const dlib::full_object_detection& face, size_t thick);
 
     void
-    text (Frame& img, const std::string& str, size_t pos);
+    text (Frame& img, size_t pos, const std::string& str);
 
     dlib::rectangle
     biggest_rectangle (const std::vector<dlib::rectangle>& rs);

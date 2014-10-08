@@ -26,7 +26,7 @@
     }
 
     void
-    text (Frame& img, const std::string& str, size_t pos) {
+    text (Frame& img, size_t pos, const std::string& str) {
         int fface = cv::FONT_HERSHEY_SIMPLEX;
         double fscale = 1;
         int thick = 2;
