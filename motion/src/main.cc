@@ -63,6 +63,7 @@ main (int argc, const char* argv[]) {
             // dlib::pyramid_down<2> pyr;
             // pyr(img);
 
+
             // Detect motion
             if (i % DROP_AMOUNT == 0) {
                 cv::Mat gray(frame);
@@ -116,6 +117,7 @@ main (int argc, const char* argv[]) {
                     dot(frame, p, 4);
                 }
             }
+
 
             cv::imshow(WINDOW, frame);
             //std::cin.get();

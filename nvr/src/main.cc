@@ -100,6 +100,7 @@ main (int argc, const char* argv[]) {
                 shapes.push_back(face);
             }
 
+
             cv::imshow(WINDOW, frame);
             //std::cin.get();
             ++i;
