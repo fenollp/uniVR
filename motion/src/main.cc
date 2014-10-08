@@ -110,12 +110,7 @@ main (int argc, const char* argv[]) {
                 const auto& face = sp(imgcv, rect);
                 faces_in_zones.push_back(face);
                 // rectangle(frame, head_hull(face), 2);
-                for (size_t k = 0; k < face.num_parts(); ++k) {
-                    const auto& p = face.part(k);
-                    if (p == dlib::OBJECT_PART_NOT_PRESENT)
-                        continue;
-                    dot(frame, p, 4);
-                }
+                dots(frame, face, 4);
             }
 
 

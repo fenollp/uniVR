@@ -24,7 +24,13 @@
     dot (Frame& img, const dlib::point& p, size_t thickness);
 
     void
+    dots (Frame& img, const dlib::full_object_detection& face, size_t thick);
+
+    void
     text (Frame& img, const std::string& str, size_t pos);
+
+    dlib::rectangle
+    biggest_rectangle (const std::vector<dlib::rectangle>& rs);
 
     dlib::rectangle  // Get a square box centered on the nose
     head_hull (const dlib::full_object_detection& face);

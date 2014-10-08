@@ -16,6 +16,16 @@
     }
 
     void
+    dots (Frame& img, const dlib::full_object_detection& face, size_t thick) {
+        for (size_t k = 0; k < face.num_parts(); ++k) {
+            const auto& p = face.part(k);
+            if (p == dlib::OBJECT_PART_NOT_PRESENT)
+                continue;
+            dot(img, p, thick);
+        }
+    }
+
+    void
     text (Frame& img, const std::string& str, size_t pos) {
         int fface = cv::FONT_HERSHEY_SIMPLEX;
         double fscale = 1;
@@ -25,12 +35,23 @@
         cv::putText(img, str, origin, fface, fscale, color, thick, 8);
     }
 
+    bool  // Used by biggest_rectangle.
+    cmp_areas (const dlib::rectangle& lr, const dlib::rectangle& rr) {
+        return lr.area() < rr.area();
+    }
+
+    dlib::rectangle
+    biggest_rectangle (const std::vector<dlib::rectangle>& rs) {
+        return *std::max_element(std::begin(rs), std::end(rs), cmp_areas);
+    }
+
     dlib::rectangle  // Get a square box centered on the nose
     head_hull (const dlib::full_object_detection& face) {
         dlib::rectangle rect;
         for (size_t j = 0; j < face.num_parts(); ++j)
             rect += face.part(j);  // Enlarges rect's area
         const auto& nose = face.part(30);
+        // FIXME use front-menton distance as rect's height/width
         return dlib::centered_rect(nose, rect.width(), rect.height());
     }
 

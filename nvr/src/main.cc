@@ -30,9 +30,7 @@ main (int argc, const char* argv[]) {
 
         cv::namedWindow(WINDOW, 1);
 
-        std::deque<dlib::cv_image<dlib::bgr_pixel> > prevs;
-        std::vector<dlib::rectangle> dets;
-        std::vector<dlib::full_object_detection> shapes;
+        std::deque<dlib::full_object_detection> shapes;
 
         size_t i = 0;
         while (true) {
@@ -63,41 +61,35 @@ main (int argc, const char* argv[]) {
             dlib::pyramid_down<2> pyr;
             pyr(img);
 
-            // int xoff = (frame.cols - img.nc()) / 2;
-            // int yoff = (frame.rows - img.nr()) / 2;
 
-
-            dets.clear();
+            dlib::rectangle rect;
             if (i % DROP_AMOUNT == 0) {
                 // Run the full detector every now and then
                 // Tell the face detector to give us a list of bounding boxes
                 // around all the faces in the image.
-                dets = detector(img);
+                auto dets = detector(img);
                 for (const auto& det : dets)
                     rectangle(frame, det, 1);
-                std::cout << "# Faces detected: " << dets.size() << std::endl;
-            } else {
-                // For most frames just guess where the face is
-                // based on the last one
-                for (const auto& face : shapes)
-                    dets.push_back(head_hull(face));
-            }
-
-            shapes.clear();
-            // Now we will go ask the shape_predictor to tell us the pose of
-            // each face we detected.
-            for (const auto& det : dets) {
-                // Say det is whole frame:
-                // const auto det = dlib::rectangle(img.nc(), img.nr());
-                // std::cout << img.nc() << " " << img.nr() << std::endl;
-                const auto& face = sp(img, det);
-                for (size_t k = 0; k < face.num_parts(); ++k) {
-                    const auto& p = face.part(k);
-                    if (p == dlib::OBJECT_PART_NOT_PRESENT)
-                        continue;
-                    dot(frame, p, 4);
+                std::cout << "# detected: " << dets.size() << std::endl;
+                if (!dets.empty()) {
+                    rect = biggest_rectangle(dets);
+                    rectangle(frame, rect, 4);
                 }
+            }
+            if (rect.is_empty())
+                if (!shapes.empty())
+                    rect = head_hull(shapes.back());
+
+            if (!rect.is_empty()) {
+                const auto& face = sp(img, rect);
+                dots(frame, face, 4);
                 shapes.push_back(face);
+            }
+            while (shapes.size() > 3)
+                shapes.pop_front();
+            if (shapes.size() == 3) {
+                auto nrg = landmark_energy(shapes);
+                text(frame, std::to_string(nrg), 20);
             }
 
 
