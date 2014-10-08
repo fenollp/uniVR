@@ -85,7 +85,7 @@ main (int argc, const char* argv[]) {
                 dets = detector(img);
                 for (const auto& det : dets) {
                     auto r = cv::Rect(det.left(), det.top(),
-                                         det.width(), det.height());
+                                      det.width(), det.height());
                     cv::rectangle(frame, r, cv::Scalar(255,255,255), 1, 8, 0);
                 }
                 std::cout << "# Faces detected: " << dets.size() << std::endl;
@@ -101,7 +101,6 @@ main (int argc, const char* argv[]) {
                     dets.push_back( // ROI
                         dlib::centered_rect(nose, rect.width(), rect.width()));
                 }
-                std::cout << "Dropped frame" << std::endl;
             }
 
             shapes.clear();
@@ -116,7 +115,8 @@ main (int argc, const char* argv[]) {
                     const auto& p = face.part(k);
                     if (p == dlib::OBJECT_PART_NOT_PRESENT)
                         continue;
-                    cv::Point pcv(p.x(), p.y());
+                    cv::Point pcv(p.x() + (frame.cols - img.nc()) / 2,
+                                  p.y() + (frame.rows - img.nr()) / 2);
                     cv::line(frame, pcv,pcv, cv::Scalar(255,255,255), 4, 8,0);
                 }
                 shapes.push_back(face);

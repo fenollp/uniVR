@@ -16,15 +16,25 @@
 typedef cv::Mat Frame;
 
 void
-rectangle (Frame& frame, const dlib::rectangle& rect, size_t thickness) {
+rectangle (Frame& img, const dlib::rectangle& rect, size_t thickness) {
     auto zone = cv::Rect(rect.left(), rect.top(), rect.width(), rect.height());
-    cv::rectangle(frame, zone, cv::Scalar(255,255,255), thickness, 8, 0);
+    cv::rectangle(img, zone, cv::Scalar(255,255,255), thickness, 8, 0);
 }
 
 void
-dot (Frame& frame, const dlib::point& p, size_t thickness) {
+dot (Frame& img, const dlib::point& p, size_t thickness) {
     cv::Point pcv(p.x(), p.y());
-    cv::line(frame, pcv,pcv, cv::Scalar(255,255,255), thickness, 8, 0);
+    cv::line(img, pcv,pcv, cv::Scalar::all(255), thickness, 8, 0);
+}
+
+void
+text (Frame& img, const std::string& str, size_t pos) {
+    int fface = cv::FONT_HERSHEY_SIMPLEX;
+    double fscale = 1;
+    int thick = 2;
+    auto color = cv::Scalar::all(255);
+    auto origin = cv::Point(0, img.rows - pos);
+    cv::putText(img, str, origin, fface, fscale, color, thick, 8);
 }
 
 dlib::rectangle  // Get a square box centered on the nose
@@ -33,7 +43,20 @@ head_hull (const dlib::full_object_detection& face) {
     for (size_t j = 0; j < face.num_parts(); ++j)
         rect += face.part(j);  // Enlarges rect's area
     const auto& nose = face.part(30);
-    return dlib::centered_rect(nose, rect.width(), rect.width()); //MAY !square
+    return dlib::centered_rect(nose, rect.width(), rect.height());
+}
+
+size_t
+landmark_energy (const std::deque<dlib::full_object_detection>& faces) {
+    size_t E = 0;
+    for (size_t i = 0; i < 68; ++i) {
+        const auto& part2i = faces[2].part(i);
+        const auto& part1i = faces[1].part(i);
+        const auto& part0i = faces[0].part(i);
+        E  += std::pow(part2i.x() - part1i.x() - part0i.x(), 2)
+            + std::pow(part2i.y() - part1i.y() - part0i.y(), 2);
+    }
+    return E;
 }
 
 bool
@@ -91,6 +114,7 @@ main (int argc, const char* argv[]) {
             cv::getStructuringElement(cv::MORPH_RECT, cv::Size(9,9));
         std::deque<Frame> prevs;
         std::vector<dlib::rectangle> zones;
+        std::deque<dlib::full_object_detection> faces_in_zones;
 
         size_t i = 0;
         while (true) {
@@ -153,12 +177,20 @@ main (int argc, const char* argv[]) {
                 // cv::imshow(WINDOW, motion);
             }
 
+            while (faces_in_zones.size() > 3)
+                faces_in_zones.pop_front();
+            if (faces_in_zones.size() == 3) {
+                auto nrg = landmark_energy(faces_in_zones);
+                text(frame, std::to_string(nrg), 20);
+            }
+
             // shape_predictor -> face landmark extraction
             /// for last of potential zones…
             if (!zones.empty())
                 for (const auto& rect : {zones.back()}) {
                     const auto& face = sp(imgcv, rect);
-                    rectangle(frame, head_hull(face), 2);
+                    faces_in_zones.push_back(face);
+                    // rectangle(frame, head_hull(face), 2);
                     for (size_t k = 0; k < face.num_parts(); ++k) {
                         const auto& p = face.part(k);
                         if (p == dlib::OBJECT_PART_NOT_PRESENT)
