@@ -63,8 +63,8 @@ main (int argc, const char* argv[]) {
             dlib::pyramid_down<2> pyr;
             pyr(img);
 
-            int xoff = (frame.cols - img.nc()) / 2;
-            int yoff = (frame.rows - img.nr()) / 2;
+            // int xoff = (frame.cols - img.nc()) / 2;
+            // int yoff = (frame.rows - img.nr()) / 2;
 
 
             dets.clear();
@@ -95,7 +95,7 @@ main (int argc, const char* argv[]) {
                     const auto& p = face.part(k);
                     if (p == dlib::OBJECT_PART_NOT_PRESENT)
                         continue;
-                    dot(frame, p, 4, xoff, yoff);
+                    dot(frame, p, 4);
                 }
                 shapes.push_back(face);
             }

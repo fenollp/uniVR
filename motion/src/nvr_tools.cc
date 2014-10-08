@@ -3,18 +3,15 @@
 //namespace nvr {
 
     void
-    rectangle (Frame& img, const dlib::rectangle& rect, size_t thickness,
-               int dx, int dy) {
+    rectangle (Frame& img, const dlib::rectangle& rect, size_t thickness) {
         auto zone =
-            cv::Rect(rect.left()  + dx, rect.top()    + dy,
-                     rect.width() + dx, rect.height() + dy);
+            cv::Rect(rect.left(), rect.top(), rect.width(), rect.height());
         cv::rectangle(img, zone, cv::Scalar(255,255,255), thickness, 8, 0);
     }
 
     void
-    dot (Frame& img, const dlib::point& p, size_t thickness,
-         int dx, int dy) {
-        cv::Point pcv(p.x() + dx, p.y() + dy);
+    dot (Frame& img, const dlib::point& p, size_t thickness) {
+        cv::Point pcv(p.x(), p.y());
         cv::line(img, pcv,pcv, cv::Scalar::all(255), thickness, 8, 0);
     }
 

@@ -18,12 +18,10 @@
     typedef cv::Mat Frame;
 
     void
-    rectangle (Frame& img, const dlib::rectangle& rect, size_t thickness,
-               int dx=0, int dy=0);
+    rectangle (Frame& img, const dlib::rectangle& rect, size_t thickness);
 
     void
-    dot (Frame& img, const dlib::point& p, size_t thickness,
-         int dx=0, int dy=0);
+    dot (Frame& img, const dlib::point& p, size_t thickness);
 
     void
     text (Frame& img, const std::string& str, size_t pos);
