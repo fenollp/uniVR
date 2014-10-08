@@ -6,6 +6,7 @@ include_directories(include)
 
 
 set(nvr__src
+  src/nvr_tools.cc
   src/main.cc
   )
 
