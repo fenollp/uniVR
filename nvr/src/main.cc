@@ -1,7 +1,8 @@
 #include "nvr_tools.hh"
 
 #define WINDOW "nvr"
-#define DROP_AMOUNT 5
+#define DROP_AMOUNT 10 //5
+#define BACKLOG_SZ 3
 
 
 int
@@ -70,7 +71,7 @@ main (int argc, const char* argv[]) {
                 auto dets = detector(img);
                 for (const auto& det : dets)
                     rectangle(frame, det, 1);
-                std::cout << "# detected: " << dets.size() << std::endl;
+                text(frame, 20, "#detected: " + std::to_string(dets.size()));
                 if (!dets.empty()) {
                     rect = biggest_rectangle(dets);
                     rectangle(frame, rect, 4);
@@ -85,13 +86,19 @@ main (int argc, const char* argv[]) {
                 dots(frame, face, 4);
                 shapes.push_back(face);
             }
-            while (shapes.size() > 3)
+            while (shapes.size() > BACKLOG_SZ)
                 shapes.pop_front();
-            if (shapes.size() == 3) {
+            if (shapes.size() == BACKLOG_SZ) {
                 auto nrg = landmark_energy(shapes);
-                text(frame, 0, std::to_string(nrg));
+                text(frame, 0, "energy: " + std::to_string(nrg));
             }
 
+
+            text(frame, 40, std::to_string(img.nc()) +
+                     "x" +  std::to_string(img.nr()));
+            text(frame, 60, "i: " + std::to_string(i));
+            text(frame, 80, "DROP_AMOUNT: "+std::to_string(DROP_AMOUNT));
+            text(frame, 100, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));
 
             cv::imshow(WINDOW, frame);
             //std::cin.get();

@@ -2,6 +2,7 @@
 
 #define WINDOW "nvr"
 #define DROP_AMOUNT 3
+#define BACKLOG_SZ 3
 
 
 int
@@ -96,9 +97,9 @@ main (int argc, const char* argv[]) {
                 // cv::imshow(WINDOW, motion);
             }
 
-            while (faces_in_zones.size() > 3)
+            while (faces_in_zones.size() > BACKLOG_SZ)
                 faces_in_zones.pop_front();
-            if (faces_in_zones.size() == 3) {
+            if (faces_in_zones.size() == BACKLOG_SZ) {
                 auto nrg = landmark_energy(faces_in_zones);
                 text(frame, 20, std::to_string(nrg));
             }

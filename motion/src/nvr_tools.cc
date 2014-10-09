@@ -28,10 +28,10 @@
     void
     text (Frame& img, size_t pos, const std::string& str) {
         int fface = cv::FONT_HERSHEY_SIMPLEX;
-        double fscale = 1;
-        int thick = 2;
+        double fscale = 0.73;
+        int thick = 1;
         auto color = cv::Scalar::all(255);
-        auto origin = cv::Point(0, img.rows - pos);
+        auto origin = cv::Point(5, img.rows - pos - 5);
         cv::putText(img, str, origin, fface, fscale, color, thick, 8);
     }
 
@@ -57,7 +57,7 @@
 
     size_t
     landmark_energy (const std::deque<dlib::full_object_detection>& faces) {
-        size_t E = 0;
+        size_t E = 0; // FIXME work with any size. FIXME: be independent wrt sz
         for (size_t i = 0; i < 68; ++i) {
             const auto& part2i = faces[2].part(i);
             const auto& part1i = faces[1].part(i);
