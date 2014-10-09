@@ -35,6 +35,16 @@
         cv::putText(img, str, origin, fface, fscale, color, thick, 8);
     }
 
+    void
+    textr (Frame& img, size_t pos, const std::string& str) {
+        int fface = cv::FONT_HERSHEY_SIMPLEX;
+        double fscale = 0.73;
+        int thick = 1;
+        auto color = cv::Scalar::all(255);
+        auto origin = cv::Point(img.cols - 15*str.size(), img.rows - pos - 5);
+        cv::putText(img, str, origin, fface, fscale, color, thick, 8);
+    }
+
     bool  // Used by biggest_rectangle.
     cmp_areas (const dlib::rectangle& lr, const dlib::rectangle& rr) {
         return lr.area() < rr.area();

@@ -29,6 +29,9 @@
     void
     text (Frame& img, size_t pos, const std::string& str);
 
+    void
+    textr (Frame& img, size_t pos, const std::string& str);
+
     dlib::rectangle
     biggest_rectangle (const std::vector<dlib::rectangle>& rs);
 
