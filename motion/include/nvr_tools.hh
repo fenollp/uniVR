@@ -11,6 +11,8 @@
 # include <dlib/image_processing.h>
 # include <dlib/image_io.h>
 
+# include <cmath>
+
 # include <iostream>
 
 //namespace nvr {
@@ -39,10 +41,18 @@
     head_hull (const dlib::full_object_detection& face);
 
     size_t
-    landmark_energy (const std::deque<dlib::full_object_detection>& faces);
+    landmark_energy (size_t rows, size_t cols,
+                     const std::deque<dlib::full_object_detection>& faces);
 
     bool
     find_movement (const Frame& motion, std::vector<dlib::rectangle>& found);
+
+    int
+    norm (const dlib::full_object_detection& face, int part1, int part2);
+
+    double
+    angle (const dlib::full_object_detection& face,
+           int part1, int part2, int Part1, int Part2);
 
 //} // namespace nvr
 

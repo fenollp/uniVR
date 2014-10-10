@@ -85,11 +85,25 @@ main (int argc, const char* argv[]) {
                 const auto& face = sp(img, rect);
                 dots(frame, face, 4);
                 shapes.push_back(face);
+
+                do {
+                    auto n  = norm(face, 27, 30);
+                    auto er = norm(face, 36, 39);
+                    auto el = norm(face, 42, 45);
+                    auto ar = angle(face, 27,30, 36,39);
+                    auto al = angle(face, 42,45, 27,30);
+                    textr(frame,  0, std::to_string(n)  + " :n");
+                    textr(frame, 20, std::to_string(er) + " :er");
+                    textr(frame, 40, std::to_string(el) + " :el");
+                    textr(frame, 60, std::to_string(ar) + " :ar");
+                    textr(frame, 80, std::to_string(al) + " :al");
+                } while (0);
             }
+
             while (shapes.size() > BACKLOG_SZ)
                 shapes.pop_front();
             if (shapes.size() == BACKLOG_SZ) {
-                auto nrg = landmark_energy(shapes);
+                auto nrg = landmark_energy(img.nr(), img.nc(), shapes);
                 text(frame, 0, "energy: " + std::to_string(nrg));
             }
 

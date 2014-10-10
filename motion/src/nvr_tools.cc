@@ -43,6 +43,7 @@
         auto color = cv::Scalar::all(255);
         auto origin = cv::Point(img.cols - 15*str.size(), img.rows - pos - 5);
         cv::putText(img, str, origin, fface, fscale, color, thick, 8);
+        std::cout << str << std::endl;///
     }
 
     bool  // Used by biggest_rectangle.
@@ -66,14 +67,16 @@
     }
 
     size_t
-    landmark_energy (const std::deque<dlib::full_object_detection>& faces) {
-        size_t E = 0; // FIXME work with any size. FIXME: be independent wrt sz
+    landmark_energy (size_t rows, size_t cols,
+                     const std::deque<dlib::full_object_detection>& faces) {
+        size_t E = 0;
         for (size_t i = 0; i < 68; ++i) {
-            const auto& part2i = faces[2].part(i);
-            const auto& part1i = faces[1].part(i);
-            const auto& part0i = faces[0].part(i);
-            E  += std::pow(part2i.x() - part1i.x() - part0i.x(), 2)
-                + std::pow(part2i.y() - part1i.y() - part0i.y(), 2);
+            int ler = rows, lec = cols;
+            for (const auto& face : faces) {
+                ler -= face.part(i).x();
+                lec -= face.part(i).y();
+            }
+            E += std::pow(ler, 2) + std::pow(lec, 2);
         }
         return E;
     }
@@ -103,6 +106,31 @@
             return true;
         }
         return false;
+    }
+
+    int
+    norm (const dlib::full_object_detection& face, int part1, int part2) {
+        const auto& p1 = face.part(part1);
+        const auto& p2 = face.part(part2);
+        int x = p1.x() - p2.x();
+        int y = p1.y() - p2.y();
+        return std::pow(x, 2) + std::pow(y, 2);
+    }
+
+    double
+    angle (const dlib::full_object_detection& face,
+           int part1, int part2, int Part1, int Part2) {
+        const auto& p1 = face.part(part1);
+        const auto& p2 = face.part(part2);
+        const auto& P1 = face.part(Part1);
+        const auto& P2 = face.part(Part2);
+        if (0 == p2.x() - p1.x())
+            return -1;
+        if (0 == P2.x() - P1.x())
+            return -2;
+        double m1 = (p2.y() - p1.y()) / (p2.x() - p1.x());
+        double m2 = (P2.y() - P1.y()) / (P2.x() - P1.x());
+        return std::atan2(1 + m2*m1, m2 - m1);
     }
 
 //}
