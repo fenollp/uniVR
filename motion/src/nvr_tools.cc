@@ -25,25 +25,30 @@
         }
     }
 
-    void
-    text (Frame& img, size_t pos, const std::string& str) {
+    void // private
+    text (Frame& img, const cv::Point& origin, const std::string& str) {
         int fface = cv::FONT_HERSHEY_SIMPLEX;
         double fscale = 0.73;
         int thick = 1;
         auto color = cv::Scalar::all(255);
-        auto origin = cv::Point(5, img.rows - pos - 5);
+        int baseline = 0;
+        auto text = cv::getTextSize(str, fface, fscale, thick, &baseline);
+        cv::rectangle(img, origin + cv::Point(0,baseline)
+                      ,    origin + cv::Point(text.width,-text.height),
+                      cv::Scalar::all(0), CV_FILLED);
         cv::putText(img, str, origin, fface, fscale, color, thick, 8);
     }
 
     void
+    text (Frame& img, size_t pos, const std::string& str) {
+        auto origin = cv::Point(5, img.rows - pos - 5);
+        text(img, origin, str);
+    }
+
+    void
     textr (Frame& img, size_t pos, const std::string& str) {
-        int fface = cv::FONT_HERSHEY_SIMPLEX;
-        double fscale = 0.73;
-        int thick = 1;
-        auto color = cv::Scalar::all(255);
         auto origin = cv::Point(img.cols - 15*str.size(), img.rows - pos - 5);
-        cv::putText(img, str, origin, fface, fscale, color, thick, 8);
-        std::cout << str << std::endl;///
+        text(img, origin, str);
     }
 
     bool  // Used by biggest_rectangle.
@@ -124,12 +129,8 @@
         const auto& p2 = face.part(part2);
         const auto& P1 = face.part(Part1);
         const auto& P2 = face.part(Part2);
-        if (0 == p2.x() - p1.x())
-            return -1;
-        if (0 == P2.x() - P1.x())
-            return -2;
-        double m1 = (p2.y() - p1.y()) / (p2.x() - p1.x());
-        double m2 = (P2.y() - P1.y()) / (P2.x() - P1.x());
+        double m1 = (p2.y() - p1.y()) / (p2.x() - p1.x() + SMOOTHING);
+        double m2 = (P2.y() - P1.y()) / (P2.x() - P1.x() + SMOOTHING);
         return std::atan2(1 + m2*m1, m2 - m1);
     }
 

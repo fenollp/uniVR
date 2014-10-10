@@ -50,6 +50,7 @@
     int
     norm (const dlib::full_object_detection& face, int part1, int part2);
 
+# define SMOOTHING 0.000000001
     double
     angle (const dlib::full_object_detection& face,
            int part1, int part2, int Part1, int Part2);

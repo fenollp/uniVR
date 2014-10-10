@@ -33,7 +33,7 @@ main (int argc, const char* argv[]) {
 
         std::deque<dlib::full_object_detection> shapes;
 
-        size_t i = 0;
+        size_t I = 0, Ds = 0;
         while (true) {
             capture >> frame;
             if (frame.empty())
@@ -64,19 +64,20 @@ main (int argc, const char* argv[]) {
 
 
             dlib::rectangle rect;
-            if (i % DROP_AMOUNT == 0) {
+            if (I % DROP_AMOUNT == 0) {
                 // Run the full detector every now and then
                 // Tell the face detector to give us a list of bounding boxes
                 // around all the faces in the image.
                 auto dets = detector(img);
                 for (const auto& det : dets)
                     rectangle(frame, det, 1);
-                text(frame, 20, "#detected: " + std::to_string(dets.size()));
                 if (!dets.empty()) {
                     rect = biggest_rectangle(dets);
                     rectangle(frame, rect, 4);
+                    ++Ds;
                 }
             }
+            text(frame, 30, "Ds: " + std::to_string(Ds));
             if (rect.is_empty())
                 if (!shapes.empty())
                     rect = head_hull(shapes.back());
@@ -91,12 +92,18 @@ main (int argc, const char* argv[]) {
                     auto er = norm(face, 36, 39);
                     auto el = norm(face, 42, 45);
                     auto ar = angle(face, 27,30, 36,39);
-                    auto al = angle(face, 42,45, 27,30);
+                    auto al = angle(face, 27,30, 42,45);
+                    auto das = std::abs(std::abs(ar) - std::abs(al));
+                    auto chin = norm(face, 7, 9);
+                    auto ears = norm(face, 0, 16);
                     textr(frame,  0, std::to_string(n)  + " :n");
-                    textr(frame, 20, std::to_string(er) + " :er");
-                    textr(frame, 40, std::to_string(el) + " :el");
-                    textr(frame, 60, std::to_string(ar) + " :ar");
-                    textr(frame, 80, std::to_string(al) + " :al");
+                    textr(frame, 30, std::to_string(er) + " :er");
+                    textr(frame, 60, std::to_string(el) + " :el");
+                    textr(frame, 90, std::to_string(ar) + " :ar");
+                    textr(frame, 120, std::to_string(al) + " :al");
+                    textr(frame, 150, std::to_string(das) + " :das");
+                    textr(frame, 180, std::to_string(chin) + " :chin");
+                    textr(frame, 210, std::to_string(ears) + " :ears");
                 } while (0);
             }
 
@@ -108,15 +115,15 @@ main (int argc, const char* argv[]) {
             }
 
 
-            text(frame, 40, std::to_string(img.nc()) +
+            text(frame, 60, std::to_string(img.nc()) +
                      "x" +  std::to_string(img.nr()));
-            text(frame, 60, "i: " + std::to_string(i));
-            text(frame, 80, "DROP_AMOUNT: "+std::to_string(DROP_AMOUNT));
-            text(frame, 100, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));
+            text(frame, 90, "I: " + std::to_string(I));
+            text(frame, 120, "DROP_AMOUNT: "+std::to_string(DROP_AMOUNT));
+            text(frame, 150, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));
 
             cv::imshow(WINDOW, frame);
             //std::cin.get();
-            ++i;
+            ++I;
         }
     }
     catch (std::exception& e) {
