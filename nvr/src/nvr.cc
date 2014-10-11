@@ -247,19 +247,23 @@ namespace nvr {
                 auto n  = norm(face, 27, 30);
                 auto er = norm(face, 36, 39);
                 auto el = norm(face, 42, 45);
-                auto ar = angle(face, 27,30, 36,39);
-                auto al = angle(face, 27,30, 42,45);
-                auto das = std::abs(std::abs(ar) - std::abs(al));
+                auto ar = std::abs(angle(face, 27,30, 36,39));
+                auto al = std::abs(angle(face, 42,45, 27,30));
+                auto das = std::abs(ar - al);
                 auto chin = norm(face, 7, 9);
                 auto ears = norm(face, 0, 16);
-                textr(frame_,  0, std::to_string(n)  + " :n");
-                textr(frame_, 30, std::to_string(er) + " :er");
-                textr(frame_, 60, std::to_string(el) + " :el");
-                textr(frame_, 90, std::to_string(ar) + " :ar");
-                textr(frame_, 120, std::to_string(al) + " :al");
-                textr(frame_, 150, std::to_string(das) + " :das");
-                textr(frame_, 180, std::to_string(chin) + " :chin");
+                auto g = center(face.get_rect());
+
+                textr(frame_, 270, std::to_string(g.y()) + " :gy");
+                textr(frame_, 240, std::to_string(g.x()) + " :gx");
                 textr(frame_, 210, std::to_string(ears) + " :ears");
+                textr(frame_, 180, std::to_string(chin) + " :chin");
+                textr(frame_, 150, std::to_string(das) + " :das");
+                textr(frame_, 120, std::to_string(al) + " :al");
+                textr(frame_, 90, std::to_string(ar) + " :ar");
+                textr(frame_, 60, std::to_string(el) + " :el");
+                textr(frame_, 30, std::to_string(er) + " :er");
+                textr(frame_,  0, std::to_string(n)  + " :n");
             } while (0);
         }
 
