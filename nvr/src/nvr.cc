@@ -5,22 +5,20 @@
 namespace nvr {
 
     void
-    UniVR::rectangle (Frame& img, const dlib::rectangle& rect,
-                      size_t thickness) {
+    rectangle (Frame& img, const dlib::rectangle& rect, size_t thickness) {
         auto zone =
             cv::Rect(rect.left(), rect.top(), rect.width(), rect.height());
         cv::rectangle(img, zone, cv::Scalar(255,255,255), thickness, 8, 0);
     }
 
     void
-    UniVR::dot (Frame& img, const dlib::point& p, size_t thickness) {
+    dot (Frame& img, const dlib::point& p, size_t thickness) {
         cv::Point pcv(p.x(), p.y());
         cv::line(img, pcv,pcv, cv::Scalar::all(255), thickness, 8, 0);
     }
 
     void
-    UniVR::dots (Frame& img, const Landmarks& face,
-                 size_t thickness) {
+    dots (Frame& img, const Landmarks& face, size_t thickness) {
         for (size_t k = 0; k < face.num_parts(); ++k) {
             const auto& p = face.part(k);
             if (p == dlib::OBJECT_PART_NOT_PRESENT)
@@ -30,7 +28,7 @@ namespace nvr {
     }
 
     void // private
-    text_ (UniVR::Frame& img, const cv::Point& o, const std::string& str) {
+    text_ (Frame& img, const cv::Point& o, const std::string& str) {
         int fface = cv::FONT_HERSHEY_SIMPLEX;
         double fscale = 0.73;
         int thick = 1;
@@ -44,16 +42,18 @@ namespace nvr {
     }
 
     void
-    UniVR::text (Frame& img, size_t pos, const std::string& str) {
+    text (Frame& img, size_t pos, const std::string& str) {
         auto origin = cv::Point(5, img.rows - pos - 5);
         text_(img, origin, str);
     }
 
     void
-    UniVR::textr (Frame& img, size_t pos, const std::string& str) {
+    textr (Frame& img, size_t pos, const std::string& str) {
         auto origin = cv::Point(img.cols - 15*str.size(), img.rows - pos - 5);
         text_(img, origin, str);
     }
+
+    ///////////////////////////////////////////////////////////////////////////
 
     bool  // Used by biggest_rectangle.
     cmp_areas (const dlib::rectangle& lr, const dlib::rectangle& rr) {
@@ -61,12 +61,12 @@ namespace nvr {
     }
 
     dlib::rectangle
-    UniVR::biggest_rectangle (const std::vector<dlib::rectangle>& rs) {
+    biggest_rectangle (const std::vector<dlib::rectangle>& rs) {
         return *std::max_element(std::begin(rs), std::end(rs), cmp_areas);
     }
 
     dlib::rectangle  // Get a square box centered on the nose
-    UniVR::head_hull (const Landmarks& face) {
+    head_hull (const Landmarks& face) {
         dlib::rectangle rect;
         for (size_t j = 0; j < face.num_parts(); ++j)
             rect += face.part(j);  // Enlarges rect's area
@@ -76,23 +76,26 @@ namespace nvr {
     }
 
     size_t
-    UniVR::landmark_energy (size_t rows, size_t cols,
-                            const std::deque<Landmarks>& faces) {
+    landmark_energy (size_t rows, size_t cols,
+                     const std::deque<Landmarks>& faces) { //stddev?
         size_t E = 0;
         for (size_t i = 0; i < 68; ++i) {
             int ler = rows, lec = cols;
             for (const auto& face : faces) {
-                ler -= face.part(i).x();
-                lec -= face.part(i).y();
+                lec -= face.part(i).x();
+                ler -= face.part(i).y();
             }
             E += std::pow(ler, 2) + std::pow(lec, 2);
         }
         return E;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+
+    //FIXME: add init_… & diff_frames
+
     bool
-    UniVR::find_movement (const Frame& motion,
-                          std::vector<dlib::rectangle>& found) {
+    find_movement (const Frame& motion, std::vector<dlib::rectangle>& found) {
         //Check whether stddev[0] < Threshold?
         size_t numberOfChanges = 0;
         size_t minX = motion.cols, maxX = 0;
@@ -118,9 +121,10 @@ namespace nvr {
         return false;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+
     int
-    UniVR::norm (const Landmarks& face,
-                 int part1, int part2) {
+    norm (const Landmarks& face, int part1, int part2) {
         const auto& p1 = face.part(part1);
         const auto& p2 = face.part(part2);
         int x = p1.x() - p2.x();
@@ -129,8 +133,7 @@ namespace nvr {
     }
 
     double
-    UniVR::angle (const Landmarks& face,
-                  int part1, int part2, int Part1, int Part2) {
+    angle (const Landmarks& face, int part1, int part2, int Part1, int Part2) {
         const auto& p1 = face.part(part1);
         const auto& p2 = face.part(part2);
         const auto& P1 = face.part(Part1);
@@ -169,10 +172,14 @@ namespace nvr {
     UniVR::~UniVR () {
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+
     bool  /// Specialize this to your FrameStream
     UniVR::open_capture () {
         return capture_.open(0) && capture_.isOpened();
     }
+
+    ///////////////////////////////////////////////////////////////////////////
 
     bool  /// Specialize this to your FrameStream
     UniVR::next_frame () {
@@ -204,6 +211,8 @@ namespace nvr {
 
         return true;
     }
+
+    ///////////////////////////////////////////////////////////////////////////
 
     bool
     UniVR::step (data& data) {
@@ -273,5 +282,7 @@ namespace nvr {
         ++I;
         return true;
     }
+
+    ///////////////////////////////////////////////////////////////////////////
 
 }
