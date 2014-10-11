@@ -25,10 +25,13 @@ namespace nvr {
     std::ostream& operator<< (std::ostream& ostr, data& rhs);
 
 
+    // Somewhat public types
     typedef cv::VideoCapture FrameStream;
     typedef cv::Mat          Frame;
 
+    // Somewhat private types
     typedef dlib::full_object_detection Landmarks;
+    typedef std::deque<Landmarks>       Faces;
 
 
     static constexpr double SMOOTHING = 0.000000001;
@@ -43,7 +46,7 @@ namespace nvr {
         FrameStream capture_; // Stream from webcam
         Frame       frame_;   // Frame from webcam
         dlib::array2d<dlib::rgb_pixel> img_; // Actual input image
-        std::deque<Landmarks> shapes_;
+        Faces shapes_;
         size_t I, Ds;
 
     public:

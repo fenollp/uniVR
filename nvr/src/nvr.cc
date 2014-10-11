@@ -76,8 +76,7 @@ namespace nvr {
     }
 
     size_t
-    landmark_energy (size_t rows, size_t cols,
-                     const std::deque<Landmarks>& faces) { //stddev?
+    landmark_energy (size_t rows, size_t cols, const Faces& faces) { //stddev?
         size_t E = 0;
         for (size_t i = 0; i < 68; ++i) {
             int ler = rows, lec = cols;
