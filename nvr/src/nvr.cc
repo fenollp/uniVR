@@ -194,14 +194,16 @@ namespace nvr {
 
     void
     collect_data (data& data, Frame& frame_, const Landmarks& face) {
-        auto n  = norm(face, PART_NT, PART_NB);
-        auto er = norm(face, PART_RER, PART_REL);
-        auto el = norm(face, PART_LER, PART_LEL);
-        auto ar = std::abs(angle(face, PART_NT,PART_NB, PART_RER,PART_REL));
-        auto al = std::abs(angle(face, PART_LER,PART_LEL, PART_NT,PART_NB));
+        auto n  = norm(face, LANDMARK_NT, LANDMARK_NB);
+        auto er = norm(face, LANDMARK_RER, LANDMARK_REL);
+        auto el = norm(face, LANDMARK_LER, LANDMARK_LEL);
+        auto ar = std::abs(angle(face, LANDMARK_NT, LANDMARK_NB
+                                 ,     LANDMARK_RER, LANDMARK_REL));
+        auto al = std::abs(angle(face, LANDMARK_LER, LANDMARK_LEL
+                                 ,     LANDMARK_NT, LANDMARK_NB));
         auto das = std::abs(ar - al);
-        auto chin = norm(face, PART_CR, PART_CL);
-        auto ears = norm(face, PART_JR, PART_JL);
+        auto chin = norm(face, LANDMARK_CR, LANDMARK_CL);
+        auto ears = norm(face, LANDMARK_JR, LANDMARK_JL);
         auto g = center(face.get_rect());
 
         textr(frame_, 270, std::to_string(g.y()) + " :gy");

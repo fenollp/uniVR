@@ -38,16 +38,16 @@ namespace nvr {
     static constexpr size_t DROP_AMOUNT = 10; //5
     static constexpr size_t BACKLOG_SZ = 3;
 
-    static constexpr size_t PART_NT = 27;  // Nose
-    static constexpr size_t PART_NB = 30;
-    static constexpr size_t PART_LER = 42; // Left eye
-    static constexpr size_t PART_LEL = 45;
-    static constexpr size_t PART_RER = 36; // Right eye
-    static constexpr size_t PART_REL = 39;
-    static constexpr size_t PART_CL = 9; // Chin
-    static constexpr size_t PART_CR = 7;
-    static constexpr size_t PART_JL = 16; // Jaw
-    static constexpr size_t PART_JR = 0;
+    static constexpr size_t LANDMARK_NT = 27;  // Nose
+    static constexpr size_t LANDMARK_NB = 30;
+    static constexpr size_t LANDMARK_LER = 42; // Left eye
+    static constexpr size_t LANDMARK_LEL = 45;
+    static constexpr size_t LANDMARK_RER = 36; // Right eye
+    static constexpr size_t LANDMARK_REL = 39;
+    static constexpr size_t LANDMARK_CL = 9; // Chin
+    static constexpr size_t LANDMARK_CR = 7;
+    static constexpr size_t LANDMARK_JL = 16; // Jaw
+    static constexpr size_t LANDMARK_JR = 0;
 
 
     class UniVR {
