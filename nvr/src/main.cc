@@ -10,11 +10,11 @@ main (int argc, const char* argv[]) {
         }
 
         std::string trained(argv[1]);
-        nvr::UniVR univr(trained);
+        nvr::UniVR ovr(trained);
 
         nvr::data face;
         while (true) { // GAME LOOP
-            if (!univr.step(face))
+            if (!ovr.step(face))
                 break;
 
             std::cout << face;

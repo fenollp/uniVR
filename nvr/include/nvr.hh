@@ -67,6 +67,7 @@ namespace nvr {
     protected:
         bool open_capture ();
         bool next_frame ();
+        double motion_energy ();
     private:
         dlib::rectangle detect_motion (std::deque<Frame>& frames_);
     };

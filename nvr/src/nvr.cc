@@ -165,7 +165,7 @@ namespace nvr {
     ///////////////////////////////////////////////////////////////////////////
 
     double
-    motion_energy () {
+    UniVR::motion_energy () {
         // pixel in face's rect
         //FIXME return sum(pixel == 255) / count(pixel)
     }
