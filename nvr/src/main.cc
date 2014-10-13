@@ -16,8 +16,10 @@ main (int argc, const char* argv[]) {
         while (true) { // GAME LOOP
             if (!ovr.step(face))
                 break;
-
             std::cout << face;
+
+            if (cv::waitKey(5) == 'q')
+                break;
         }
     }
     catch (std::exception& e) {

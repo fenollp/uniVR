@@ -52,12 +52,14 @@ namespace nvr {
 
     class UniVR {
     private:
-        dlib::frontal_face_detector detector_;  // HoG face detector
-        dlib::shape_predictor       extractor_; // Landmarks extractor
         FrameStream capture_; // Stream from webcam
         Frame       frame_;   // Frame from webcam
+        dlib::frontal_face_detector detector_;  // HoG face detector
+        dlib::shape_predictor       extractor_; // Landmarks extractor
         dlib::array2d<dlib::rgb_pixel> img_; // Actual input image
-        Faces shapes_;
+        dlib::rectangle rect_found_; // shapes_.last().get_rect();
+        std::deque<Frame> rects_found_; // Frame zones of past rect_found_s
+        Faces shapes_; // Last BACKLOG_SZ landmarks extracted
         size_t I, Ds;
 
     public:
@@ -67,7 +69,7 @@ namespace nvr {
     protected:
         bool open_capture ();
         bool next_frame ();
-        double motion_energy ();
+        int motion_energy (const dlib::rectangle& rect_found);
     private:
         dlib::rectangle detect_motion (std::deque<Frame>& frames_);
     };

@@ -14,7 +14,10 @@ namespace nvr {
     void
     dot (Frame& img, const dlib::point& p, size_t thickness) {
         cv::Point pcv(p.x(), p.y());
-        cv::line(img, pcv,pcv, cv::Scalar::all(255), thickness, 8, 0);
+        auto s = "+";
+        auto color = cv::Scalar(255,0,0);
+        auto fface = cv::FONT_HERSHEY_SIMPLEX;
+        cv::putText(img, "+", pcv, fface, .37, color, thickness, 8);
     }
 
     void
@@ -98,7 +101,7 @@ namespace nvr {
         return erosionKernel;
     }
 
-    bool
+    bool  //DEPRECATED
     find_movement (const Frame& motion, std::vector<dlib::rectangle>& found) {
         //Check whether stddev[0] < Threshold?
         size_t numberOfChanges = 0;
@@ -125,7 +128,7 @@ namespace nvr {
         return false;
     }
 
-    dlib::rectangle
+    dlib::rectangle  //DEPRECATED
     UniVR::detect_motion (std::deque<Frame>& frames_) {
         if (I % DROP_AMOUNT == 0) {
             cv::Mat gray(frame_);
@@ -164,10 +167,40 @@ namespace nvr {
 
     ///////////////////////////////////////////////////////////////////////////
 
-    double
-    UniVR::motion_energy () {
-        // pixel in face's rect
-        //FIXME return sum(pixel == 255) / count(pixel)
+    int
+    UniVR::motion_energy (const dlib::rectangle& rect_found) {
+        int E = 0;
+        if (rect_found.is_empty())
+            return -1;
+        do {
+            auto x = rect_found.left();
+            auto y = rect_found.top();
+            auto width = rect_found.width();
+            auto height = rect_found.height();
+            rectangle(frame_, rect_found, 1);
+            cv::Mat subFrame = frame_(cv::Rect(x, y, width, height));
+            cv::Mat gray(subFrame);
+            cv::cvtColor(frame_, gray, CV_RGB2GRAY);
+            rects_found_.push_back(gray);
+        } while (0);
+        while (rects_found_.size() > 3)
+            rects_found_.pop_front();
+        if (rects_found_.size() == 3) {
+            cv::Mat d1, d2, motion;
+            cv::absdiff(rects_found_[0], rects_found_[1], d1);
+            cv::absdiff(rects_found_[1], rects_found_[2], d2);
+            cv::bitwise_and(d1, d2, motion);
+            // Note: static threshold…
+            cv::threshold(motion, motion, 1, 255, CV_THRESH_BINARY);
+            cv::erode(motion, motion, erosion_kernel());
+            size_t minX = motion.cols, maxX = 0;
+            size_t minY = motion.rows, maxY = 0;
+            for (size_t y = 0; y < motion.rows; ++y)
+                for (size_t x = 0; x < motion.cols; ++x)
+                    if (motion.at<uchar>(y, x) == 255)
+                        ++E;
+        }
+        return E;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -291,34 +324,37 @@ namespace nvr {
 
     bool
     UniVR::step (data& data) {
-        if (!next_frame())
+        if (!next_frame()) // Sets frame_
             return false;
 
-        dlib::rectangle rect;
+        auto E = motion_energy(rect_found_);
+
+        if (E != 0) {
+
+        rect_found_ = dlib::rectangle();
         if (I % DROP_AMOUNT == 0) {
-            // Run the full detector every now and then
-            // Tell the face detector to give us a list of bounding boxes
-            // around all the faces in the image.
+            /// Detection
             auto dets = detector_(img_);
             for (const auto& det : dets)
                 rectangle(frame_, det, 1);
             if (!dets.empty()) {
-                rect = biggest_rectangle(dets);
-                rectangle(frame_, rect, 4);
+                rect_found_ = biggest_rectangle(dets);
+                rectangle(frame_, rect_found_, 4);
                 ++Ds;
             }
         }
         text(frame_, 30, "Ds: " + std::to_string(Ds));
-        if (rect.is_empty())
+        if (rect_found_.is_empty())
             if (!shapes_.empty())
-                rect = head_hull(shapes_.back());
+                rect_found_ = head_hull(shapes_.back());
 
-        if (!rect.is_empty()) {
-            const auto& face = extractor_(img_, rect);
-            dots(frame_, face, 4);
-            shapes_.push_back(face);
+        if (!rect_found_.is_empty()) {
+            /// Extraction
+            const auto& face_found = extractor_(img_, rect_found_);
+            dots(frame_, face_found, 1);
+            shapes_.push_back(face_found);
 
-            collect_data(data, frame_, face);
+            collect_data(data, frame_, face_found);
         }
 
         while (shapes_.size() > BACKLOG_SZ)
@@ -328,12 +364,15 @@ namespace nvr {
             text(frame_, 0, "energy: " + std::to_string(nrg));
         }
 
+        }
+
 
         text(frame_, 60, std::to_string(img_.nc()) +
              "x" +  std::to_string(img_.nr()));
         text(frame_, 90, "I: " + std::to_string(I));
         text(frame_, 120, "DROP_AMOUNT: "+std::to_string(DROP_AMOUNT));
         text(frame_, 150, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));
+        text(frame_, 180, "motion:"+std::to_string(E));
 
         cv::imshow(WINDOW, frame_);
 
