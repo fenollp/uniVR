@@ -338,9 +338,9 @@ namespace nvr {
 
         auto E = motion_energy(rect_found_);
 
-        if (E != 0) { ///
+        if (E != 0)
+            rect_found_ = dlib::rectangle();
 
-        rect_found_ = dlib::rectangle();
         if (I % DROP_AMOUNT == 0) {
             /// Detection
             auto dets = detector_(img_);
@@ -352,6 +352,9 @@ namespace nvr {
                 ++Ds;
             }
         }
+
+        if (E != 0) { ///
+
         if (rect_found_.is_empty())
             if (!shapes_.empty())
                 rect_found_ = head_hull(shapes_.back());
