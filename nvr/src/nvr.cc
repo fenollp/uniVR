@@ -78,7 +78,7 @@ namespace nvr {
         return dlib::centered_rect(nose, rect.width(), rect.height());
     }
 
-    size_t
+    size_t // DEPRECATED
     landmark_energy (size_t rows, size_t cols, const Faces& faces) { //stddev?
         size_t E = 0;
         for (size_t i = 0; i < 68; ++i) {
@@ -101,7 +101,7 @@ namespace nvr {
         return erosionKernel;
     }
 
-    bool  //DEPRECATED
+    bool  // DEPRECATED
     find_movement (const Frame& motion, std::vector<dlib::rectangle>& found) {
         //Check whether stddev[0] < Threshold?
         size_t numberOfChanges = 0;
@@ -128,7 +128,7 @@ namespace nvr {
         return false;
     }
 
-    dlib::rectangle  //DEPRECATED
+    dlib::rectangle  // DEPRECATED
     UniVR::detect_motion (std::deque<Frame>& frames_) {
         if (I % DROP_AMOUNT == 0) {
             cv::Mat gray(frame_);
@@ -168,24 +168,18 @@ namespace nvr {
     ///////////////////////////////////////////////////////////////////////////
 
     int
-    UniVR::motion_energy (const dlib::rectangle& rect_found) {
-        int E = 0;
-        if (rect_found.is_empty())
+    UniVR::motion_energy (const dlib::rectangle& prev_rect) {
+        if (prev_rect.is_empty())
             return -1;
         do {
-            auto x = rect_found.left();
-            auto y = rect_found.top();
-            auto width = rect_found.width();
-            auto height = rect_found.height();
-            rectangle(frame_, rect_found, 1);
-            cv::Mat subFrame = frame_(cv::Rect(x, y, width, height));
-            cv::Mat gray(subFrame);
+            cv::Mat gray(frame_);
             cv::cvtColor(frame_, gray, CV_RGB2GRAY);
             rects_found_.push_back(gray);
         } while (0);
         while (rects_found_.size() > 3)
             rects_found_.pop_front();
         if (rects_found_.size() == 3) {
+            int E = 0;
             cv::Mat d1, d2, motion;
             cv::absdiff(rects_found_[0], rects_found_[1], d1);
             cv::absdiff(rects_found_[1], rects_found_[2], d2);
@@ -193,14 +187,30 @@ namespace nvr {
             // Note: static threshold…
             cv::threshold(motion, motion, 1, 255, CV_THRESH_BINARY);
             cv::erode(motion, motion, erosion_kernel());
-            size_t minX = motion.cols, maxX = 0;
-            size_t minY = motion.rows, maxY = 0;
-            for (size_t y = 0; y < motion.rows; ++y)
-                for (size_t x = 0; x < motion.cols; ++x)
+            rectangle(frame_, prev_rect, 1);//
+
+            int rc = frame_.cols / img_.nc();
+            int rr = frame_.rows / img_.nr();
+            auto x = prev_rect.left();
+            auto y = prev_rect.top();
+            auto w = prev_rect.width();
+            auto h = prev_rect.height();
+            auto sx = x * rc;
+            auto sy = y * rr;
+            auto sw = (x + w) * rc;
+            auto sh = (y + h) * rr;
+
+            auto r = dlib::rectangle(sx,sy,sw,sh);
+            for (size_t y = 0; y < motion.rows; ++y) // -> rows
+                for (size_t x = 0; x < motion.cols; ++x) // -> cols
                     if (motion.at<uchar>(y, x) == 255)
                         ++E;
+            rectangle(frame_, r, 1);//
+            rectangle(motion, r, 1);//
+            cv::imshow("motion", motion);//
+            return E;
         }
-        return E;
+        return -1;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -275,6 +285,7 @@ namespace nvr {
         Ds = 0;
 
         cv::namedWindow(WINDOW, 1);//
+        cv::namedWindow("motion", 1);//
     }
 
     UniVR::~UniVR () {
@@ -355,13 +366,6 @@ namespace nvr {
             shapes_.push_back(face_found);
 
             collect_data(data, frame_, face_found);
-        }
-
-        while (shapes_.size() > BACKLOG_SZ)
-            shapes_.pop_front();
-        if (shapes_.size() == BACKLOG_SZ) {
-            auto nrg = landmark_energy(img_.nr(), img_.nc(), shapes_);
-            text(frame_, 0, "energy: " + std::to_string(nrg));
         }
 
         }
