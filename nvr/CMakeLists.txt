@@ -10,6 +10,8 @@ set(nvr__src
   src/main.cc
   )
 
+add_definitions( -Wall )
+
 set(target_name nvr)
 
 PROJECT(${target_name})

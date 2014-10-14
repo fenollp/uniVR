@@ -14,7 +14,6 @@ namespace nvr {
     void
     dot (Frame& img, const dlib::point& p, size_t thickness) {
         cv::Point pcv(p.x(), p.y());
-        auto s = "+";
         auto color = cv::Scalar(255,0,0);
         auto fface = cv::FONT_HERSHEY_SIMPLEX;
         cv::putText(img, "+", pcv, fface, .37, color, thickness, 8);
@@ -171,20 +170,17 @@ namespace nvr {
     UniVR::motion_energy (const dlib::rectangle& prev_rect) {
         if (prev_rect.is_empty())
             return -1;
-        do {
-            cv::Mat gray(frame_);
-            cv::cvtColor(frame_, gray, CV_RGB2GRAY);
-            rects_found_.push_back(gray);
-        } while (0);
+        cv::Mat gray(frame_);
+        cv::cvtColor(frame_, gray, CV_RGB2GRAY);
+        rects_found_.push_back(gray);
         while (rects_found_.size() > 3)
             rects_found_.pop_front();
         if (rects_found_.size() == 3) {
-            int E = 0;
             cv::Mat d1, d2, motion;
             cv::absdiff(rects_found_[0], rects_found_[1], d1);
             cv::absdiff(rects_found_[1], rects_found_[2], d2);
             cv::bitwise_and(d1, d2, motion);
-            // Note: static threshold…
+            // Note: static threshold of 1…
             cv::threshold(motion, motion, 1, 255, CV_THRESH_BINARY);
             cv::erode(motion, motion, erosion_kernel());
             rectangle(frame_, prev_rect, 1);//
@@ -193,21 +189,23 @@ namespace nvr {
             int rr = frame_.rows / img_.nr();
             auto x = prev_rect.left();
             auto y = prev_rect.top();
-            auto w = prev_rect.width();
-            auto h = prev_rect.height();
             auto sx = x * rc;
             auto sy = y * rr;
-            auto sw = (x + w) * rc;
-            auto sh = (y + h) * rr;
+            auto sw = (x + prev_rect.width()) * rc;
+            auto sh = (y + prev_rect.height()) * rr;
 
-            auto r = dlib::rectangle(sx,sy,sw,sh);
-            for (size_t y = 0; y < motion.rows; ++y) // -> rows
-                for (size_t x = 0; x < motion.cols; ++x) // -> cols
-                    if (motion.at<uchar>(y, x) == 255)
+            auto r = dlib::rectangle(sx,sy,sw,sh);//
+            int E = 0;
+            for (size_t yy = sy; yy < sh; ++yy) // -> rows
+                for (size_t xx = sy; xx < sw; ++xx) // -> cols
+                    if (motion.at<uchar>(yy, xx) == 255)
                         ++E;
             rectangle(frame_, r, 1);//
-            rectangle(motion, r, 1);//
-            cv::imshow("motion", motion);//
+            // rectangle(motion, r, 1);//
+            cv::imshow("motion",
+                       motion(cv::Rect(sx, sy,
+                                       prev_rect.width() * rc,
+                                       prev_rect.height() * rr)));//
             return E;
         }
         return -1;
@@ -340,7 +338,7 @@ namespace nvr {
 
         auto E = motion_energy(rect_found_);
 
-        if (E != 0) {
+        if (E != 0) { ///
 
         rect_found_ = dlib::rectangle();
         if (I % DROP_AMOUNT == 0) {
@@ -354,7 +352,6 @@ namespace nvr {
                 ++Ds;
             }
         }
-        text(frame_, 30, "Ds: " + std::to_string(Ds));
         if (rect_found_.is_empty())
             if (!shapes_.empty())
                 rect_found_ = head_hull(shapes_.back());
@@ -368,9 +365,10 @@ namespace nvr {
             collect_data(data, frame_, face_found);
         }
 
-        }
+        } ///
 
 
+        text(frame_, 30, "Ds: " + std::to_string(Ds));
         text(frame_, 60, std::to_string(img_.nc()) +
              "x" +  std::to_string(img_.nr()));
         text(frame_, 90, "I: " + std::to_string(I));
