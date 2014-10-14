@@ -235,40 +235,48 @@ namespace nvr {
 
     void
     collect_data (data& data, Frame& frame_, const Landmarks& face) {
-        auto n  = norm(face, LANDMARK_NT, LANDMARK_NB);
-        auto er = norm(face, LANDMARK_RER, LANDMARK_REL);
-        auto el = norm(face, LANDMARK_LER, LANDMARK_LEL);
-        auto ar = std::abs(angle(face, LANDMARK_NT, LANDMARK_NB
+        data.n  = norm(face, LANDMARK_NT, LANDMARK_NB);
+        data.er = norm(face, LANDMARK_RER, LANDMARK_REL);
+        data.el = norm(face, LANDMARK_LER, LANDMARK_LEL);
+        data.ar = std::abs(angle(face, LANDMARK_NT, LANDMARK_NB
                                  ,     LANDMARK_RER, LANDMARK_REL));
-        auto al = std::abs(angle(face, LANDMARK_LER, LANDMARK_LEL
+        data.al = std::abs(angle(face, LANDMARK_LER, LANDMARK_LEL
                                  ,     LANDMARK_NT, LANDMARK_NB));
-        auto das = std::abs(ar - al);
-        auto chin = norm(face, LANDMARK_CR, LANDMARK_CL);
-        auto ears = norm(face, LANDMARK_JR, LANDMARK_JL);
+        data.das = std::abs(data.ar - data.al);
+        data.chin = norm(face, LANDMARK_CR, LANDMARK_CL);
+        data.ears = norm(face, LANDMARK_JR, LANDMARK_JL);
         auto g = center(face.get_rect());
+        data.gx = g.x();
+        data.gy = g.y();
 
-        textr(frame_, 270, std::to_string(g.y()) + " :gy");
-        textr(frame_, 240, std::to_string(g.x()) + " :gx");
-        textr(frame_, 210, std::to_string(ears) + " :ears");
-        textr(frame_, 180, std::to_string(chin) + " :chin");
-        textr(frame_, 150, std::to_string(das) + " :das");
-        textr(frame_, 120, std::to_string(al) + " :al");
-        textr(frame_, 90,  std::to_string(ar) + " :ar");
-        textr(frame_, 60,  std::to_string(el) + " :el");
-        textr(frame_, 30,  std::to_string(er) + " :er");
-        textr(frame_,  0,  std::to_string(n)  + " :n");
+        textr(frame_, 270, std::to_string(data.gy) + " :gy");
+        textr(frame_, 240, std::to_string(data.gx) + " :gx");
+        textr(frame_, 210, std::to_string(data.ears) + " :ears");
+        textr(frame_, 180, std::to_string(data.chin) + " :chin");
+        textr(frame_, 150, std::to_string(data.das) + " :das");
+        textr(frame_, 120, std::to_string(data.al) + " :al");
+        textr(frame_, 90,  std::to_string(data.ar) + " :ar");
+        textr(frame_, 60,  std::to_string(data.el) + " :el");
+        textr(frame_, 30,  std::to_string(data.er) + " :er");
+        textr(frame_,  0,  std::to_string(data.n)  + " :n");
     }
 
     ///////////////////////////////////////////////////////////////////////////
 
     std::ostream&
-    operator<< (std::ostream& ostr, UniVR& rhs) {
+    operator<< (std::ostream& o, const UniVR& rhs) {
         //FIXME
     }
 
     std::ostream&
-    operator<< (std::ostream& ostr, data& rhs) {
-        //FIXME
+    operator<< (std::ostream& o, const data& rhs) {
+        return o << "data"
+                 << " n:" << rhs.n
+                 << " er:" << rhs.er << " el:" << rhs.el
+                 << " ar:" << rhs.ar << " al:" << rhs.al << " das:" << rhs.das
+                 << " chin:" << rhs.chin
+                 << " ears:" << rhs.ears
+                 << " gx:" << rhs.gx << " gy:" << rhs.gy << std::endl;
     }
 
     ///////////////////////////////////////////////////////////////////////////

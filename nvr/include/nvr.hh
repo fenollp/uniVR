@@ -19,10 +19,14 @@ namespace nvr {
 
     typedef struct {
         size_t n;
-        //FIXME
-    } data; //FIXME
+        size_t er, el;
+        double ar, al, das;
+        size_t chin;
+        size_t ears;
+        size_t gx, gy;
+    } data;
 
-    std::ostream& operator<< (std::ostream& ostr, data& rhs);
+    std::ostream& operator<< (std::ostream& o, const data& rhs);
 
 
     // Somewhat public types
@@ -74,7 +78,7 @@ namespace nvr {
         dlib::rectangle detect_motion (std::deque<Frame>& frames_);
     };
 
-    std::ostream& operator<< (std::ostream& ostr, UniVR& rhs);
+    std::ostream& operator<< (std::ostream& o, const UniVR& rhs);
 
 } // namespace nvr
 
