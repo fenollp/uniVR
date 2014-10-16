@@ -60,7 +60,7 @@ namespace nvr {
         Frame       frame_;   // Frame from webcam
         dlib::frontal_face_detector detector_;  // HoG face detector
         dlib::shape_predictor       extractor_; // Landmarks extractor
-        dlib::array2d<dlib::rgb_pixel> img_; // Actual input image
+        dlib::array2d<dlib::rgb_pixel> img_; // dlib's input image
         dlib::rectangle rect_found_; // ≈ zones_.last()
         std::deque<Frame> rects_found_; // Frames of past rect_found_s
         std::deque<dlib::rectangle> zones_; // Last BACKLOG_SZ zones detected

@@ -191,8 +191,8 @@ namespace nvr {
             cv::erode(motion, motion, erosion_kernel());
             rectangle(frame_, prev_rect, 1);//
 
-            int rc = frame_.cols / img_.nc();
-            int rr = frame_.rows / img_.nr();
+            static const int rc = frame_.cols / img_.nc();
+            static const int rr = frame_.rows / img_.nr();
             auto x = prev_rect.left();
             auto y = prev_rect.top();
             auto sx = x * rc;
@@ -374,6 +374,7 @@ namespace nvr {
 
         if (E != 0)
             rect_found_ = dlib::rectangle();
+        // else: reuse last rect_found_
 
         if (I % DROP_AMOUNT == 0) {
             /// Detection
@@ -407,7 +408,6 @@ namespace nvr {
 
         for (const auto& zone : zones_)//
             rectangle(frame_, scaled(zone), 1);//
-
         text(frame_, 30, "Ds: " + std::to_string(Ds));
         text(frame_, 60, std::to_string(img_.nc())
              +     "x" + std::to_string(img_.nr()));
