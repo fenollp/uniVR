@@ -77,7 +77,8 @@ namespace nvr {
         return dlib::centered_rect(nose, rect.width(), rect.height());
     }
 
-    size_t // DEPRECATED
+#if 0  // DEPRECATED
+    size_t
     landmark_energy (size_t rows, size_t cols, const Faces& faces) { //stddev?
         size_t E = 0;
         for (size_t i = 0; i < 68; ++i) {
@@ -90,6 +91,7 @@ namespace nvr {
         }
         return E;
     }
+#endif
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -100,7 +102,8 @@ namespace nvr {
         return erosionKernel;
     }
 
-    bool  // DEPRECATED
+#if 0  // DEPRECATED
+    bool
     find_movement (const Frame& motion, std::vector<dlib::rectangle>& found) {
         //Check whether stddev[0] < Threshold?
         size_t numberOfChanges = 0;
@@ -126,8 +129,10 @@ namespace nvr {
         }
         return false;
     }
+#endif
 
-    dlib::rectangle  // DEPRECATED
+#if 0  // DEPRECATED
+    dlib::rectangle
     UniVR::detect_motion (std::deque<Frame>& frames_) {
         if (I % DROP_AMOUNT == 0) {
             cv::Mat gray(frame_);
@@ -163,6 +168,7 @@ namespace nvr {
         }
         return dlib::rectangle();
     }
+#endif
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -194,13 +200,13 @@ namespace nvr {
             auto sw = (x + prev_rect.width()) * rc;
             auto sh = (y + prev_rect.height()) * rr;
 
-            auto r = dlib::rectangle(sx,sy,sw,sh);//
             int E = 0;
             for (size_t yy = sy; yy < sh; ++yy) // -> rows
                 for (size_t xx = sy; xx < sw; ++xx) // -> cols
                     if (motion.at<uchar>(yy, xx) == 255)
                         ++E;
-            rectangle(frame_, r, 1);//
+            auto r = dlib::rectangle(sx,sy,sw,sh);//
+            rectangle(frame_, r, 10);//
             // rectangle(motion, r, 1);//
             cv::imshow("motion",
                        motion(cv::Rect(sx, sy,
@@ -209,6 +215,26 @@ namespace nvr {
             return E;
         }
         return -1;
+    }
+
+    dlib::rectangle
+    UniVR::scaled (const dlib::rectangle& r) {
+        static const int rc = frame_.cols / img_.nc();
+        static const int rr = frame_.rows / img_.nr();
+        auto x = r.left();
+        auto y = r.top();
+        auto sx = x * rc;
+        auto sy = y * rr;
+        auto sw = (x + r.width()) * rc;
+        auto sh = (y + r.height()) * rr;
+        // Keep away from the edges
+        if (sw > frame_.cols)
+            sw = frame_.cols - 5;
+        if (sh > frame_.rows)
+            sh = frame_.rows - 5;
+        auto r2 = dlib::rectangle(sx, sy, sw, sh);
+        //std::cout << r << " -> " << r2 << std::endl;
+        return r2;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -360,28 +386,31 @@ namespace nvr {
                 ++Ds;
             }
         }
-
-        if (E != 0) { ///
-
         if (rect_found_.is_empty())
-            if (!shapes_.empty())
-                rect_found_ = head_hull(shapes_.back());
+            if (!zones_.empty())
+                rect_found_ = zones_.back();
 
         if (!rect_found_.is_empty()) {
-            /// Extraction
-            const auto& face_found = extractor_(img_, rect_found_);
-            dots(frame_, face_found, 1);
-            shapes_.push_back(face_found);
+            if (E != 0) { ///
+                /// Extraction
+                const auto& face_found = extractor_(img_, rect_found_);
+                dots(frame_, face_found, 1);
 
-            collect_data(data, frame_, face_found);
+                collect_data(data, frame_, face_found);
+                zones_.push_back(head_hull(face_found));
+            } ///
+            else ///
+                zones_.push_back(rect_found_);
         }
+        while (zones_.size() > BACKLOG_SZ)
+            zones_.pop_front();
 
-        } ///
-
+        for (const auto& zone : zones_)//
+            rectangle(frame_, scaled(zone), 1);//
 
         text(frame_, 30, "Ds: " + std::to_string(Ds));
-        text(frame_, 60, std::to_string(img_.nc()) +
-             "x" +  std::to_string(img_.nr()));
+        text(frame_, 60, std::to_string(img_.nc())
+             +     "x" + std::to_string(img_.nr()));
         text(frame_, 90, "I: " + std::to_string(I));
         text(frame_, 120, "DROP_AMOUNT: "+std::to_string(DROP_AMOUNT));
         text(frame_, 150, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));

@@ -61,9 +61,9 @@ namespace nvr {
         dlib::frontal_face_detector detector_;  // HoG face detector
         dlib::shape_predictor       extractor_; // Landmarks extractor
         dlib::array2d<dlib::rgb_pixel> img_; // Actual input image
-        dlib::rectangle rect_found_; // shapes_.last().get_rect();
-        std::deque<Frame> rects_found_; // Frame zones of past rect_found_s
-        Faces shapes_; // Last BACKLOG_SZ landmarks extracted
+        dlib::rectangle rect_found_; // ≈ zones_.last()
+        std::deque<Frame> rects_found_; // Frames of past rect_found_s
+        std::deque<dlib::rectangle> zones_; // Last BACKLOG_SZ zones detected
         size_t I, Ds;
 
     public:
@@ -75,7 +75,7 @@ namespace nvr {
         bool next_frame ();
         int motion_energy (const dlib::rectangle& rect_found);
     private:
-        dlib::rectangle detect_motion (std::deque<Frame>& frames_);
+        dlib::rectangle scaled (const dlib::rectangle& r);
     };
 
     std::ostream& operator<< (std::ostream& o, const UniVR& rhs);
