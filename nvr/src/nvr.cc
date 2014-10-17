@@ -392,7 +392,7 @@ namespace nvr {
                 rect_found_ = zones_.back();
 
         if (!rect_found_.is_empty()) {
-            if (E != 0) { ///
+            if (I % DROP_AMOUNT == 0 || E != 0) { ///
                 /// Extraction
                 const auto& face_found = extractor_(img_, rect_found_);
                 dots(frame_, face_found, 1);
