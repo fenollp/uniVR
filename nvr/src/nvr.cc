@@ -260,7 +260,7 @@ namespace nvr {
     }
 
     void
-    collect_data (data& data, Frame& frame_, const Landmarks& face) {
+    collect_data (data& data, const Landmarks& face) {
         data.n  = norm(face, LANDMARK_NT, LANDMARK_NB);
         data.er = norm(face, LANDMARK_RER, LANDMARK_REL);
         data.el = norm(face, LANDMARK_LER, LANDMARK_LEL);
@@ -274,7 +274,10 @@ namespace nvr {
         auto g = center(face.get_rect());
         data.gx = g.x();
         data.gy = g.y();
+    }
 
+    void
+    display_data (Frame& frame_, const data& data) {
         textr(frame_, 270, std::to_string(data.gy) + " :gy");
         textr(frame_, 240, std::to_string(data.gx) + " :gx");
         textr(frame_, 210, std::to_string(data.ears) + " :ears");
@@ -399,7 +402,7 @@ namespace nvr {
                 const auto& face_found = extractor_(img_, rect_found_);
                 dots(frame_, face_found, 1);
 
-                collect_data(data, frame_, face_found);
+                collect_data(data, face_found);
                 zones_.push_back(head_hull(face_found));
             } ///
             else ///
@@ -408,6 +411,7 @@ namespace nvr {
         while (zones_.size() > BACKLOG_SZ)
             zones_.pop_front();
 
+        display_data(frame_, data);//
         for (const auto& zone : zones_)//
             rectangle(frame_, scaled(zone), 1);//
         text(frame_, 30, "Ds: " + std::to_string(Ds));
