@@ -376,6 +376,7 @@ namespace nvr {
             rect_found_ = dlib::rectangle();
         // else: reuse last rect_found_
 
+        bool detected = false;
         if (I % DROP_AMOUNT == 0) {
             /// Detection
             auto dets = detector_(img_);
@@ -384,6 +385,7 @@ namespace nvr {
             if (!dets.empty()) {
                 rect_found_ = biggest_rectangle(dets);
                 rectangle(frame_, rect_found_, 4);
+                detected = true;
                 ++Ds;
             }
         }
@@ -392,7 +394,7 @@ namespace nvr {
                 rect_found_ = zones_.back();
 
         if (!rect_found_.is_empty()) {
-            if (I % DROP_AMOUNT == 0 || E != 0) { ///
+            if (detected || E != 0) { ///
                 /// Extraction
                 const auto& face_found = extractor_(img_, rect_found_);
                 dots(frame_, face_found, 1);
