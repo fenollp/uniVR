@@ -1,7 +1,16 @@
 cmake_minimum_required(VERSION 2.6)
 
+set(target_name nvr)
+PROJECT(${target_name})
+
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
+
+find_package(OpenGL REQUIRED)
+include_directories(${OPENGL_INCLUDE_DIRS})
+find_package(GLUT REQUIRED)
+include_directories(${GLUT_INCLUDE_DIR})
+
 include_directories(include)
 
 
@@ -11,10 +20,7 @@ set(nvr__src
   )
 
 add_definitions( -Wall )
-
-set(target_name nvr)
-
-PROJECT(${target_name})
+add_definitions( -Wno-deprecated )
 
 # add all the cpp files we want to compile to this list.  This tells
 # cmake that they are part of our target (which is the executable named dtest)
@@ -46,6 +52,8 @@ endif()
 include(ext/dlib/dlib/cmake)
 TARGET_LINK_LIBRARIES(${target_name}
   ${OpenCV_LIBS}
+  ${OPENGL_LIBRARIES}
+  ${GLUT_LIBRARIES}
   dlib
 )
 

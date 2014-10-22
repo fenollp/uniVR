@@ -310,7 +310,15 @@ namespace nvr {
 
     ///////////////////////////////////////////////////////////////////////////
 
-    UniVR::UniVR (const std::string& trained_data) {
+    UniVR::UniVR () {
+        inited = false;
+    }
+
+    UniVR::~UniVR () {
+    }
+
+    void
+    UniVR::init (const std::string& trained_data) {
         detector_ = dlib::get_frontal_face_detector();
         dlib::deserialize(trained_data) >> extractor_;
 
@@ -321,9 +329,7 @@ namespace nvr {
 
         cv::namedWindow(WINDOW, 1);//
         cv::namedWindow("motion", 1);//
-    }
-
-    UniVR::~UniVR () {
+        inited = true;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -370,6 +376,9 @@ namespace nvr {
 
     bool
     UniVR::step (data& data) {
+        if (!inited)
+            std::cerr << "nvr: init/1 was not called!" << std::endl;
+
         if (!next_frame()) // Sets frame_
             return false;
 

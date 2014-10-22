@@ -1,5 +1,5 @@
+#if 1
 #include "nvr.hh"
-
 int
 main (int argc, const char* argv[]) {
     try {
@@ -8,16 +8,14 @@ main (int argc, const char* argv[]) {
                       << "./nvr 68_face_landmarks.dat" << std::endl;
             return 1;
         }
-
         std::string trained(argv[1]);
-        nvr::UniVR ovr(trained);
-
+        nvr::UniVR ovr;
+        ovr.init(trained);
         nvr::data face;
         while (true) { // GAME LOOP
             if (!ovr.step(face))
                 break;
-            // std::cout << face;
-
+            std::cout << face;//
             if (cv::waitKey(5) == 'q')
                 break;
         }
@@ -27,3 +25,4 @@ main (int argc, const char* argv[]) {
                   << std::endl << e.what() << std::endl;
     }
 }
+#endif

@@ -65,10 +65,12 @@ namespace nvr {
         std::deque<Frame> rects_found_; // Frames of past rect_found_s
         std::deque<dlib::rectangle> zones_; // Last BACKLOG_SZ zones detected
         size_t I, Ds;
+        bool inited;
 
     public:
-        UniVR (const std::string& trained_data);
+        UniVR ();
         ~UniVR ();
+        void init (const std::string& trained_data);
         bool step (data& face);
     protected:
         bool open_capture ();
