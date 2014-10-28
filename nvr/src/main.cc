@@ -180,6 +180,16 @@ update (void) {
     if (ovr.step(data))
         std::cout << data;
 
+    int gx = data.gx;
+    float new_deltaAngle = 0.05 * (gx - xDragStart) / WIN_SZ_X;
+    if (-1.0f > (new_deltaAngle - deltaAngle))
+        deltaAngle = -1.0f * new_deltaAngle;
+    else
+        deltaAngle = +1.0f * new_deltaAngle;
+    lx = - sin(angle + deltaAngle);
+    ly =   cos(angle + deltaAngle);
+    angle += deltaAngle;
+
     if (deltaMove) { // update camera position
         x += deltaMove * lx * 0.1;
         y += deltaMove * ly * 0.1;
