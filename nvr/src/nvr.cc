@@ -208,10 +208,10 @@ namespace nvr {
             auto r = dlib::rectangle(sx,sy,sw,sh);//
             rectangle(frame_, r, 10);//
             // rectangle(motion, r, 1);//
-            cv::imshow("motion",
-                       motion(cv::Rect(sx, sy,
-                                       prev_rect.width() * rc,
-                                       prev_rect.height() * rr)));//
+            // cv::imshow("motion",
+            //            motion(cv::Rect(sx, sy,
+            //                            prev_rect.width() * rc,
+            //                            prev_rect.height() * rr)));//
             return E;
         }
         return -1;
@@ -327,8 +327,8 @@ namespace nvr {
         I = 0;
         Ds = 0;
 
-        cv::namedWindow(WINDOW, 1);//
-        cv::namedWindow("motion", 1);//
+        // cv::namedWindow(WINDOW, 1);//
+        // cv::namedWindow("motion", 1);//
         inited = true;
     }
 
@@ -431,7 +431,7 @@ namespace nvr {
         text(frame_, 150, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));
         text(frame_, 180, "motion:"+std::to_string(E));
 
-        cv::imshow(WINDOW, frame_);
+        // cv::imshow(WINDOW, frame_);
 
         ++I;
         return true;
