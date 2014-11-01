@@ -182,8 +182,11 @@ update (void) {
 
     int gx = data.gx;
     float new_deltaAngle = 0.05 * (gx - xDragStart) / WIN_SZ_X;
-    if (-1.0f > (new_deltaAngle - deltaAngle))
+    float diff_deltaAngle = new_deltaAngle - deltaAngle;
+    if (-1.0f > diff_deltaAngle)
         deltaAngle = -1.0f * new_deltaAngle;
+    // else if (0.001f > std::abs(diff_deltaAngle))
+    //     deltaAngle = 0.0f;
     else
         deltaAngle = +1.0f * new_deltaAngle;
     lx = - sin(angle + deltaAngle);
