@@ -78,6 +78,13 @@ namespace nvr {
         int motion_energy (const dlib::rectangle& rect_found);
     private:
         dlib::rectangle scaled (const dlib::rectangle& r);
+        dlib::point scaled (const dlib::point& p);
+    private:
+        int norm (const Landmarks& face, int part1, int part2);
+        double angle (const Landmarks& face,
+                      int part1, int part2, int Part1, int Part2);
+        void collect_data (data& data, const Landmarks& face);
+
     };
 
 } // namespace nvr

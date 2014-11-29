@@ -237,30 +237,38 @@ namespace nvr {
         return r2;
     }
 
+    dlib::point
+    UniVR::scaled (const dlib::point& p) {
+        static const int rc = frame_.cols / img_.nc();
+        static const int rr = frame_.rows / img_.nr();
+        return dlib::point(p.x() * rc,  p.y() * rr);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
 
     int
-    norm (const Landmarks& face, int part1, int part2) {
-        const auto& p1 = face.part(part1);
-        const auto& p2 = face.part(part2);
+    UniVR::norm (const Landmarks& face, int part1, int part2) {
+        const auto& p1 = scaled(face.part(part1));
+        const auto& p2 = scaled(face.part(part2));
         int x = p1.x() - p2.x();
         int y = p1.y() - p2.y();
         return std::pow(x, 2) + std::pow(y, 2);
     }
 
     double
-    angle (const Landmarks& face, int part1, int part2, int Part1, int Part2) {
-        const auto& p1 = face.part(part1);
-        const auto& p2 = face.part(part2);
-        const auto& P1 = face.part(Part1);
-        const auto& P2 = face.part(Part2);
+    UniVR::angle (const Landmarks& face,
+                  int part1, int part2, int Part1, int Part2) {
+        const auto& p1 = scaled(face.part(part1));
+        const auto& p2 = scaled(face.part(part2));
+        const auto& P1 = scaled(face.part(Part1));
+        const auto& P2 = scaled(face.part(Part2));
         double m1 = (p2.y()-p1.y() + SMOOTHING) / (p2.x()-p1.x() + SMOOTHING);
         double m2 = (P2.y()-P1.y() + SMOOTHING) / (P2.x()-P1.x() + SMOOTHING);
         return std::atan2(1 + m2 * m1, m2 - m1);
     }
 
     void
-    collect_data (data& data, const Landmarks& face) {
+    UniVR::collect_data (data& data, const Landmarks& face) {
         data.n  = norm(face, LANDMARK_NT, LANDMARK_NB);
         data.er = norm(face, LANDMARK_RER, LANDMARK_REL);
         data.el = norm(face, LANDMARK_LER, LANDMARK_LEL);
@@ -271,7 +279,7 @@ namespace nvr {
         data.das = std::abs(data.ar - data.al);
         data.chin = norm(face, LANDMARK_CR, LANDMARK_CL);
         data.ears = norm(face, LANDMARK_JR, LANDMARK_JL);
-        auto g = center(face.get_rect());
+        auto g = scaled(center(face.get_rect()));
         data.gx = g.x();
         data.gy = g.y();
     }
@@ -288,13 +296,33 @@ namespace nvr {
         textr(frame_, 60,  std::to_string(data.el) + " :el");
         textr(frame_, 30,  std::to_string(data.er) + " :er");
         textr(frame_,  0,  std::to_string(data.n)  + " :n");
+
+        int w = frame_.cols, h = frame_.rows;
+        auto c = cv::Point(w / 2, h /2);
+        auto color = cv::Scalar(0, 255, 0); // Green
+        double scale = 0.75;
+        auto  a_x_l = cv::Point(scale*(c.x - w),  c.y)
+            , a_x_r = cv::Point(scale*(c.x + w),  c.y)
+            , a_y_t = cv::Point(c.x,              scale*(c.y - h))
+            , a_y_d = cv::Point(c.x,              scale*(c.y + h));
+        cv::line(frame_, a_x_l, a_x_r, color, 1, 8, 0);
+        cv::line(frame_, a_y_t, a_y_d, color, 1, 8, 0);
+        auto  p_x = cv::Point(
+                scale*(data.gx)
+              , c.y)
+            , p_y = cv::Point(c.x,
+                scale*(data.gy)
+              );
+        cv::line(frame_, p_x,p_x, color, 4, 8, 0);
+        cv::line(frame_, p_y,p_y, color, 4, 8, 0);
     }
 
     ///////////////////////////////////////////////////////////////////////////
 
     std::ostream&
     operator<< (std::ostream& o, const data& rhs) {
-        return o << "data"
+        static size_t i = 0;
+        return o << "data " << i++
                  << " n:" << rhs.n
                  << " er:" << rhs.er << " el:" << rhs.el
                  << " ar:" << rhs.ar << " al:" << rhs.al << " das:" << rhs.das
@@ -421,10 +449,12 @@ namespace nvr {
         text(frame_, 30, "Ds: " + std::to_string(Ds));
         text(frame_, 60, std::to_string(img_.nc())
              +     "x" + std::to_string(img_.nr()));
-        text(frame_, 90, "I: " + std::to_string(I));
-        text(frame_, 120, "DROP_AMOUNT: "+std::to_string(DROP_AMOUNT));
-        text(frame_, 150, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));
-        text(frame_, 180, "motion:"+std::to_string(E));
+        text(frame_, 90, std::to_string(frame_.cols)
+             +     "x" + std::to_string(frame_.rows));
+        text(frame_, 120, "I: " + std::to_string(I));
+        text(frame_, 150, "DROP_AMOUNT: "+std::to_string(DROP_AMOUNT));
+        text(frame_, 180, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));
+        text(frame_, 210, "motion:"+std::to_string(E));
 
         cv::imshow(WINDOW, frame_);
 
