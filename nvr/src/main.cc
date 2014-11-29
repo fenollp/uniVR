@@ -344,8 +344,6 @@ int
 main (int argc, const char *argv[]) {
     if (argc != 2)
         return 1;
-    std::string trained(argv[1]);
-    ovr.init(trained);
 
     // UglyHack® #47
     char *my_argv[] = {"demo2", NULL};
@@ -372,6 +370,9 @@ main (int argc, const char *argv[]) {
 
     // OpenGL init
     glEnable(GL_DEPTH_TEST);
+
+    std::string trained(argv[1]);
+    ovr.init(trained);
 
     // enter GLUT event processing cycle
     glutMainLoop();
