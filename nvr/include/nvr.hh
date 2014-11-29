@@ -80,8 +80,6 @@ namespace nvr {
         dlib::rectangle scaled (const dlib::rectangle& r);
     };
 
-    std::ostream& operator<< (std::ostream& o, const UniVR& rhs);
-
 } // namespace nvr
 
 #endif /* !NVR_HH */

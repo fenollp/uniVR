@@ -293,11 +293,6 @@ namespace nvr {
     ///////////////////////////////////////////////////////////////////////////
 
     std::ostream&
-    operator<< (std::ostream& o, const UniVR& rhs) {
-        //FIXME
-    }
-
-    std::ostream&
     operator<< (std::ostream& o, const data& rhs) {
         return o << "data"
                  << " n:" << rhs.n
