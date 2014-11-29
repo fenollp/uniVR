@@ -254,9 +254,9 @@ namespace nvr {
         const auto& p2 = face.part(part2);
         const auto& P1 = face.part(Part1);
         const auto& P2 = face.part(Part2);
-        double m1 = (p2.y() - p1.y()) / (p2.x() - p1.x() + SMOOTHING);
-        double m2 = (P2.y() - P1.y()) / (P2.x() - P1.x() + SMOOTHING);
-        return std::atan2(1 + m2*m1, m2 - m1);
+        double m1 = (p2.y()-p1.y() + SMOOTHING) / (p2.x()-p1.x() + SMOOTHING);
+        double m2 = (P2.y()-P1.y() + SMOOTHING) / (P2.x()-P1.x() + SMOOTHING);
+        return std::atan2(1 + m2 * m1, m2 - m1);
     }
 
     void
