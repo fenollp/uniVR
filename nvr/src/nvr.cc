@@ -2,6 +2,7 @@
 
 #define WINDOW   "nvr"
 #define WINDOW_2 "motion"
+
 #define WHITE  (cv::Scalar::all(255))
 #define BLACK  (cv::Scalar::all(0))
 #define BLUE   (cv::Scalar(255, 0, 0))
@@ -11,6 +12,12 @@ namespace nvr {
 
     void
     rectangle (Frame& img, const dlib::rectangle& rect, size_t thickness) {
+        if ((  0 >= rect.left() - thickness)
+            || 0 >= rect.top() - thickness
+            || 0 >= rect.right() - thickness
+            || 0 >= rect.bottom() - thickness)
+            // FIXME: a segfault hides deeper than here…
+            return;
         auto zone =
             cv::Rect(rect.left(), rect.top(), rect.width(), rect.height());
         cv::rectangle(img, zone, WHITE, thickness, 8, 0);
