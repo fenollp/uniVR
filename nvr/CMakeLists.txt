@@ -16,21 +16,29 @@ include_directories(include)
 
 set(nvr__src
   src/nvr.cc
-  src/main.cc
+)
+
+set(nvr__libs
+  ${OpenCV_LIBS}
+  ${OPENGL_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  dlib
+)
+
+#if(snowmen)
+  set(nvr__src
+    ${nvr__src}
+    src/main_snowmen.cc
   )
+#endif(snowmen)
 
 add_definitions( -Wall )
 add_definitions( -Wno-deprecated )
+#add_definitions( -W -Wextra -pedantic )
 
 # add all the cpp files we want to compile to this list.  This tells
 # cmake that they are part of our target (which is the executable named dtest)
 ADD_EXECUTABLE(${target_name} ${nvr__src})
-
-# Turn on all warnings when using gcc.
-# if (CMAKE_COMPILER_IS_GNUCXX)
-#    add_definitions("-W -Wall")
-# endif()
-
 
 #This warning is for project developers.  Use -Wno-dev to suppress it.#
 #add_definitions( -Wno-dev )

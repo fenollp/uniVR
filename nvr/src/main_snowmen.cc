@@ -1,34 +1,4 @@
-#if 0
-#include "nvr.hh"
-int
-main (int argc, const char* argv[]) {
-    try {
-        if (argc == 1) {
-            std::cout << "Call this program like this:" << std::endl
-                      << "./nvr 68_face_landmarks.dat" << std::endl;
-            return 1;
-        }
-        std::string trained(argv[1]);
-        nvr::UniVR ovr;
-        ovr.init(trained);
-        nvr::data face;
-        while (true) { // GAME LOOP
-            if (!ovr.step(face))
-                break;
-            std::cout << face;//
-            if (cv::waitKey(5) == 'q')
-                break;
-        }
-    }
-    catch (std::exception& e) {
-        std::cout << std::endl << "exception thrown!"
-                  << std::endl << e.what() << std::endl;
-    }
-}
-#endif
-
-
-// //www.cs.umd.edu/class/spring2013/cmsc425/OpenGL/OpenGLSamples/OpenGL-3D-Sample/OpenGL-3D-Sample-ForC/opengl-3D-sample.c
+// Inspired from //www.cs.umd.edu/class/spring2013/cmsc425/OpenGL/OpenGLSamples/OpenGL-3D-Sample/OpenGL-3D-Sample-ForC/opengl-3D-sample.c
 
 #include <stdlib.h>
 #include <math.h>
@@ -49,10 +19,9 @@ main (int argc, const char* argv[]) {
 
 #include "nvr.hh"
 
-#define DEMO "demo2"
-#define PROJECT "snowmen"
-#define WIN_SZ_Y 800
-#define WIN_SZ_X 400
+#define NAME "nvr_snowmen"
+#define WIN_SZ_Y 1280    //800
+#define WIN_SZ_X 720     //400
 
 //----------------------------------------------------------------------
 // Global variables
@@ -346,7 +315,7 @@ main (int argc, const char *argv[]) {
         return 1;
 
     // UglyHack® #47
-    char *my_argv[] = {"demo2", NULL};
+    char *my_argv[] = {NAME, NULL};
     int   my_argc = 1;
 
     // general initializations
@@ -354,7 +323,7 @@ main (int argc, const char *argv[]) {
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);
     glutInitWindowSize(WIN_SZ_Y, WIN_SZ_X);
-    glutCreateWindow(PROJECT " ~ " DEMO);
+    glutCreateWindow(NAME);
 
     // register callbacks
     glutReshapeFunc(changeSize); // window reshape callback
