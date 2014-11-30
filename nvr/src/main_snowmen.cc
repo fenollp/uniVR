@@ -10,13 +10,6 @@
 # include <GL/glut.h>
 #endif
 
-// Pipe stuff
-#include <unistd.h>
-#include <sys/wait.h> // Actually..
-
-// Shared mem stuff
-#include <sys/shm.h>
-
 #include "nvr.hh"
 
 #define NAME "nvr_snowmen"
@@ -44,19 +37,10 @@ float deltaMove = 0.0; // initially camera doesn't move
 
 // Camera direction
 float lx = 0.0, ly = 1.0; // camera points initially along y-axis
-float angle = 0.0; // angle of rotation for the camera direction
-float deltaAngle = 0.0; // additional angle change when dragging
-
-// Mouse drag control
-int isDragging = 0; // true when dragging
-int xDragStart = WIN_SZ_X; // records the x-coordinate when dragging starts
 
 // Shared memory between the 2 main loops
 nvr::UniVR ovr;
 nvr::data  data;
-
-// Previous value of norm, so as to extract a differential
-int norm_;
 
 //----------------------------------------------------------------------
 // Reshape callback
@@ -68,8 +52,7 @@ int norm_;
 //
 //----------------------------------------------------------------------
 void
-changeSize (int w, int h)
-{
+changeSize (int w, int h) {
     float ratio =  ((float) w) / ((float) h); // window aspect ratio
     glMatrixMode(GL_PROJECTION); // projection matrix is active
     glLoadIdentity(); // reset the projection
@@ -93,8 +76,7 @@ changeSize (int w, int h)
 // into its final position.
 //----------------------------------------------------------------------
 void
-drawSnowman ()
-{
+drawSnowman () {
     // Draw body (a 20x20 spherical mesh of radius 0.75 at height 0.75)
     glColor3f(1.0, 1.0, 1.0); // set drawing color to white
     glPushMatrix();
@@ -138,44 +120,27 @@ drawSnowman ()
     glPopMatrix();
 }
 
-//----------------------------------------------------------------------
-// Update with each idle event
-//
-// This incrementally moves the camera and requests that the scene be
-// redrawn.
-//----------------------------------------------------------------------
-void
-update (void) {
-    if (ovr.step(data))
-        std::cout << data;
-    // ovr.step(data);
 
-    int gx = data.gx;
-    float new_deltaAngle = 0.05 * (gx - xDragStart) / WIN_SZ_X;
-    float diff_deltaAngle = new_deltaAngle - deltaAngle;
-    if (-1.0f > diff_deltaAngle)
-        deltaAngle = -1.0f * new_deltaAngle;
-    // else if (0.001f > std::abs(diff_deltaAngle))
-    //     deltaAngle = 0.0f;
-    else
-        deltaAngle = +1.0f * new_deltaAngle;
-    lx = - sin(angle + deltaAngle);
-    ly =   cos(angle + deltaAngle);
-    angle += deltaAngle;
+void  /// Update with each idle event
+update () {
+    ovr.step(data);
 
-    if (deltaMove) { // update camera position
-        x += deltaMove * lx * 0.1;
-        y += deltaMove * ly * 0.1;
-    }
+    // update camera direction (lx,y \in [0;1])
+    lx = 1.0f / data.gx;
+    ly = 1.0f / data.gy;
+
+    // if (deltaMove) { // update camera position
+    //     x += deltaMove * lx * 0.1;
+    //     y += deltaMove * ly * 0.1;
+    // }
+
     glutPostRedisplay(); // redisplay everything
 
-    std::cout << "lx:" << lx << " "
-              << "ly:" << ly << " "
-              << "x:"  <<  x << " "
-              << "y:"  <<  y << " "
-              << "deltaMove:" << deltaMove << " "
-              << "angle:" << angle << " "
-              << "deltaAngle:" << deltaAngle << " "
+    std::cout << " lx:" << lx
+              << " ly:" << ly
+              << " x:"  <<  x
+              << " y:"  <<  y
+              << " deltaMove:" << deltaMove
               << std::endl;
 }
 
@@ -186,8 +151,7 @@ update (void) {
 // origin and its direction.
 //----------------------------------------------------------------------
 void
-renderScene (void)
-{
+renderScene () {
     // Clear color and depth buffers
     glClearColor(0.0, 0.7, 1.0, 1.0); // sky color is light blue
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -222,94 +186,13 @@ renderScene (void)
     glutSwapBuffers(); // Make it all visible
 }
 
-//----------------------------------------------------------------------
-// User-input callbacks
-//
-// processNormalKeys: ESC, q, and Q cause program to exit
-// pressSpecialKey: Up arrow = forward motion, down arrow = backwards
-// releaseSpecialKey: Set incremental motion to zero
-//----------------------------------------------------------------------
 void
-processNormalKeys (unsigned char key, int xx, int yy)
-{
-    if ('\e' == key || 'q' == key || 'Q' == key)
+stopKey (unsigned char key, int mouse_x, int mouse_y) {
+    if ('q' == key)
         exit(0);
-
-    // printf("[MASTER] Received (%i %i %f %f)\n",
-    //        lvrs->cx, lvrs->cy, lvrs->norm, lvrs->alpha);
-
-    // int cx = lvrs->cx + 200;
-    // if (cx > 600) cx = 1 + xDragStart;//
-    // deltaAngle = 0.005 * (cx - xDragStart);
-    // lx = - sin(angle + deltaAngle);
-    // ly =   cos(angle + deltaAngle);
-    // printf("MOI %i %f  %f %f\n", cx, deltaAngle, lx, ly);
-    // // xDragStart = cx;
-    // // angle += deltaAngle;
-
-    // EXPERIMENTAL y translation
-    // int norm = lvrs->norm;
-    // if (0 == norm_) norm_ = norm;
-    // deltaMove = (norm_ - norm) / (norm_ - norm + 1);
-}
-
-void
-pressSpecialKey (int key, int xx, int yy)
-{
-    switch (key) {
-        case GLUT_KEY_UP   : deltaMove =  1.0; break;
-        case GLUT_KEY_DOWN : deltaMove = -1.0; break;
-    }
-}
-
-void
-releaseSpecialKey (int key, int xx, int yy)
-{
-    switch (key) {
-        case GLUT_KEY_UP   : deltaMove = 0.0; break;
-        case GLUT_KEY_DOWN : deltaMove = 0.0; break;
-    }
-}
-
-//----------------------------------------------------------------------
-// Process mouse drag events
-//
-// This is called when dragging motion occurs. The variable
-// angle stores the camera angle at the instance when dragging
-// started, and deltaAngle is a additional angle based on the
-// mouse movement since dragging started.
-//----------------------------------------------------------------------
-void
-mouseMove (int xx, int yy)
-{
-    if (isDragging) { // only when dragging
-        // update the change in angle
-        deltaAngle = 0.005 * (xx - xDragStart);
-        std::cout << "xx " << xx << std::endl;//
-        // camera's direction is set to angle + deltaAngle
-        lx = - sin(angle + deltaAngle);
-        ly =   cos(angle + deltaAngle);
-        // printf("LUI %i %f  %f %f\n", xx, deltaAngle, lx, ly);
-    }
-}
-
-void
-mouseButton (int button, int state, int xx, int yy)
-{
-    if (GLUT_LEFT_BUTTON == button) {
-        if (GLUT_DOWN == state) { // left mouse button pressed
-            isDragging = 1; // start dragging
-            xDragStart = xx; // save xx where button first pressed
-        }
-        else  { /* state is GLUT_UP */
-            angle += deltaAngle; // update camera turning angle
-            isDragging = 0; // no longer dragging
-        }
-    }
 }
 
 
-// Main program  - standard GLUT initializations and callbacks
 int
 main (int argc, const char *argv[]) {
     if (argc != 2) {
@@ -318,36 +201,27 @@ main (int argc, const char *argv[]) {
         return 1;
     }
 
-    // UglyHack® #47
     char *my_argv[] = {(char*)NAME, NULL};
     int   my_argc = 1;
-
-    // general initializations
     glutInit(&my_argc, my_argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);
     glutInitWindowSize(WIN_SZ_Y, WIN_SZ_X);
     glutCreateWindow(NAME);
 
-    // register callbacks
+    // callbacks
     glutReshapeFunc(changeSize); // window reshape callback
     glutDisplayFunc(renderScene); // (re)display callback
     glutIdleFunc(update); // incremental update
-    //glutIgnoreKeyRepeat(1); // ignore key repeat when holding key down
-    glutMouseFunc(mouseButton); // process mouse button push/release
-    glutMotionFunc(mouseMove); // process mouse dragging motion
-    glutKeyboardFunc(processNormalKeys); // process standard key clicks
-    glutSpecialFunc(pressSpecialKey); // process special key pressed
-// Warning: Nonstandard function! Delete if desired.
-    glutSpecialUpFunc(releaseSpecialKey); // process special key release
+    glutKeyboardFunc(stopKey);
 
     // OpenGL init
     glEnable(GL_DEPTH_TEST);
 
+    // UniVR init
     std::string trained(argv[1]);
     ovr.init(trained);
 
-    // enter GLUT event processing cycle
     glutMainLoop();
 
     return 0;
