@@ -400,8 +400,12 @@ namespace nvr {
         // downsample an image using pyramid_down<2> pyr; pyr(img); and
         // it will make it smaller than therefore faster for the detector
         // to run. But you won't be able to detect small faces.
-        dlib::pyramid_down<2> pyr;
-        pyr(img_);
+#define MAGIC__MINIMUM_CAMERA_HEIGHT  (300)
+        if (frame_.rows / 2 > MAGIC__MINIMUM_CAMERA_HEIGHT) {
+            dlib::pyramid_down<2> pyr;
+            pyr(img_);
+            //FIXME: compute ideal ratio given frame_.rows?
+        }
 
         if (rc_ == 0 || rr_ == 0) {
             rc_ = frame_.cols / img_.nc();

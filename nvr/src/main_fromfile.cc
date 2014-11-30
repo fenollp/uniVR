@@ -8,12 +8,14 @@ main (int argc, const char* argv[]) {
                       << "./$0 68_face_landmarks.dat video.mp4" << std::endl;
             return 1;
         }
+
         std::string trained(argv[1]);
         nvr::UniVR ovr;
         auto video_opener = [&](nvr::FrameStream& capture) {
             return capture.open(argv[2]) && capture.isOpened();
         };
         ovr.init(trained, video_opener);
+
         nvr::data face;
         while (true) { // GAME LOOP
             if (!ovr.step(face))
@@ -22,6 +24,7 @@ main (int argc, const char* argv[]) {
             if (cv::waitKey(5) == 'q')
                 break;
         }
+
     }
     catch (std::exception& e) {
         std::cout << std::endl << "exception thrown!"
