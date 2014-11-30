@@ -72,9 +72,10 @@ namespace nvr {
         UniVR ();
         ~UniVR ();
         void init (const std::string& trained_data);
+        void init (const std::string& trained_data,
+                   std::function<bool(FrameStream&)> capture_opener);
         bool step (data& face);
     protected:
-        bool open_capture ();
         bool next_frame ();
         int motion_energy (const dlib::rectangle& rect_found);
     private:

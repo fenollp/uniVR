@@ -349,11 +349,12 @@ namespace nvr {
     }
 
     void
-    UniVR::init (const std::string& trained_data) {
+    UniVR::init (const std::string& trained_data,
+                 std::function<bool(nvr::FrameStream&)> capture_opener) {
         detector_ = dlib::get_frontal_face_detector();
         dlib::deserialize(trained_data) >> extractor_;
 
-        if (!open_capture())
+        if (!capture_opener(capture_))
             throw std::string("!cap from webcam 0");
 
 #ifdef window_debug
@@ -363,11 +364,13 @@ namespace nvr {
         inited_ = true;
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-
-    bool  /// Specialize this to your FrameStream
-    UniVR::open_capture () {
-        return capture_.open(0) && capture_.isOpened();
+    void
+    UniVR::init (const std::string& trained_data) {
+        /// Specialize this to your FrameStream
+        auto default_capture_opener = [](FrameStream& capture) {
+            return capture.open(0) && capture.isOpened();
+        };
+        init(trained_data, default_capture_opener);
     }
 
     ///////////////////////////////////////////////////////////////////////////
