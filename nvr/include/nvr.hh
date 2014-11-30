@@ -64,8 +64,9 @@ namespace nvr {
         dlib::rectangle rect_found_; // ≈ zones_.last()
         std::deque<Frame> rects_found_; // Frames of past rect_found_s
         std::deque<dlib::rectangle> zones_; // Last BACKLOG_SZ zones detected
-        size_t I, Ds;
-        bool inited;
+        size_t I_, Ds_; // Counters that will overflow(!!)
+        bool inited_; // Set to true after a call to init/1
+        int rc_, rr_; // Ratio of camera frame over pyramied-down img
 
     public:
         UniVR ();

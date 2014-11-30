@@ -219,14 +219,12 @@ namespace nvr {
 
     dlib::rectangle
     UniVR::scaled (const dlib::rectangle& r) {
-        static const int rc = frame_.cols / img_.nc();
-        static const int rr = frame_.rows / img_.nr();
         auto x = r.left();
         auto y = r.top();
-        auto sx = x * rc;
-        auto sy = y * rr;
-        auto sw = (x + r.width()) * rc;
-        auto sh = (y + r.height()) * rr;
+        auto sx = x * rc_;
+        auto sy = y * rr_;
+        auto sw = (x + r.width()) * rc_;
+        auto sh = (y + r.height()) * rr_;
         // Keep away from the edges
         if (sw > frame_.cols)
             sw = frame_.cols - 5;
@@ -239,9 +237,7 @@ namespace nvr {
 
     dlib::point
     UniVR::scaled (const dlib::point& p) {
-        static const int rc = frame_.cols / img_.nc();
-        static const int rr = frame_.rows / img_.nr();
-        return dlib::point(p.x() * rc,  p.y() * rr);
+        return dlib::point(p.x() * rc_,  p.y() * rr_);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -285,6 +281,23 @@ namespace nvr {
     }
 
     void
+    project_coords (Frame& frame_, const data& data) {
+        int w = frame_.cols, h = frame_.rows;
+        auto c = cv::Point(w/2, h/2);
+        auto color = cv::Scalar(0, 255, 0); // Green
+        auto  a_x_l = cv::Point(c.x - w,  c.y)
+            , a_x_r = cv::Point(c.x + w,  c.y)
+            , a_y_t = cv::Point(c.x,      c.y - h)
+            , a_y_d = cv::Point(c.x,      c.y + h);
+        cv::line(frame_, a_x_l, a_x_r, color, 1, 8, 0);
+        cv::line(frame_, a_y_t, a_y_d, color, 1, 8, 0);
+        auto  p_x = cv::Point(data.gx, c.y)
+            , p_y = cv::Point(c.x,     data.gy);
+        cv::line(frame_, p_x,p_x, color, 4, 8, 0);
+        cv::line(frame_, p_y,p_y, color, 4, 8, 0);
+    }
+
+    void
     display_data (Frame& frame_, const data& data) {
         textr(frame_, 270, std::to_string(data.gy) + " :gy");
         textr(frame_, 240, std::to_string(data.gx) + " :gx");
@@ -296,25 +309,7 @@ namespace nvr {
         textr(frame_, 60,  std::to_string(data.el) + " :el");
         textr(frame_, 30,  std::to_string(data.er) + " :er");
         textr(frame_,  0,  std::to_string(data.n)  + " :n");
-
-        int w = frame_.cols, h = frame_.rows;
-        auto c = cv::Point(w / 2, h /2);
-        auto color = cv::Scalar(0, 255, 0); // Green
-        double scale = 0.75;
-        auto  a_x_l = cv::Point(scale*(c.x - w),  c.y)
-            , a_x_r = cv::Point(scale*(c.x + w),  c.y)
-            , a_y_t = cv::Point(c.x,              scale*(c.y - h))
-            , a_y_d = cv::Point(c.x,              scale*(c.y + h));
-        cv::line(frame_, a_x_l, a_x_r, color, 1, 8, 0);
-        cv::line(frame_, a_y_t, a_y_d, color, 1, 8, 0);
-        auto  p_x = cv::Point(
-                scale*(data.gx)
-              , c.y)
-            , p_y = cv::Point(c.x,
-                scale*(data.gy)
-              );
-        cv::line(frame_, p_x,p_x, color, 4, 8, 0);
-        cv::line(frame_, p_y,p_y, color, 4, 8, 0);
+        project_coords(frame_, data);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -334,7 +329,7 @@ namespace nvr {
     ///////////////////////////////////////////////////////////////////////////
 
     UniVR::UniVR () {
-        inited = false;
+        inited_ = false;
     }
 
     UniVR::~UniVR () {
@@ -347,12 +342,16 @@ namespace nvr {
 
         if (!open_capture())
             throw std::string("!cap from webcam 0");
-        I = 0;
-        Ds = 0;
+
+        I_ = 0;
+        Ds_ = 0;
+
+        rc_ = 0;
+        rr_ = 0;
 
         cv::namedWindow(WINDOW, 1);//
         cv::namedWindow("motion", 1);//
-        inited = true;
+        inited_ = true;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -392,6 +391,11 @@ namespace nvr {
         dlib::pyramid_down<2> pyr;
         pyr(img_);
 
+        if (rc_ == 0 || rr_ == 0) {
+            rc_ = frame_.cols / img_.nc();
+            rr_ = frame_.rows / img_.nr();
+        }
+
         return true;
     }
 
@@ -399,7 +403,7 @@ namespace nvr {
 
     bool
     UniVR::step (data& data) {
-        if (!inited)
+        if (!inited_)
             std::cerr << "nvr: init/1 was not called!" << std::endl;
 
         if (!next_frame()) // Sets frame_
@@ -412,7 +416,7 @@ namespace nvr {
         // else: reuse last rect_found_
 
         bool detected = false;
-        if (I % DROP_AMOUNT == 0) {
+        if (I_ % DROP_AMOUNT == 0) {
             /// Detection
             auto dets = detector_(img_);
             for (const auto& det : dets)
@@ -421,7 +425,7 @@ namespace nvr {
                 rect_found_ = biggest_rectangle(dets);
                 rectangle(frame_, rect_found_, 4);
                 detected = true;
-                ++Ds;
+                ++Ds_;
             }
         }
         if (rect_found_.is_empty())
@@ -446,19 +450,19 @@ namespace nvr {
         display_data(frame_, data);//
         for (const auto& zone : zones_)//
             rectangle(frame_, scaled(zone), 1);//
-        text(frame_, 30, "Ds: " + std::to_string(Ds));
+        text(frame_, 30, "Ds: " + std::to_string(Ds_));
         text(frame_, 60, std::to_string(img_.nc())
              +     "x" + std::to_string(img_.nr()));
         text(frame_, 90, std::to_string(frame_.cols)
              +     "x" + std::to_string(frame_.rows));
-        text(frame_, 120, "I: " + std::to_string(I));
+        text(frame_, 120, "I: " + std::to_string(I_));
         text(frame_, 150, "DROP_AMOUNT: "+std::to_string(DROP_AMOUNT));
         text(frame_, 180, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));
         text(frame_, 210, "motion:"+std::to_string(E));
 
         cv::imshow(WINDOW, frame_);
 
-        ++I;
+        ++I_;
         return true;
     }
 
