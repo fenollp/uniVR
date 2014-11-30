@@ -16,6 +16,7 @@ include_directories(include)
 add_definitions( -Wall )
 add_definitions( -Wno-deprecated )
 #add_definitions( -W -Wextra -pedantic )
+add_definitions( -O2 )
 
 #This warning is for project developers.  Use -Wno-dev to suppress it.#
 #add_definitions( -Wno-dev )

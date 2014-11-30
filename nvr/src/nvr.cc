@@ -232,8 +232,8 @@ namespace nvr {
         auto y = r.top();
         auto sx = x * rc_;
         auto sy = y * rr_;
-        auto sw = (x + r.width()) * rc_;
-        auto sh = (y + r.height()) * rr_;
+        int sw = (x + r.width()) * rc_;
+        int sh = (y + r.height()) * rr_;
         // Keep away from the edges
         if (sw > frame_.cols)
             sw = frame_.cols - 5;
@@ -371,6 +371,7 @@ namespace nvr {
     UniVR::init (const std::string& trained_data) {
         /// Specialize this to your FrameStream
         auto default_capture_opener = [](FrameStream& capture) {
+            // capture.set(CV_CAP_PROP_FPS, 30);
             return capture.open(0) && capture.isOpened();
         };
         init(trained_data, default_capture_opener);
@@ -484,7 +485,9 @@ namespace nvr {
         text(frame_, 120, "I: " + std::to_string(I_));
         text(frame_, 150, "DROP_AMOUNT: "+std::to_string(DROP_AMOUNT));
         text(frame_, 180, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));
-        text(frame_, 210, "motion:"+std::to_string(E));
+        text(frame_, 210, "motion: "+std::to_string(E));
+        // text(frame_, 240,
+        //      "feed FPS: "+std::to_string(capture_.get(CV_CAP_PROP_FPS)));
 
         cv::imshow(WINDOW, frame_);
 #endif

@@ -26,7 +26,7 @@ clean:
 distclean: clean
 	$(if $(wildcard ext/*), rm -r ext/)
 	$(foreach bin, snowmen base fromfile, \
-            $(if $(wildcard $(bin)), rm $(bin)))
+            $(if $(wildcard $(bin)), rm $(bin);))
 
 
 
