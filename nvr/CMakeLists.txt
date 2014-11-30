@@ -38,7 +38,7 @@ if(MODE_snowmen)
   add_definitions( -Dwindow_debug )
   add_executable(${target_name}
     src/nvr.cc
-    src/main_snowmen.cc
+    src/main_${target_name}.cc
   )
   include(ext/dlib/dlib/cmake)
   target_link_libraries(${target_name}
@@ -54,7 +54,7 @@ if(MODE_base)
   add_definitions( -Dwindow_debug )
   add_executable(${target_name}
     src/nvr.cc
-    src/main_base.cc
+    src/main_${target_name}.cc
   )
   include(ext/dlib/dlib/cmake)
   target_link_libraries(${target_name}
@@ -68,7 +68,7 @@ if(MODE_fromfile)
   # Same as MODE_base, except no -Dwindow_debug
   add_executable(${target_name}
     src/nvr.cc
-    src/main_base.cc
+    src/main_${target_name}.cc
   )
   include(ext/dlib/dlib/cmake)
   target_link_libraries(${target_name}

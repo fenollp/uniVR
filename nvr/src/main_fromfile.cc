@@ -3,14 +3,17 @@
 int
 main (int argc, const char* argv[]) {
     try {
-        if (argc != 2) {
+        if (argc != 3) {
             std::cout << "Call this program like this:" << std::endl
-                      << "./$0 68_face_landmarks.dat" << std::endl;
+                      << "./$0 68_face_landmarks.dat video.mp4" << std::endl;
             return 1;
         }
         std::string trained(argv[1]);
         nvr::UniVR ovr;
-        ovr.init(trained);
+        auto video_opener = [&](nvr::FrameStream& capture) {
+            return capture.open(argv[2]) && capture.isOpened();
+        };
+        ovr.init(trained, video_opener);
         nvr::data face;
         while (true) { // GAME LOOP
             if (!ovr.step(face))

@@ -1,6 +1,7 @@
 #include "nvr.hh"
 
-#define WINDOW "nvr"
+#define WINDOW   "nvr"
+#define WINDOW_2 "motion"
 #define WHITE  (cv::Scalar::all(255))
 #define BLACK  (cv::Scalar::all(0))
 #define BLUE   (cv::Scalar(255, 0, 0))
@@ -215,7 +216,7 @@ namespace nvr {
 #ifdef window_debug
             rectangle(frame_, r, 10);//
             // rectangle(motion, r, 1);//
-            cv::imshow("motion",
+            cv::imshow(WINDOW_2,
                        motion(cv::Rect(sx, sy,
                                        prev_rect.width() * rc,
                                        prev_rect.height() * rr)));//
@@ -337,6 +338,10 @@ namespace nvr {
     ///////////////////////////////////////////////////////////////////////////
 
     UniVR::UniVR () {
+        I_ = 0;
+        Ds_ = 0;
+        rc_ = 0;
+        rr_ = 0;
         inited_ = false;
     }
 
@@ -351,15 +356,9 @@ namespace nvr {
         if (!open_capture())
             throw std::string("!cap from webcam 0");
 
-        I_ = 0;
-        Ds_ = 0;
-
-        rc_ = 0;
-        rr_ = 0;
-
 #ifdef window_debug
         cv::namedWindow(WINDOW, 1);//
-        cv::namedWindow("motion", 1);//
+        cv::namedWindow(WINDOW_2, 1);//
 #endif
         inited_ = true;
     }

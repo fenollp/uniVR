@@ -312,11 +312,14 @@ mouseButton (int button, int state, int xx, int yy)
 // Main program  - standard GLUT initializations and callbacks
 int
 main (int argc, const char *argv[]) {
-    if (argc != 2)
+    if (argc != 2) {
+        std::cout << "Call this program like this:" << std::endl
+                  << "./$0 68_face_landmarks.dat" << std::endl;
         return 1;
+    }
 
     // UglyHack® #47
-    char *my_argv[] = {NAME, NULL};
+    char *my_argv[] = {(char*)NAME, NULL};
     int   my_argc = 1;
 
     // general initializations
