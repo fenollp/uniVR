@@ -24,6 +24,7 @@ namespace nvr {
         size_t chin;
         size_t ears;
         size_t gx, gy;
+        size_t w, h;
     } data;
 
     std::ostream& operator<< (std::ostream& o, const data& rhs);

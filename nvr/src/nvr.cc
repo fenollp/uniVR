@@ -274,6 +274,8 @@ namespace nvr {
 
     void
     UniVR::collect_data (data& data, const Landmarks& face) {
+        data.w = frame_.cols;
+        data.h = frame_.rows;
         data.n  = norm(face, LANDMARK_NT, LANDMARK_NB);
         data.er = norm(face, LANDMARK_RER, LANDMARK_REL);
         data.el = norm(face, LANDMARK_LER, LANDMARK_LEL);
@@ -327,6 +329,7 @@ namespace nvr {
     operator<< (std::ostream& o, const data& rhs) {
         static size_t i = 0;
         return o << "data " << i++
+                 << " w:" << rhs.w << " h:" << rhs.h
                  << " n:" << rhs.n
                  << " er:" << rhs.er << " el:" << rhs.el
                  << " ar:" << rhs.ar << " al:" << rhs.al << " das:" << rhs.das
