@@ -1,6 +1,10 @@
 #include "nvr.hh"
 
 #define WINDOW "nvr"
+#define WHITE  (cv::Scalar::all(255))
+#define BLACK  (cv::Scalar::all(0))
+#define BLUE   (cv::Scalar(255, 0, 0))
+#define GREEN  (cv::Scalar(0, 255, 0))
 
 namespace nvr {
 
@@ -8,13 +12,13 @@ namespace nvr {
     rectangle (Frame& img, const dlib::rectangle& rect, size_t thickness) {
         auto zone =
             cv::Rect(rect.left(), rect.top(), rect.width(), rect.height());
-        cv::rectangle(img, zone, cv::Scalar(255,255,255), thickness, 8, 0);
+        cv::rectangle(img, zone, WHITE, thickness, 8, 0);
     }
 
     void
     dot (Frame& img, const dlib::point& p, size_t thickness) {
         cv::Point pcv(p.x(), p.y());
-        auto color = cv::Scalar(255,0,0);
+        auto color = BLUE;
         auto fface = cv::FONT_HERSHEY_SIMPLEX;
         cv::putText(img, "+", pcv, fface, .37, color, thickness, 8);
     }
@@ -29,17 +33,17 @@ namespace nvr {
         }
     }
 
-    void // private
+    void // Used by text & textr
     text_ (Frame& img, const cv::Point& o, const std::string& str) {
         int fface = cv::FONT_HERSHEY_SIMPLEX;
         double fscale = 0.73;
         int thick = 1;
-        auto color = cv::Scalar::all(255);
+        auto color = WHITE;
         int baseline = 0;
         auto text = cv::getTextSize(str, fface, fscale, thick, &baseline);
         cv::rectangle(img, o + cv::Point(0, baseline)
                       ,    o + cv::Point(text.width, -text.height),
-                      cv::Scalar::all(0), CV_FILLED);
+                      BLACK, CV_FILLED);
         cv::putText(img, str, o, fface, fscale, color, thick, 8);
     }
 
@@ -189,7 +193,9 @@ namespace nvr {
             // Note: static threshold of 1…
             cv::threshold(motion, motion, 1, 255, CV_THRESH_BINARY);
             cv::erode(motion, motion, erosion_kernel());
+#ifdef window_debug
             rectangle(frame_, prev_rect, 1);//
+#endif
 
             static const int rc = frame_.cols / img_.nc();
             static const int rr = frame_.rows / img_.nr();
@@ -206,12 +212,14 @@ namespace nvr {
                     if (motion.at<uchar>(yy, xx) == 255)
                         ++E;
             auto r = dlib::rectangle(sx,sy,sw,sh);//
+#ifdef window_debug
             rectangle(frame_, r, 10);//
             // rectangle(motion, r, 1);//
             cv::imshow("motion",
                        motion(cv::Rect(sx, sy,
                                        prev_rect.width() * rc,
                                        prev_rect.height() * rr)));//
+#endif
             return E;
         }
         return -1;
@@ -284,7 +292,7 @@ namespace nvr {
     project_coords (Frame& frame_, const data& data) {
         int w = frame_.cols, h = frame_.rows;
         auto c = cv::Point(w/2, h/2);
-        auto color = cv::Scalar(0, 255, 0); // Green
+        auto color = GREEN;
         auto  a_x_l = cv::Point(c.x - w,  c.y)
             , a_x_r = cv::Point(c.x + w,  c.y)
             , a_y_t = cv::Point(c.x,      c.y - h)
@@ -349,8 +357,10 @@ namespace nvr {
         rc_ = 0;
         rr_ = 0;
 
+#ifdef window_debug
         cv::namedWindow(WINDOW, 1);//
         cv::namedWindow("motion", 1);//
+#endif
         inited_ = true;
     }
 
@@ -419,11 +429,15 @@ namespace nvr {
         if (I_ % DROP_AMOUNT == 0) {
             /// Detection
             auto dets = detector_(img_);
+#ifdef window_debug
             for (const auto& det : dets)
                 rectangle(frame_, det, 1);
+#endif
             if (!dets.empty()) {
                 rect_found_ = biggest_rectangle(dets);
+#ifdef window_debug
                 rectangle(frame_, rect_found_, 4);
+#endif
                 detected = true;
                 ++Ds_;
             }
@@ -436,7 +450,9 @@ namespace nvr {
             if (detected || E != 0) { ///
                 /// Extraction
                 const auto& face_found = extractor_(img_, rect_found_);
+#ifdef window_debug
                 dots(frame_, face_found, 1);
+#endif
 
                 collect_data(data, face_found);
                 zones_.push_back(head_hull(face_found));
@@ -447,6 +463,7 @@ namespace nvr {
         while (zones_.size() > BACKLOG_SZ)
             zones_.pop_front();
 
+#ifdef window_debug
         display_data(frame_, data);//
         for (const auto& zone : zones_)//
             rectangle(frame_, scaled(zone), 1);//
@@ -461,6 +478,7 @@ namespace nvr {
         text(frame_, 210, "motion:"+std::to_string(E));
 
         cv::imshow(WINDOW, frame_);
+#endif
 
         ++I_;
         return true;

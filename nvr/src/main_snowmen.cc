@@ -148,6 +148,7 @@ void
 update (void) {
     if (ovr.step(data))
         std::cout << data;
+    // ovr.step(data);
 
     int gx = data.gx;
     float new_deltaAngle = 0.05 * (gx - xDragStart) / WIN_SZ_X;

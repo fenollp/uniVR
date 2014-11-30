@@ -48,18 +48,11 @@ This code should compile | run with
 * Apple LLVM version 5.1 (clang-503.0.40) (based on LLVM 3.4svn)
 
 
-### motion/*
-
-`cd nvr && make && ./nvr shape_predictor_68_face_landmarks.dat`
-
-* **motion detection** as [explained here](http://blog.cedric.ws/opencv-simple-motion-detection)
-* **facial landmark extraction**
-
-
 ### nvr/*
 
-`cd nvr && make && ./nvr shape_predictor_68_face_landmarks.dat`
+`cd nvr && MODE=snowmen make -j && ./snowmen shape_predictor_68_face_landmarks.dat`
 
+* Different `MODE`s: `snowmen`, `base`, `fromfile`.
 * **facial landmark detection** using [C++ Dlib](http://dlib.net/)
 * **Face detector:** Histogram of Oriented Gradients
     * Affine-invariant feature descriptor (like SIFT, SURF)
@@ -74,6 +67,14 @@ This code should compile | run with
         * Both papers dating 2014
     * Related database (of still images): [helen](http://www.ifp.illinois.edu/~vuongle2/helen/)
 * [dlib documentation](http://dlib.net/term_index.html)
+
+
+### motion/*
+
+`cd nvr && make && ./nvr shape_predictor_68_face_landmarks.dat`
+
+* **motion detection** as [explained here](http://blog.cedric.ws/opencv-simple-motion-detection)
+* **facial landmark extraction**
 
 
 ### algorithms/*

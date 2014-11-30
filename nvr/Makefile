@@ -1,8 +1,10 @@
 all: compile
 
+MODE ?= snowmen # base fromfile
+
 compile: ext/dlib/ build/
-	cd build/ && cmake .. && cmake --build .
-	cp build/nvr nvr
+	cd build/ && cmake -DMODE_$(MODE)=ON .. && cmake --build .
+	cp build/$(MODE) .
 .PHONY: compile
 
 build/:
@@ -23,7 +25,8 @@ clean:
 
 distclean: clean
 	$(if $(wildcard ext/*), rm -r ext/)
-	$(if $(wildcard nvr), rm nvr)
+	$(foreach bin, snowmen base fromfile, \
+            $(if $(wildcard $(bin)), rm $(bin)))
 
 
 

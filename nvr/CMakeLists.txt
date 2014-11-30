@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-set(target_name nvr)
-PROJECT(${target_name})
+PROJECT(nvr)
 
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
@@ -14,31 +13,9 @@ include_directories(${GLUT_INCLUDE_DIR})
 include_directories(include)
 
 
-set(nvr__src
-  src/nvr.cc
-)
-
-set(nvr__libs
-  ${OpenCV_LIBS}
-  ${OPENGL_LIBRARIES}
-  ${GLUT_LIBRARIES}
-  dlib
-)
-
-#if(snowmen)
-  set(nvr__src
-    ${nvr__src}
-    src/main_snowmen.cc
-  )
-#endif(snowmen)
-
 add_definitions( -Wall )
 add_definitions( -Wno-deprecated )
 #add_definitions( -W -Wextra -pedantic )
-
-# add all the cpp files we want to compile to this list.  This tells
-# cmake that they are part of our target (which is the executable named dtest)
-ADD_EXECUTABLE(${target_name} ${nvr__src})
 
 #This warning is for project developers.  Use -Wno-dev to suppress it.#
 #add_definitions( -Wno-dev )
@@ -56,14 +33,49 @@ else()
 endif()
 
 
-# Tell cmake to link our target executable to dlib.
-include(ext/dlib/dlib/cmake)
-TARGET_LINK_LIBRARIES(${target_name}
-  ${OpenCV_LIBS}
-  ${OPENGL_LIBRARIES}
-  ${GLUT_LIBRARIES}
-  dlib
-)
+if(MODE_snowmen)
+  set(target_name snowmen)
+  add_definitions( -Dwindow_debug )
+  add_executable(${target_name}
+    src/nvr.cc
+    src/main_snowmen.cc
+  )
+  include(ext/dlib/dlib/cmake)
+  target_link_libraries(${target_name}
+    ${OpenCV_LIBS}
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    dlib
+  )
+endif(MODE_snowmen)
+
+if(MODE_base)
+  set(target_name base)
+  add_definitions( -Dwindow_debug )
+  add_executable(${target_name}
+    src/nvr.cc
+    src/main_base.cc
+  )
+  include(ext/dlib/dlib/cmake)
+  target_link_libraries(${target_name}
+    ${OpenCV_LIBS}
+    dlib
+  )
+endif(MODE_base)
+
+if(MODE_fromfile)
+  set(target_name fromfile)
+  # Same as MODE_base, except no -Dwindow_debug
+  add_executable(${target_name}
+    src/nvr.cc
+    src/main_base.cc
+  )
+  include(ext/dlib/dlib/cmake)
+  target_link_libraries(${target_name}
+    ${OpenCV_LIBS}
+    dlib
+  )
+endif(MODE_fromfile)
 
 
 # if (NOT DLIB_NO_GUI_SUPPORT)
