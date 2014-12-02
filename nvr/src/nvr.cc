@@ -2,6 +2,7 @@
 
 #define WINDOW   "nvr"
 #define WINDOW_2 "motion"
+#define WINDOW_3 "face"
 
 #define WHITE  (cv::Scalar::all(255))
 #define BLACK  (cv::Scalar::all(0))
@@ -205,14 +206,12 @@ namespace nvr {
             rectangle(frame_, prev_rect, 1);//
 #endif
 
-            static const int rc = frame_.cols / img_.nc();
-            static const int rr = frame_.rows / img_.nr();
             auto x = prev_rect.left();
             auto y = prev_rect.top();
-            auto sx = x * rc;
-            auto sy = y * rr;
-            auto sw = (x + prev_rect.width()) * rc;
-            auto sh = (y + prev_rect.height()) * rr;
+            auto sx = x * rc_;
+            auto sy = y * rr_;
+            auto sw = (x + prev_rect.width()) * rc_;
+            auto sh = (y + prev_rect.height()) * rr_;
 
             int E = 0;
             for (size_t yy = sy; yy < sh; ++yy) // -> rows
@@ -225,8 +224,8 @@ namespace nvr {
             // rectangle(motion, r, 1);//
             cv::imshow(WINDOW_2,
                        motion(cv::Rect(sx, sy,
-                                       prev_rect.width() * rc,
-                                       prev_rect.height() * rr)));//
+                                       prev_rect.width() * rc_,
+                                       prev_rect.height() * rr_)));//
 #endif
             return E;
         }
@@ -370,6 +369,7 @@ namespace nvr {
 #ifdef window_debug
         cv::namedWindow(WINDOW, 1);//
         cv::namedWindow(WINDOW_2, 1);//
+        cv::namedWindow(WINDOW_3, 1);//
 #endif
         inited_ = true;
     }
@@ -469,6 +469,13 @@ namespace nvr {
                 const auto& face_found = extractor_(img_, rect_found_);
 #ifdef window_debug
                 dots(frame_, face_found, 1);
+                do {
+                    auto sr = scaled(rect_found_);
+                    auto cvrect = cv::Rect(sr.left(), sr.top(),
+                                           sr.width(), sr.height());
+                    cv::Mat face_img = frame_(cvrect);
+                    cv::imshow(WINDOW_3, face_img);
+                } while (0);
 #endif
 
                 collect_data(data, face_found);
