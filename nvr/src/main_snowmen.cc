@@ -43,8 +43,6 @@ nvr::UniVR ovr;
 nvr::data  data;
 
 //----------------------------------------------------------------------
-// Reshape callback
-//
 // Window size has been set/changed to w by h pixels. Set the camera
 // perspective to 45 degree vertical field of view, a window aspect
 // ratio of w/h, a near clipping plane at depth 1, and a far clipping
@@ -53,7 +51,7 @@ nvr::data  data;
 //----------------------------------------------------------------------
 void
 changeSize (int w, int h) {
-    float ratio =  ((float) w) / ((float) h); // window aspect ratio
+    float ratio = ((float) w) / ((float) h); // window aspect ratio
     glMatrixMode(GL_PROJECTION); // projection matrix is active
     glLoadIdentity(); // reset the projection
     gluPerspective(45.0, ratio, 0.1, 100.0); // perspective transformation
@@ -124,6 +122,8 @@ drawSnowman () {
 void  /// Update with each idle event
 update () {
     ovr.step(data);
+    if (data.gx == 0 || data.gy == 0)
+        return;
 
     // update camera direction (lx,y \in [0;1])
     lx = 1.0f / data.gx;
@@ -135,36 +135,24 @@ update () {
     // }
 
     glutPostRedisplay(); // redisplay everything
-
     std::cout << " lx:" << lx
               << " ly:" << ly
               << " x:"  <<  x
               << " y:"  <<  y
               << " deltaMove:" << deltaMove
-              << std::endl;
+              << std::endl;//
 }
 
-//----------------------------------------------------------------------
-// Draw the entire scene
-//
-// We first update the camera location based on its distance from the
-// origin and its direction.
-//----------------------------------------------------------------------
-void
+void  /// Draw the entire scene
 renderScene () {
-    // Clear color and depth buffers
     glClearColor(0.0, 0.7, 1.0, 1.0); // sky color is light blue
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Reset transformations
-    glLoadIdentity();
-
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // depth buffers
+    glLoadIdentity(); // Reset transformations
     // Set the camera centered at (x,y,1) and looking along directional
     // vector (lx, ly, 0), with the z-axis pointing up
     gluLookAt(x,      y,      1.0,
               x + lx, y + ly, 1.0,
               0.0,    0.0,    1.0);
-
     // Draw ground - 200x200 square colored green
     glColor3f(0.0, 0.7, 0.0);
     glBegin(GL_QUADS);
@@ -173,16 +161,13 @@ renderScene () {
         glVertex3f( 100.0,  100.0, 0.0);
         glVertex3f( 100.0, -100.0, 0.0);
     glEnd();
-
-    // Draw 36 snow men
     for (int i = -3; i < 3; i++)
-        for (int j = -3; j < 3; j++) {
+        for (int j = -3; j < 3; j++) {  // Draw 36 snow men
             glPushMatrix();
                 glTranslatef(i*7.5, j*7.5, 0);
                 drawSnowman();
             glPopMatrix();
         }
-
     glutSwapBuffers(); // Make it all visible
 }
 
