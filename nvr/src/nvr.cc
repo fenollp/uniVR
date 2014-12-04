@@ -203,7 +203,7 @@ namespace nvr {
             cv::threshold(motion, motion, 1, 255, CV_THRESH_BINARY);
             cv::erode(motion, motion, erosion_kernel());
 #ifdef window_debug
-            rectangle(frame_, prev_rect, 1);//
+            rectangle(frame_, prev_rect, 1);
 #endif
 
             auto x = prev_rect.left();
@@ -218,14 +218,14 @@ namespace nvr {
                 for (size_t xx = sy; xx < sw; ++xx) // -> cols
                     if (motion.at<uchar>(yy, xx) == 255)
                         ++E;
-            auto r = dlib::rectangle(sx,sy,sw,sh);//
 #ifdef window_debug
-            rectangle(frame_, r, 10);//
-            // rectangle(motion, r, 1);//
+            auto r = dlib::rectangle(sx,sy,sw,sh);
+            rectangle(frame_, r, 10);
+            // rectangle(motion, r, 1);
             cv::imshow(WINDOW_2,
                        motion(cv::Rect(sx, sy,
                                        prev_rect.width() * rc_,
-                                       prev_rect.height() * rr_)));//
+                                       prev_rect.height() * rr_)));
 #endif
             return E;
         }
@@ -366,10 +366,12 @@ namespace nvr {
         if (!capture_opener(capture_))
             throw std::string("!cap from webcam 0");
 
+        std::cout << "Cam FPS: " << capture_.get(CV_CAP_PROP_FPS) << std::endl;//
+
 #ifdef window_debug
-        cv::namedWindow(WINDOW, 1);//
-        cv::namedWindow(WINDOW_2, 1);//
-        cv::namedWindow(WINDOW_3, 1);//
+        cv::namedWindow(WINDOW, 1);
+        cv::namedWindow(WINDOW_2, 1);
+        cv::namedWindow(WINDOW_3, 1);
 #endif
         inited_ = true;
     }
@@ -378,7 +380,6 @@ namespace nvr {
     UniVR::init (const std::string& trained_data) {
         /// Specialize this to your FrameStream
         auto default_capture_opener = [](FrameStream& capture) {
-            // capture.set(CV_CAP_PROP_FPS, 30);
             return capture.open(0) && capture.isOpened();
         };
         init(trained_data, default_capture_opener);
@@ -488,9 +489,9 @@ namespace nvr {
             zones_.pop_front();
 
 #ifdef window_debug
-        display_data(frame_, data);//
-        for (const auto& zone : zones_)//
-            rectangle(frame_, scaled(zone), 1);//
+        display_data(frame_, data);
+        for (const auto& zone : zones_)
+            rectangle(frame_, scaled(zone), 1);
         text(frame_, 30, "Ds: " + std::to_string(Ds_));
         text(frame_, 60, std::to_string(img_.nc())
              +     "x" + std::to_string(img_.nr()));
@@ -500,8 +501,6 @@ namespace nvr {
         text(frame_, 150, "DROP_AMOUNT: "+std::to_string(DROP_AMOUNT));
         text(frame_, 180, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));
         text(frame_, 210, "motion: "+std::to_string(E));
-        // text(frame_, 240,
-        //      "feed FPS: "+std::to_string(capture_.get(CV_CAP_PROP_FPS)));
 
         cv::imshow(WINDOW, frame_);
 #endif
