@@ -17,10 +17,21 @@ main (int argc, const char* argv[]) {
         ovr.init(trained, video_opener);
 
         nvr::data face;
+        size_t i = 0;
         while (true) { // GAME LOOP
-            if (!ovr.step(face))
+            auto s = std::chrono::high_resolution_clock::now();
+            bool ret = ovr.step(face);
+            auto f = std::chrono::high_resolution_clock::now();
+            auto t = std::chrono::duration_cast<std::chrono::nanoseconds>(f-s);
+            if (!ret)
                 break;
-            std::cout << face;//
+
+            std::cout << i++       << ','
+                      << t.count() << ','
+                      << face.gx   << ','
+                      << face.gy   << ','
+                      << face.chin << std::endl;
+
             if (cv::waitKey(5) == 'q')
                 break;
         }
