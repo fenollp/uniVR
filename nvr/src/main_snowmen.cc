@@ -37,6 +37,7 @@ float deltaMove = 0.0; // initially camera doesn't move
 
 // Camera direction
 float lx = 0.0, ly = 1.0; // camera points initially along y-axis
+float lz = 0.0;
 
 // Shared memory between the 2 main loops
 nvr::UniVR ovr;
@@ -127,7 +128,8 @@ update () {
 
     // update camera direction (lx,y \in [0;1])
     lx = 1.0f / data.gx;
-    ly = 1.0f / data.gy;
+    ly = 10.0f / data.chin;
+    lz = 0.1f / data.gy;
 
     // if (deltaMove) { // update camera position
     //     x += deltaMove * lx * 0.1;
@@ -137,6 +139,7 @@ update () {
     glutPostRedisplay(); // redisplay everything
     std::cout << " lx:" << lx
               << " ly:" << ly
+              << " lz:" << lz
               << " x:"  <<  x
               << " y:"  <<  y
               << " deltaMove:" << deltaMove
@@ -151,7 +154,7 @@ renderScene () {
     // Set the camera centered at (x,y,1) and looking along directional
     // vector (lx, ly, 0), with the z-axis pointing up
     gluLookAt(x,      y,      1.0,
-              x + lx, y + ly, 1.0,
+              x + lx, y + ly, 1.0 + lz,
               0.0,    0.0,    1.0);
     // Draw ground - 200x200 square colored green
     glColor3f(0.0, 0.7, 0.0);
