@@ -129,7 +129,7 @@ update () {
     // update camera direction (lx,y \in [0;1])
     lx = 1.0f / data.gx;
     ly = 10.0f / data.chin;
-    lz = 0.1f / data.gy;
+    lz = (-1) * 0.1f / data.gy;
 
     // if (deltaMove) { // update camera position
     //     x += deltaMove * lx * 0.1;
