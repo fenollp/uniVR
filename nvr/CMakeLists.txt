@@ -67,7 +67,7 @@ endif(MODE_base)
 if(MODE_fromfile)
   set(target_name fromfile)
   # Same as MODE_base, except no -Dwindow_debug
-  add_definitions( -Dwindow_debug )#####
+#  add_definitions( -Dwindow_debug )#####
   add_executable(${target_name}
     src/nvr.cc
     src/main_${target_name}.cc

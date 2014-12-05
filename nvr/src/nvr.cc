@@ -366,7 +366,7 @@ namespace nvr {
         if (!capture_opener(capture_))
             throw std::string("!cap from webcam 0");
 
-        std::cout << "Cam FPS: " << capture_.get(CV_CAP_PROP_FPS) << std::endl;//
+//std::cout << "Cam FPS: " << capture_.get(CV_CAP_PROP_FPS) << std::end;
 
 #ifdef window_debug
         cv::namedWindow(WINDOW, 1);
