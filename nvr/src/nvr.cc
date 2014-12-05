@@ -215,7 +215,7 @@ namespace nvr {
 
             int E = 0;
             for (size_t yy = sy; yy < sh; ++yy) // -> rows
-                for (size_t xx = sy; xx < sw; ++xx) // -> cols
+                for (size_t xx = sx; xx < sw; ++xx) // -> cols
                     if (motion.at<uchar>(yy, xx) == 255)
                         ++E;
 #ifdef window_debug
