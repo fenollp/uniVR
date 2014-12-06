@@ -1,5 +1,9 @@
 # Vidéos DB
 
+Meilleurs critères:
+* éclairage vif
+* tête centrée, petits mouvement, regard camera
+
 * [0a4MEF6okhs](https://www.youtube.com/watch?v=0a4MEF6okhs)
     * Très basse qualitée, sur-exposition
     * Une tête centrée, bougeant peu, petits mouvements, regard camera
@@ -25,3 +29,15 @@
 * [z-m6Ua9Iqkg](https://www.youtube.com/watch?v=z-m6Ua9Iqkg)
     * HD
     * Une tête centrée, regards pas toujours camera, petits mouvements
+
+* [PFdnZDCKf3s](https://www.youtube.com/watch?v=PFdnZDCKf3s)
+    * HD
+    * Une tête, grands mouvements, pas de regards camera
+
+* [p32OC97aNqc](https://www.youtube.com/watch?v=p32OC97aNqc)
+    * Très basse qualité
+    * Une tête, sortant du champ, pas de regards camera
+
+* [9TQ2DMeBYQ8](https://www.youtube.com/watch?v=9TQ2DMeBYQ8)
+    * HD
+    * Une tête, arriere plan en grand mouvement, regards sortant du champ
