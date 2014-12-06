@@ -10,10 +10,10 @@ function ret = plotCSV(filename)
     N = dataL(:, 1);
 
     for i=2:5
-        h = figure;
-        plot(N, dataL(:,i), '-',...
-             N, dataE(:,i), '--',...
-             N, dataO(:,i), ':');
+        h = figure('visible', 'off');
+        plot(N, dataL(:,i), 'k-',...
+             N, dataE(:,i), 'r-',...
+             N, dataO(:,i), 'b-');
         xlabel('Frame Number');
         ty = '';
         switch i
