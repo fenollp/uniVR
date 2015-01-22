@@ -437,9 +437,9 @@ namespace nvr {
         if (!next_frame()) // Sets frame_
             return false;
 
-        auto E = motion_energy(rect_found_);
+        //auto E = motion_energy(rect_found_);
 
-        if (E != 0)
+        //if (E != 0)
             rect_found_ = dlib::rectangle();
         // else: reuse last rect_found_
 
@@ -465,7 +465,8 @@ namespace nvr {
                 rect_found_ = zones_.back();
 
         if (!rect_found_.is_empty()) {
-            if (detected || E != 0) { ///
+            //if (detected || E != 0) { ///
+            if (true) {
                 /// Extraction
                 const auto& face_found = extractor_(img_, rect_found_);
 #ifdef window_debug
@@ -500,7 +501,7 @@ namespace nvr {
         text(frame_, 120, "I: " + std::to_string(I_));
         text(frame_, 150, "DROP_AMOUNT: "+std::to_string(DROP_AMOUNT));
         text(frame_, 180, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));
-        text(frame_, 210, "motion: "+std::to_string(E));
+        //text(frame_, 210, "motion: "+std::to_string(E));
 
         cv::imshow(WINDOW, frame_);
 #endif

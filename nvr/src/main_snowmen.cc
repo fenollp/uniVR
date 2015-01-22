@@ -137,13 +137,13 @@ update () {
     // }
 
     glutPostRedisplay(); // redisplay everything
-    std::cout << " lx:" << lx
+/*    std::cout << " lx:" << lx
               << " ly:" << ly
               << " lz:" << lz
               << " x:"  <<  x
               << " y:"  <<  y
               << " deltaMove:" << deltaMove
-              << std::endl;//
+              << std::endl;/*/
 }
 
 void  /// Draw the entire scene

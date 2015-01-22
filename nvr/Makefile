@@ -1,6 +1,7 @@
 all: compile
 
-MODE ?= snowmen # base fromfile
+# modes: snowmen base fromfile
+MODE ?= snowmen
 
 compile: ext/dlib/ build/
 	cd build/ && cmake -DMODE_$(MODE)=ON .. && cmake --build .
