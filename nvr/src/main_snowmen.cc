@@ -175,7 +175,7 @@ renderScene () {
 }
 
 void
-stopKey (unsigned char key, int mouse_x, int mouse_y) {
+stopKey (unsigned char key, int /*mouse_x*/, int /*mouse_y*/) {
     if ('q' == key)
         exit(0);
 }
