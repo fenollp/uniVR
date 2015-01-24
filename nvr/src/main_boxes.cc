@@ -37,12 +37,6 @@ const double TheHeadWidth = 0.12; // Supposing head's width is 12 cm
 nvr::UniVR ovr;
 nvr::data  data;
 
-int window; // The number of our GLUT window
-int light; // lighting on/off (1 = on, 0 = off)
-int lp; // L pressed (1 = yes, 0 = no)
-int fp; // F pressed (1 = yes, 0 = no)
-
-
 GLfloat xrot;   // x rotation
 GLfloat yrot;   // y rotation
 GLfloat xspeed; // x rotation speed
@@ -57,8 +51,10 @@ GLfloat LightDiffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 /* position of light (x, y, z, (position of light)) */
 GLfloat LightPosition[] = { 0.0f, 2.0f, 0.0f, 1.0f };
 
-GLuint filter;     // Which Filter To Use (nearest/linear/mipmapped)
-GLuint texture[3]; // Storage for 3 textures
+int window;
+int light; // lighting on/off (1 = on, 0 = off)
+int lp; // L pressed (1 = yes, 0 = no)
+GLuint texture; // Holds loaded texture
 
 
 void detect_and_draw () {
@@ -90,7 +86,7 @@ void detect_and_draw () {
 
 GLuint LoadTexture (const std::string& bmp) {
     //stackoverflow.com/a/12524013/1418165
-    GLuint texture;
+    GLuint tex;
     int tWidth = 256, tHeight = 256, tSize = tWidth * tHeight * 3;
     unsigned char *data = NULL;
     FILE *fd = NULL;
@@ -121,7 +117,7 @@ GLuint LoadTexture (const std::string& bmp) {
         data[index + 2] = B;
     }
 
-    glGenTextures(1, &texture);
+    glGenTextures(1, &tex);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     // Scale linearly when image bigger than texture
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -139,11 +135,11 @@ GLuint LoadTexture (const std::string& bmp) {
     gluBuild2DMipmaps(GL_TEXTURE_2D, 3, tWidth, tHeight, GL_RGB,
                       GL_UNSIGNED_BYTE, data);
     free(data);
-    return texture;
+    return tex; // Not directly used but works (weird)
 }
 
 void InitGL (const std::string& bmp, GLsizei Width, GLsizei Height) {
-    GLuint texture = LoadTexture(bmp);
+    LoadTexture(bmp);
     glBindTexture(GL_TEXTURE_2D, texture);
     glEnable(GL_TEXTURE_2D);              // Enable texture mapping.
 
@@ -198,7 +194,7 @@ void DrawGLScene () {
     glRotatef(xrot, 1.0f, 0.0f, 0.0f);  // Rotate On The X Axis
     glRotatef(yrot, 0.0f, 1.0f, 0.0f);  // Rotate On The Y Axis
 
-    glBindTexture(GL_TEXTURE_2D, texture[filter]);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     glBegin(GL_QUADS);  // begin drawing a cube
 
@@ -468,7 +464,7 @@ main (int argc, char *argv[]) {
      Depth buffer */
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
 
-    glutInitWindowSize(640, 480);
+    glutInitWindowSize(winWidth, winHeight);
     /* the window starts at the upper left corner of the screen */
     glutInitWindowPosition(0, 0);
     window = glutCreateWindow("boxes");
@@ -483,7 +479,7 @@ main (int argc, char *argv[]) {
     glutKeyboardFunc(&keyPressed);
     glutSpecialFunc(&specialKeyPressed);
 
-    InitGL(argv[2], 640, 480);
+    InitGL(argv[2], winWidth, winHeight);
 
     // UniVR init
     std::string trained(argv[1]);
