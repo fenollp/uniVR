@@ -18,9 +18,11 @@
 
 #include "nvr.hh"
 
+
+#define Pi 3.141592654
+
 #define MEANWINDOW 5
 double headHist[MEANWINDOW];
-
 double headX, headY, headDist;
 
 #define winWidth  640
@@ -34,8 +36,6 @@ const double TheHeadWidth = 0.12; // Supposing head's width is 12 cm
 // Shared memory between the 2 main loops
 nvr::UniVR ovr;
 nvr::data  data;
-
-#define ESCAPE 27
 
 int window; // The number of our GLUT window
 int light; // lighting on/off (1 = on, 0 = off)
@@ -60,13 +60,6 @@ GLfloat LightPosition[] = { 0.0f, 2.0f, 0.0f, 1.0f };
 GLuint filter;     // Which Filter To Use (nearest/linear/mipmapped)
 GLuint texture[3]; // Storage for 3 textures
 
-typedef struct {
-    unsigned long sizeX;
-    unsigned long sizeY;
-    char *data;
-} Image;
-
-#define Pi 3.141592654
 
 void detect_and_draw () {
     ovr.step(data);
@@ -178,16 +171,12 @@ void InitGL (const std::string& bmp, GLsizei Width, GLsizei Height) {
 void ReSizeGLScene (GLsizei Width, GLsizei Height) {
     if (Height == 0)
 	Height = 1;
-
     glViewport(0, 0, Width, Height); // Reset curr viewport & perspec transform
-
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-
     gluPerspective(45.0f, (GLfloat)Width / (GLfloat)Height, 0.1f, 100.0f);
     glMatrixMode(GL_MODELVIEW);
 }
-
 
 void DrawGLScene () {
     double t = (double)cvGetTickCount();
@@ -206,8 +195,8 @@ void DrawGLScene () {
 
     glTranslatef(0.0f, 0.0f, -1);  // Move z units out from the screen
 
-    glRotatef(xrot,1.0f,0.0f,0.0f);  // Rotate On The X Axis
-    glRotatef(yrot,0.0f,1.0f,0.0f);  // Rotate On The Y Axis
+    glRotatef(xrot, 1.0f, 0.0f, 0.0f);  // Rotate On The X Axis
+    glRotatef(yrot, 0.0f, 1.0f, 0.0f);  // Rotate On The Y Axis
 
     glBindTexture(GL_TEXTURE_2D, texture[filter]);
 
@@ -257,7 +246,7 @@ void DrawGLScene () {
 
     glEnd();  // done with the polygon.
 
-    glTranslatef(-3.0f, 0.0f,0);  // move z units out from the screen.
+    glTranslatef(-3.0f, 0.0f, 0);  // Move z units out from the screen.
 
     glBegin(GL_QUADS);  // begin drawing a cube
 
@@ -307,7 +296,7 @@ void DrawGLScene () {
 
     //
 
-    glTranslatef(+6.0f, 0.0f,0);  // move z units out from the screen.
+    glTranslatef(+6.0f, 0.0f, 0);  // Move z units out from the screen.
 
     glBegin(GL_QUADS);  // begin drawing a cube
 
@@ -355,7 +344,7 @@ void DrawGLScene () {
 
     glEnd();  // done with the polygon
 
-    glTranslatef(0.0f, 0.0f,3.0);  // move z units out from the screen.
+    glTranslatef(0.0f, 0.0f, 3.0);  // Move z units out from the screen
 
     glBegin(GL_QUADS);  // begin drawing a cube
 
@@ -406,7 +395,7 @@ void DrawGLScene () {
     //xrot += xspeed;  // X Axis Rotation
     yrot += yspeed;  // Y Axis Rotation
 
-    // since this is double buffered, swap the buffers to display what just got drawn.
+    // Double buffered => swap the buffers to display what just got drawn
     glutSwapBuffers();
 
     t = (double)cvGetTickCount() - t;
@@ -418,7 +407,7 @@ void
 keyPressed (unsigned char key, int, int) {
     switch (key) {
     case 'q':
-    case ESCAPE:
+    case 27: // ESCAPE:
 	glutDestroyWindow(window);
 	exit(0);
 
@@ -431,15 +420,6 @@ keyPressed (unsigned char key, int, int) {
 	    glDisable(GL_LIGHTING);
         else
 	    glEnable(GL_LIGHTING);
-	break;
-
-    case 'f':
-    case 'F': // toggle the filter.
-	printf("F/f pressed; filter is: %d\n", filter);
-	filter += 1;
-	if (filter > 2)
-	    filter = 0;
-	printf("Filter is now: %d\n", filter);
 	break;
     }
 }
