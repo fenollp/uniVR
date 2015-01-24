@@ -1,6 +1,6 @@
 all: compile
 
-# modes: snowmen base fromfile
+modes = snowmen base fromfile boxes
 MODE ?= snowmen
 
 compile: ext/dlib/ build/
@@ -26,7 +26,7 @@ clean:
 
 distclean: clean
 	$(if $(wildcard ext/*), rm -r ext/)
-	$(foreach bin, snowmen base fromfile, \
+	$(foreach bin, $(modes), \
             $(if $(wildcard $(bin)), rm $(bin);))
 
 

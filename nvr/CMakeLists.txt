@@ -79,6 +79,22 @@ if(MODE_fromfile)
   )
 endif(MODE_fromfile)
 
+if(MODE_boxes)
+  set(target_name boxes)
+  add_definitions( -Dwindow_debug )
+  add_executable(${target_name}
+    src/nvr.cc
+    src/main_${target_name}.cc
+  )
+  include(ext/dlib/dlib/cmake)
+  target_link_libraries(${target_name}
+    ${OpenCV_LIBS}
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    dlib
+  )
+endif(MODE_boxes)
+
 
 # if (NOT DLIB_NO_GUI_SUPPORT)
 #    add_subdirectory(gui)
