@@ -69,15 +69,11 @@ typedef struct {
 #define Pi 3.141592654
 
 void detect_and_draw () {
-    int headWidth, headHeight, upperHeadX, upperHeadY;
-
     ovr.step(data);
-    // if (data.gx == 0 || data.gy == 0)
-    //     return;
-    headWidth  = data.headWidth;
-    headHeight = data.headHeight;
-    upperHeadX = data.upperHeadX;
-    upperHeadY = data.upperHeadY;
+    int headWidth  = data.headWidth,
+        headHeight = data.headHeight,
+        upperHeadX = data.upperHeadX,
+        upperHeadY = data.upperHeadY;
 
     double angle = headWidth * hGpP * Pi/180;
     headDist = (TheHeadWidth/2) / (tan(angle/2)); //in meters
@@ -99,140 +95,63 @@ void detect_and_draw () {
     headY = tan(yAngle) * headDist;
 }
 
+GLuint LoadTexture (const std::string& bmp) {
+    //stackoverflow.com/a/12524013/1418165
+    GLuint texture;
+    int tWidth = 256, tHeight = 256, tSize = tWidth * tHeight * 3;
+    unsigned char *data = NULL;
+    FILE *fd = NULL;
 
-
-// quick and dirty bitmap loader...for 24 bit bitmaps with 1 plane only.
-// See http://www.dcs.ed.ac.uk/~mxr/gfx/2d/BMP.txt for more info.
-// if mesa ever gets glaux, let me know.
-int ImageLoad(char *filename, Image *image) {
-    FILE *file;
-    unsigned long size;                 // size of the image in bytes.
-    unsigned long i;                    // standard counter.
-    unsigned short int planes;          // number of planes in image (must be 1)
-    unsigned short int bpp;             // number of bits per pixel (must be 24)
-    char temp;                          // used to convert bgr to rgb color.
-
-    // make sure the file is there.
-    if ((file = fopen(filename, "rb"))==NULL) {
-        printf("File Not Found : %s\n",filename);
-        return 0;
+    if ((fd = fopen(bmp.c_str(), "rb")) == NULL) {
+        std::cerr << "!file " << bmp << std::endl;
+        fclose(fd);
+        exit(2);
+    }
+    if ((data = (unsigned char *)malloc(tSize)) == NULL) {
+        std::cerr << "!malloc texture of size " << tSize << std::endl;
+        fclose(fd);
+        exit(2);
+    }
+    if (fread(data, tSize, 1, fd) != 1) {
+        std::cerr << "!fread texture of size " << tSize << std::endl;
+        fclose(fd);
+        free(data);
+        exit(2);
+    }
+    fclose(fd);
+    for (int i = 0; i < tWidth*tHeight; ++i) {  // Turn BGR into RGB
+        int index = 3 * i;
+        unsigned char B, R;
+        B = data[index];
+        R = data[index + 2];
+        data[index] = R;
+        data[index + 2] = B;
     }
 
-    // seek through the bmp header, up to the width/height:
-    fseek(file, 18, SEEK_CUR);
-    // read the width
-    if ((i = fread(&image->sizeX, 4, 1, file)) != 1) {
-        printf("Error reading width from %s.\n", filename);
-        return 0;
-    }
-    // read the height
-    if ((i = fread(&image->sizeY, 4, 1, file)) != 1) {
-        printf("Error reading height from %s.\n", filename);
-        return 0;
-    }
-
-    // calculate the size (assuming 24 bits or 3 bytes per pixel).
-    //size = image->sizeX * image->sizeY * 3;
-    size = 256 * 256 * 3;
-
-    // read the planes
-    if ((fread(&planes, 2, 1, file)) != 1) {
-        printf("Error reading planes from %s.\n", filename);
-        return 0;
-    }
-    if (planes != 1) {
-        printf("Planes from %s is not 1: %u\n", filename, planes);
-        return 0;
-    }
-
-    // read the bpp
-    if ((i = fread(&bpp, 2, 1, file)) != 1) {
-        printf("Error reading bpp from %s.\n", filename);
-        return 0;
-    }
-    if (bpp != 24) {
-        printf("Bpp from %s is not 24: %u\n", filename, bpp);
-        return 0;
-    }
-
-    // seek past the rest of the bitmap header.
-    fseek(file, 24, SEEK_CUR);
-
-    // read the data.
-    image->data = (char *) malloc(size);
-    if (image->data == NULL) {
-        printf("Error allocating memory for color-corrected image data");
-        return 0;
-    }
-
-    if ((i = fread(image->data, size, 1, file)) != 1) {
-        printf("Error reading image data from %s.\n", filename);
-        return 0;
-    }
-
-    for (i=0;i<size;i+=3) { // reverse all of the colors. (bgr -> rgb)
-        temp = image->data[i];
-        image->data[i] = image->data[i+2];
-        image->data[i+2] = temp;
-    }
-
-    // we're done.
-    return 1;
-}
-
-// Load Bitmaps And Convert To Textures
-void LoadGLTextures (char *bmp) {
-    // Load Texture
-    Image *image1;
-
-    // allocate space for texture
-    image1 = (Image *) malloc(sizeof(Image));
-    if (image1 == NULL) {
-        printf("Error allocating space for image");
-        exit(0);
-    }
-
-    if (!ImageLoad(bmp, image1))
-        exit(1);
-
-    // Create Textures
-    glGenTextures(3, &texture[0]);
-
-    // texture 1 (poor quality scaling)
-    glBindTexture(GL_TEXTURE_2D, texture[0]);   // 2d texture (x and y size)
-
-    // cheap scaling when image bigger than texture
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-    // cheap scaling when image smalled than texture
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-
+    glGenTextures(1, &texture);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    // Scale linearly when image bigger than texture
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Scale linearly + mipmap when image smalled than texture
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     // 2d texture, level of detail 0 (normal), 3 components (rgb),
     // x size from image, y size from image, border 0 (normal), rgb color data,
     // unsigned byte data, and finally the data itself.
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, image1->sizeX, image1->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, image1->data);
-
-    // texture 2 (linear scaling)
-    glBindTexture(GL_TEXTURE_2D, texture[1]);   // 2d texture (x and y size)
-    // scale linearly when image bigger than texture
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-    // scale linearly when image smalled than texture
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, image1->sizeX, image1->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, image1->data);
-
-    // texture 3 (mipmapped scaling)
-    glBindTexture(GL_TEXTURE_2D, texture[2]);   // 2d texture (x and y size)
-    // scale linearly when image bigger than texture
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-    // scale linearly + mipmap when image smalled than texture
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, image1->sizeX, image1->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, image1->data);
-
-    // 2d texture, 3 colors, width, height, RGB in that order, byte data, and the data.
-    gluBuild2DMipmaps(GL_TEXTURE_2D, 3, image1->sizeX, image1->sizeY, GL_RGB, GL_UNSIGNED_BYTE, image1->data);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, tWidth, tHeight, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, data);
+    // 2d texture, 3 colors, width, height, RGB, byte data, and the data.
+    gluBuild2DMipmaps(GL_TEXTURE_2D, 3, tWidth, tHeight, GL_RGB,
+                      GL_UNSIGNED_BYTE, data);
+    free(data);
+    return texture;
 }
 
-void InitGL (char *bmp, GLsizei Width, GLsizei Height) {
-    LoadGLTextures(bmp);
+void InitGL (const std::string& bmp, GLsizei Width, GLsizei Height) {
+    GLuint texture = LoadTexture(bmp);
+    glBindTexture(GL_TEXTURE_2D, texture);
     glEnable(GL_TEXTURE_2D);              // Enable texture mapping.
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Black background color
@@ -276,19 +195,21 @@ void DrawGLScene () {
 
     double normX = 3*headX;//(float) (( headX - 320)/320.0);
     double normY = 3*headY;//(float) (( headY - 240)/320.0);
-//printf("Head x = %lf Head y = %lf\n",normX,normY);
+    //printf("Head x = %lf Head y = %lf\n", normX, normY);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear scene & depthb
     glLoadIdentity();  // Reset The View
 
-    gluLookAt(-5*normX, 7*normY, 1 + 5*headDist , 0, 0, 0, 0, 1, 0); //+ 5*headDist
+    printf("eyeX:%lf eyeY:%lf eyeZ:%lf\n", -5*normX, 7*normY, 1+5*headDist);//
+    gluLookAt(-5 * normX, 7 * normY, 1 + 5 * headDist,
+              0, 0, 0, 0, 1, 0); //+ 5*headDist
 
-    glTranslatef(0.0f,0.0f,-1);                  // move z units out from the screen.
+    glTranslatef(0.0f, 0.0f, -1);  // Move z units out from the screen
 
     glRotatef(xrot,1.0f,0.0f,0.0f);  // Rotate On The X Axis
     glRotatef(yrot,0.0f,1.0f,0.0f);  // Rotate On The Y Axis
 
-    glBindTexture(GL_TEXTURE_2D, texture[filter]);   // choose the texture to use.
+    glBindTexture(GL_TEXTURE_2D, texture[filter]);
 
     glBegin(GL_QUADS);  // begin drawing a cube
 
@@ -499,7 +420,7 @@ keyPressed (unsigned char key, int, int) {
     case 'q':
     case ESCAPE:
 	glutDestroyWindow(window);
-	exit(1);
+	exit(0);
 
     case 'l':
     case 'L': // toggle the lighting.
