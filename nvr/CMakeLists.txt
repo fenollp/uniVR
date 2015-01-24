@@ -81,7 +81,7 @@ endif(MODE_fromfile)
 
 if(MODE_boxes)
   set(target_name boxes)
-  add_definitions( -Dwindow_debug )
+# add_definitions( -Dwindow_debug )
   add_executable(${target_name}
     src/nvr.cc
     src/main_${target_name}.cc
