@@ -90,7 +90,147 @@ namespace nvr {
         return dlib::centered_rect(nose, rect.width(), rect.height());
     }
 
+#if 0  // DEPRECATED
+    size_t
+    landmark_energy (size_t rows, size_t cols, const Faces& faces) { //stddev?
+        size_t E = 0;
+        for (size_t i = 0; i < 68; ++i) {
+            int ler = rows, lec = cols;
+            for (const auto& face : faces) {
+                lec -= face.part(i).x();
+                ler -= face.part(i).y();
+            }
+            E += std::pow(ler, 2) + std::pow(lec, 2);
+        }
+        return E;
+    }
+#endif
+
     ///////////////////////////////////////////////////////////////////////////
+
+    cv::Mat
+    erosion_kernel () {
+        static const cv::Mat erosionKernel =
+            cv::getStructuringElement(cv::MORPH_RECT, cv::Size(9,9));
+        return erosionKernel;
+    }
+
+#if 0  // DEPRECATED
+    bool
+    find_movement (const Frame& motion, std::vector<dlib::rectangle>& found) {
+        //Check whether stddev[0] < Threshold?
+        size_t numberOfChanges = 0;
+        size_t minX = motion.cols, maxX = 0;
+        size_t minY = motion.rows, maxY = 0;
+        for (size_t y = 0; y < motion.rows; y += 2)
+            for (size_t x = 0; x < motion.cols; x += 2)
+                if (motion.at<uchar>(y, x) == 255) {
+                    if (x < minX)  minX = x;
+                    if (y < minY)  minY = y;
+                    if (maxX < x)  maxX = x;
+                    if (maxY < y)  maxY = y;
+                    ++numberOfChanges;
+                }
+        if (numberOfChanges != 0) { // Place within boundaries
+            if (minX - 10 > 0)                minX -= 10; // left
+            if (minY - 10 > 0)                minY -= 10; // bottom
+            if (maxX + 10 < motion.cols - 1)  maxX += 10; // right
+            if (maxY + 10 < motion.rows - 1)  maxY += 10; // top
+            auto zone = dlib::rectangle(minX, maxY, maxX, minY);
+            found.push_back(zone);
+            return true;
+        }
+        return false;
+    }
+#endif
+
+#if 0  // DEPRECATED
+    dlib::rectangle
+    UniVR::detect_motion (std::deque<Frame>& frames_) {
+        if (I % DROP_AMOUNT == 0) {
+            cv::Mat gray(frame_);
+            cv::cvtColor(frame_, gray, CV_RGB2GRAY);
+            frames_.push_back(gray);
+        }
+        while (frames_.size() > 3)
+            frames_.pop_front();
+        if (frames_.size() == 3) {
+            cv::Mat d1, d2, motion;
+            cv::absdiff(frames_[0], frames_[1], d1);
+            cv::absdiff(frames_[1], frames_[2], d2);
+            cv::bitwise_and(d1, d2, motion);
+            // Note: 15 is a static threshold…
+            cv::threshold(motion, motion, 15, 255, CV_THRESH_BINARY);
+            cv::erode(motion, motion, erosion_kernel());
+            std::vector<dlib::rectangle> zones;
+            bool foundSomething = find_movement(motion, zones);
+            if (!zones.empty()) {
+                const auto& found = zones.back();
+                rectangle(frame_, found, 1);
+                if (foundSomething) {
+                    auto r = dlib::centered_rect(found,
+                                                 motion.rows / 2,
+                                                 motion.cols / 3);
+                    zones.pop_back();
+                    zones.push_back(r);
+                    return r;
+                    rectangle(frame_, r, 5);
+                }
+            }
+            // cv::imshow(WINDOW, motion);
+        }
+        return dlib::rectangle();
+    }
+#endif
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    int
+    UniVR::motion_energy (const dlib::rectangle& prev_rect) {
+        if (prev_rect.is_empty())
+            return -1;
+        cv::Mat gray(frame_);
+        cv::cvtColor(frame_, gray, CV_RGB2GRAY);
+        rects_found_.push_back(gray);
+        while (rects_found_.size() > 3)
+            rects_found_.pop_front();
+        if (rects_found_.size() == 3) {
+            cv::Mat d1, d2, motion;
+            cv::absdiff(rects_found_[0], rects_found_[1], d1);
+            cv::absdiff(rects_found_[1], rects_found_[2], d2);
+            cv::bitwise_and(d1, d2, motion);
+            // Note: static threshold of 1…
+            cv::threshold(motion, motion, 1, 255, CV_THRESH_BINARY);
+            cv::erode(motion, motion, erosion_kernel());
+#ifdef window_debug
+            rectangle(frame_, prev_rect, 1);
+#endif
+
+            auto x = prev_rect.left();
+            auto y = prev_rect.top();
+            auto sx = x * rc_;
+            auto sy = y * rr_;
+            auto sw = (x + prev_rect.width()) * rc_;
+            auto sh = (y + prev_rect.height()) * rr_;
+
+            int E = 0;
+            for (size_t yy = sy; yy < sh; ++yy) // -> rows
+                for (size_t xx = sx; xx < sw; ++xx) // -> cols
+                    if (motion.at<uchar>(yy, xx) == 255)
+                        ++E;
+#ifdef window_debug
+            auto r = dlib::rectangle(sx,sy,sw,sh);
+            rectangle(frame_, r, 10);
+            // rectangle(motion, r, 1);
+            cv::imshow(WINDOW_2,
+                       motion(cv::Rect(sx, sy,
+                                       prev_rect.width() * rc_,
+                                       prev_rect.height() * rr_)));
+#endif
+            return E;
+        }
+        return -1;
+    }
 
     dlib::rectangle
     UniVR::scaled (const dlib::rectangle& r) {
@@ -297,7 +437,11 @@ namespace nvr {
         if (!next_frame()) // Sets frame_
             return false;
 
-        rect_found_ = dlib::rectangle();
+        auto E = motion_energy(rect_found_);
+
+        if (E != 0)
+            rect_found_ = dlib::rectangle();
+        // else: reuse last rect_found_
 
         bool detected = false;
         if (I_ % DROP_AMOUNT == 0) {
@@ -321,21 +465,25 @@ namespace nvr {
                 rect_found_ = zones_.back();
 
         if (!rect_found_.is_empty()) {
-            /// Extraction
-            const auto& face_found = extractor_(img_, rect_found_);
+            if (detected || E != 0) { ///
+                /// Extraction
+                const auto& face_found = extractor_(img_, rect_found_);
 #ifdef window_debug
-            dots(frame_, face_found, 1);
-            do {
-                auto sr = scaled(rect_found_);
-                auto cvrect = cv::Rect(sr.left(), sr.top(),
-                                       sr.width(), sr.height());
-                cv::Mat face_img = frame_(cvrect);
-                cv::imshow(WINDOW_3, face_img);
-            } while (0);
+                dots(frame_, face_found, 1);
+                do {
+                    auto sr = scaled(rect_found_);
+                    auto cvrect = cv::Rect(sr.left(), sr.top(),
+                                           sr.width(), sr.height());
+                    cv::Mat face_img = frame_(cvrect);
+                    cv::imshow(WINDOW_3, face_img);
+                } while (0);
 #endif
 
-            collect_data(data, face_found);
-            zones_.push_back(head_hull(face_found));
+                collect_data(data, face_found);
+                zones_.push_back(head_hull(face_found));
+            } ///
+            else ///
+                zones_.push_back(rect_found_);
         }
         while (zones_.size() > BACKLOG_SZ)
             zones_.pop_front();
@@ -352,6 +500,7 @@ namespace nvr {
         text(frame_, 120, "I: " + std::to_string(I_));
         text(frame_, 150, "DROP_AMOUNT: "+std::to_string(DROP_AMOUNT));
         text(frame_, 180, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));
+        text(frame_, 210, "motion: "+std::to_string(E));
 
         cv::imshow(WINDOW, frame_);
 #endif
