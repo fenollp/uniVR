@@ -1,7 +1,6 @@
 #include "nvr.hh"
 
 #define WINDOW   "nvr"
-#define WINDOW_2 "motion"
 #define WINDOW_3 "face"
 
 #define WHITE  (cv::Scalar::all(255))
@@ -139,7 +138,8 @@ namespace nvr {
     }
 
     void
-    UniVR::collect_data (data& data, const Landmarks& face) {
+    UniVR::collect_data (data& data, const Landmarks& face,
+                         const dlib::rectangle& face_zone) {
         data.w = frame_.cols;
         data.h = frame_.rows;
         data.n  = norm(face, LANDMARK_NT, LANDMARK_NB);
@@ -155,6 +155,34 @@ namespace nvr {
         auto g = scaled(center(face.get_rect()));
         data.gx = g.x();
         data.gy = g.y();
+        // --
+        data.headWidth  = face_zone.width();
+        data.headHeight = face_zone.height();
+        data.upperHeadX = face_zone.left();
+        data.upperHeadY = face_zone.top();
+        // --
+        double angle = data.headWidth * HGPP * PI180;
+        data.headDist = (MEAN_HEAD_WIDTH/2) / tan(angle/2); // in meters
+
+        for (int i = MEAN_WINDOW -1; i > 0; i--)
+            data.headHist[i] = data.headHist[i - 1];
+        data.headHist[0] = data.headDist;
+        double sumHeadDist = 0.0;
+        for (size_t i = 0; i < MEAN_WINDOW; ++i)
+            sumHeadDist += data.headHist[i];
+        data.headDist = sumHeadDist / MEAN_WINDOW;
+        double xAngle = HGPP * PI180 *
+            (WINWIDTH /2 - (data.upperHeadX + data.headWidth /2));
+        double yAngle = VGPP * PI180 *
+            (WINHEIGHT/2 - (data.upperHeadY + data.headHeight/2));
+        data.headX = tan(xAngle) * data.headDist;
+        data.headY = tan(yAngle) * data.headDist;
+        // --
+        double normX = 3 * data.headX;//(float) (( headX - 320)/320.0);
+        double normY = 3 * data.headY;//(float) (( headY - 240)/320.0);
+        data.eyeX = 5 * normX;
+        data.eyeY = 7 * normY;
+        data.eyeZ = 1 + 5 * data.headDist;
     }
 
     void
@@ -226,11 +254,8 @@ namespace nvr {
         if (!capture_opener(capture_))
             throw std::string("!cap from webcam 0");
 
-//std::cout << "Cam FPS: " << capture_.get(CV_CAP_PROP_FPS) << std::end;
-
 #ifdef window_debug
         cv::namedWindow(WINDOW, 1);
-        cv::namedWindow(WINDOW_2, 1);
         cv::namedWindow(WINDOW_3, 1);
 #endif
         inited_ = true;
@@ -334,8 +359,9 @@ namespace nvr {
             } while (0);
 #endif
 
-            collect_data(data, face_found);
-            zones_.push_back(head_hull(face_found));
+            const auto& reconstructed_zone = head_hull(face_found);
+            collect_data(data, face_found, scaled(reconstructed_zone));
+            zones_.push_back(reconstructed_zone);
         }
         while (zones_.size() > BACKLOG_SZ)
             zones_.pop_front();

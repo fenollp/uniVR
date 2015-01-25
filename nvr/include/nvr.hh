@@ -17,6 +17,8 @@
 
 namespace nvr {
 
+# define MEAN_WINDOW_ 5
+
     typedef struct {
         size_t n;
         size_t er, el;
@@ -25,6 +27,14 @@ namespace nvr {
         size_t ears;
         size_t gx, gy;
         size_t w, h;
+        // --
+        int headWidth, headHeight;
+        int upperHeadX, upperHeadY;
+        // --
+        double headX, headY, headDist;
+        double headHist[MEAN_WINDOW_];
+        // --
+        double eyeX, eyeY, eyeZ;
     } data;
 
     std::ostream& operator<< (std::ostream& o, const data& rhs);
@@ -42,6 +52,16 @@ namespace nvr {
     static constexpr double SMOOTHING = 0.000000001;
     static constexpr size_t DROP_AMOUNT = 10; //5
     static constexpr size_t BACKLOG_SZ = 3;
+
+# define WINWIDTH  640 // Try 1280x720
+# define WINHEIGHT 480
+    static constexpr size_t MEAN_WINDOW = MEAN_WINDOW_;
+    // Number of graduations per pixel (horizontal)
+    static constexpr double HGPP = 53.0 / (1.0*WINWIDTH);
+    // Number of graduations per pixel (vertical)
+    static constexpr double VGPP = 40.0 / (1.0*WINHEIGHT);
+    static constexpr double PI180 = 3.141592654 / 180;
+    static constexpr double MEAN_HEAD_WIDTH = 0.12; // 12cm
 
     static constexpr size_t LANDMARK_NT = 27;  // Nose
     static constexpr size_t LANDMARK_NB = 30;
@@ -81,12 +101,13 @@ namespace nvr {
         int motion_energy (const dlib::rectangle& rect_found);
     private:
         dlib::rectangle scaled (const dlib::rectangle& r);
-        dlib::point scaled (const dlib::point& p);
+        dlib::point     scaled (const dlib::point& p);
     private:
         int norm (const Landmarks& face, int part1, int part2);
         double angle (const Landmarks& face,
                       int part1, int part2, int Part1, int Part2);
-        void collect_data (data& data, const Landmarks& face);
+        void collect_data (data& data, const Landmarks& face,
+                           const dlib::rectangle& face_zone);
 
     };
 
