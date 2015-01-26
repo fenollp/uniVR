@@ -137,6 +137,12 @@ namespace nvr {
         return std::atan2(1 + m2 * m1, m2 - m1);
     }
 
+    double
+    select_stable (double Old, double New) {
+        double threshold = 0.1;//
+        return (std::abs(Old - New) < threshold) ? Old : New;
+    }
+
     void
     UniVR::collect_data (data& data, const Landmarks& face,
                          const dlib::rectangle& face_zone) {
@@ -160,10 +166,10 @@ namespace nvr {
         data.headHeight = face_zone.height();
         data.upperHeadX = face_zone.left();
         data.upperHeadY = face_zone.top();
+
         // --
         double angle = data.headWidth * HGPP * PI180;
         data.headDist = (MEAN_HEAD_WIDTH/2) / tan(angle/2); // in meters
-
         for (int i = MEAN_WINDOW -1; i > 0; i--)
             data.headHist[i] = data.headHist[i - 1];
         data.headHist[0] = data.headDist;
@@ -180,9 +186,9 @@ namespace nvr {
         // --
         double normX = 3 * data.headX;//(float) (( headX - 320)/320.0);
         double normY = 3 * data.headY;//(float) (( headY - 240)/320.0);
-        data.eyeX = 5 * normX;
-        data.eyeY = 7 * normY;
-        data.eyeZ = 1 + 5 * data.headDist;
+        data.eyeX = select_stable(data.eyeX, 5 * normX);
+        data.eyeY = select_stable(data.eyeY, 7 * normY);
+        data.eyeZ = select_stable(data.eyeZ, 1 + 5 * data.headDist);
     }
 
     void
