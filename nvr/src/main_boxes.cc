@@ -10,6 +10,8 @@
 
 
 #define NAME "nvr_boxes"
+#define winWidth  640
+#define winHeight 480
 
 // Shared memory between the 2 main loops
 nvr::UniVR ovr;
@@ -30,8 +32,8 @@ GLfloat LightDiffuse[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
 GLfloat LightPosition[] = { 0.0f, 2.0f, 0.0f, 1.0f };
 
 int window;
-int light; // lighting on/off (1 = on, 0 = off)
-int lp; // L pressed (1 = yes, 0 = no)
+bool light; // Lighting on/off (false is off)
+bool fullscreen = false; // Full screen on/off (true is on)
 GLuint texture; // Holds loaded texture
 
 size_t dropper = 0;
@@ -40,15 +42,16 @@ size_t dropper = 0;
 void DrawGLScene () {
     double t = (double)cvGetTickCount();
     ++dropper;
-    if (30*dropper == 30) {
+    if (10*dropper == 30) {
         ovr.step(data);
         dropper = 0;
-    }
+    } else
+        std::cout << "\treusing" << std::endl;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear scene & depthb
     glLoadIdentity();  // Reset The View
 
-    printf("eyeX:%lf eyeY:%lf eyeZ:%lf\n", data.eyeX,data.eyeY,data.eyeZ);//
+    printf("X %lf\tY %lf\tZ %lf\n", data.eyeX,data.eyeY,data.eyeZ);//
     gluLookAt(data.eyeX, data.eyeY, data.eyeZ,
               0, 0, 0, 0, 1, 0); //+ 5*headDist
 
@@ -337,7 +340,7 @@ void InitGL (const std::string& bmp, GLsizei Width, GLsizei Height) {
     glLightfv(GL_LIGHT1, GL_DIFFUSE, LightDiffuse);  // add lighting (diffuse).
     glLightfv(GL_LIGHT1, GL_POSITION,LightPosition); // set light position
     glEnable(GL_LIGHT1);                             // turn light 1 on
-    light = 1;
+    light = true;
     glEnable(GL_LIGHTING);
 }
 
@@ -352,23 +355,34 @@ void ReSizeGLScene (GLsizei Width, GLsizei Height) {
 }
 
 void
+toggle_fullscreen () {
+    fullscreen = !fullscreen;
+    if (!fullscreen) {
+        glutSetCursor(GLUT_CURSOR_INHERIT);
+        glutPositionWindow(0, 0);
+        glutReshapeWindow(winWidth, winHeight);
+    } else {
+        glutSetCursor(GLUT_CURSOR_NONE);
+        glutFullScreen();
+    }
+}
+
+void
 keyPressed (unsigned char key, int, int) {
     switch (key) {
+    case 'l':
+    case 'L': // Toggle lighting
+	light = !light;
+	(!light) ? glDisable(GL_LIGHTING) : glEnable(GL_LIGHTING);
+	break;
+    case 'f':
+    case 'F':
+        toggle_fullscreen();
+        break;
     case 'q':
     case 27: // ESCAPE
 	glutDestroyWindow(window);
 	exit(0);
-
-    case 'l':
-    case 'L': // toggle the lighting.
-	printf("L/l pressed; light is: %d\n", light);
-	light = light ? 0 : 1;
-	printf("Light is now: %d\n", light);
-	if (!light)
-	    glDisable(GL_LIGHTING);
-        else
-	    glEnable(GL_LIGHTING);
-	break;
     }
 }
 
@@ -403,21 +417,15 @@ main (int argc, char *argv[]) {
         return 1;
     }
     glutInit(&argc, argv);
-    int winWidth = 640, winHeight = 480;
 
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
     glutInitWindowSize(winWidth, winHeight);
-    /* the window starts at the upper left corner of the screen */
     glutInitWindowPosition(0, 0);
     window = glutCreateWindow(NAME);
-    /* Register the function to do all our OpenGL drawing. */
     glutDisplayFunc(&DrawGLScene);
-    glutFullScreen();//
-    /* Even if there are no events, redraw our gl scene. */
-    glutIdleFunc(&DrawGLScene);
-    /* Register the function called when our window is resized. */
+    //toggle_fullscreen();
+    glutIdleFunc(&DrawGLScene); // Redraw even when no events
     glutReshapeFunc(&ReSizeGLScene);
-    /* Register the function called when the keyboard is pressed. */
     glutKeyboardFunc(&keyPressed);
     glutSpecialFunc(&specialKeyPressed);
 
