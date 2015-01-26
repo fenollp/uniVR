@@ -139,8 +139,21 @@ namespace nvr {
 
     double
     select_stable (double Old, double New) {
-        double threshold = 0.1;//
+        double threshold = 0.009;//
         return (std::abs(Old - New) < threshold) ? Old : New;
+    }
+
+#define SZEYE 5
+    typedef struct { double x,y,z; } Eye;
+    Eye
+    average (const Eye eyes[SZEYE]) {
+        Eye e = {};
+        for (int i = 0; i < SZEYE; ++i) {
+            e.x += eyes[i].x;
+            e.y += eyes[i].y;
+            e.z += eyes[i].z;
+        }
+        return Eye{e.x / SZEYE, e.y / SZEYE, e.z / SZEYE};
     }
 
     void
@@ -183,12 +196,38 @@ namespace nvr {
             (WINHEIGHT/2 - (data.upperHeadY + data.headHeight/2));
         data.headX = tan(xAngle) * data.headDist;
         data.headY = tan(yAngle) * data.headDist;
-        // --
+
+        // -- (This and below uses things modified just above)
         double normX = 3 * data.headX;//(float) (( headX - 320)/320.0);
         double normY = 3 * data.headY;//(float) (( headY - 240)/320.0);
-        data.eyeX = select_stable(data.eyeX, 5 * normX);
-        data.eyeY = select_stable(data.eyeY, 7 * normY);
-        data.eyeZ = select_stable(data.eyeZ, 1 + 5 * data.headDist);
+        Eye e0 = Eye{5 * normX, 7 * normY, 1 + 5 * data.headDist};
+
+        // ---
+        // data.eyeX = select_stable(data.eyeX, e0.x);
+        // data.eyeY = select_stable(data.eyeY, e0.y);
+        // data.eyeZ = select_stable(data.eyeZ, e0.z);
+
+        // ---
+        static Eye eyes[SZEYE];
+        static int count = 1;
+        for (int i = SZEYE -1; i > 0; i--)
+            eyes[i] = eyes[i -1];
+        eyes[0] = e0;
+        Eye e = average(eyes);
+        if (count > SZEYE) {
+            data.eyeX = e.x;
+            data.eyeY = e.y;
+            data.eyeZ = e.z;
+            printf("  %lf\t  %lf\t  %lf\n",
+                   std::abs(e.x - eyes[0].x),
+                   std::abs(e.y - eyes[0].y),
+                   std::abs(e.z - eyes[0].z));
+        } else {
+            data.eyeX = eyes[0].x;
+            data.eyeY = eyes[0].y;
+            data.eyeZ = eyes[0].z;
+            ++count;
+        }
     }
 
     void
@@ -331,8 +370,11 @@ namespace nvr {
         rect_found_ = dlib::rectangle();
 
         bool detected = false;
+        ++I_;
         if (I_ % DROP_AMOUNT == 0) {
             /// Detection
+            I_ = 0;
+            std::cout << "Detection" << std::endl;
             auto dets = detector_(img_);
 #ifdef window_debug
             for (const auto& det : dets)
@@ -388,7 +430,6 @@ namespace nvr {
         cv::imshow(WINDOW, frame_);
 #endif
 
-        ++I_;
         return true;
     }
 
