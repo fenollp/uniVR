@@ -183,13 +183,13 @@ namespace nvr {
         // --
         double angle = data.headWidth * HGPP * PI180;
         data.headDist = (MEAN_HEAD_WIDTH/2) / tan(angle/2); // in meters
-        for (int i = MEAN_WINDOW -1; i > 0; i--)
+        for (int i = HEAD_HIST_SZ -1; i > 0; i--)
             data.headHist[i] = data.headHist[i - 1];
         data.headHist[0] = data.headDist;
         double sumHeadDist = 0.0;
-        for (size_t i = 0; i < MEAN_WINDOW; ++i)
+        for (size_t i = 0; i < HEAD_HIST_SZ; ++i)
             sumHeadDist += data.headHist[i];
-        data.headDist = sumHeadDist / MEAN_WINDOW;
+        data.headDist = sumHeadDist / HEAD_HIST_SZ;
         double xAngle = HGPP * PI180 *
             (WINWIDTH /2 - (data.upperHeadX + data.headWidth /2));
         double yAngle = VGPP * PI180 *
