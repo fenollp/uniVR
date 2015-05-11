@@ -52,7 +52,10 @@ This code should compile | run with
 
 `cd nvr && MODE=snowmen make -j && ./snowmen shape_predictor_68_face_landmarks.dat`
 
-* Different `MODE`s: `snowmen`, `base`, `fromfile`.
+* Different `MODE`s: `snowmen`, `base`, `fromfile`, `shaders`.
+* More GLSL shaders at
+    * [GLSL Sandbox Gallery](http://glslsandbox.com/)
+    * [Shadertoy BETA](https://www.shadertoy.com/)
 * **facial landmark detection** using [C++ Dlib](http://dlib.net/)
 * **Face detector:** Histogram of Oriented Gradients
     * Affine-invariant feature descriptor (like SIFT, SURF)
