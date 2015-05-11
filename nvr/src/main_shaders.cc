@@ -19,22 +19,47 @@
 #include <string.h>
 #include <getopt.h>
 #include <poll.h>
+#include <stdlib.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
 #include <GL/glew.h>
+#ifdef __APPLE_CC__
+# define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
+# include <OpenGL/gl3.h>
+# include <OpenGL/glu.h>
+
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#include <OpenGL/glext.h>
+#include <GLUT/glut.h>
+#else
+# include <GL/gl.h>
+# include <GL/glu.h>
+
 #include <GL/glut.h>
 #include <GL/freeglut_ext.h>
+#endif
 
-#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <FreeImage.h>
+
+#ifdef __MACH__
+# include <mach/clock.h>
+# include <mach/mach.h>
+#endif
 
 /* width, height, x0, y0 (top left) */
 static double geometry[4] = { 0, };
 
 /* x, y, x_press, y_press  (in target coords) */
 static double mouse[4] = { 0, };
+
+static int window_x0 = -1;
+static int window_y0 = -1;
+static int window_width = -1;
+static int window_height = -1;
 
 static GLint prog = 0;
 static GLenum tex[4];
@@ -119,13 +144,28 @@ keyboard_handler (unsigned char key, int x, int y)
       case '\x1b':  /* Escape */
       case 'q':
       case 'Q':
-        glutLeaveMainLoop ();
+        /* glutLeaveMainLoop (); */
+          exit(0);
         break;
 
       case 'f': /* fullscreen */
       case 'F':
-        glutFullScreenToggle ();
-        break;
+        /* glutFullScreenToggle (); */
+          if (window_width < 0)
+          {
+              window_x0 = glutGet (GLUT_WINDOW_X);
+              window_y0 = glutGet (GLUT_WINDOW_Y);
+              window_width = glutGet (GLUT_WINDOW_WIDTH);
+              window_height = glutGet (GLUT_WINDOW_HEIGHT);
+              glutFullScreen ();
+          }
+          else
+          {
+              glutPositionWindow (window_x0, window_y0);
+              glutReshapeWindow (window_width, window_height);
+              window_width = -1;
+          }
+          break;
 
       default:
         break;
@@ -158,6 +198,12 @@ display (void)
   static int frames, last_time;
   int x0, y0, width, height, ticks;
   GLint uindex;
+#ifdef __MACH__
+  /// https://github.com/SIPp/sipp/pull/104/files
+  // OS X does not have clock_gettime, use clock_get_time
+  clock_serv_t cclock;
+  mach_timespec_t mts;
+#endif
   struct timespec ts;
 
   glUseProgram (prog);
@@ -166,7 +212,15 @@ display (void)
   y0     = glutGet (GLUT_WINDOW_Y);
   width  = glutGet (GLUT_WINDOW_WIDTH);
   height = glutGet (GLUT_WINDOW_HEIGHT);
+#ifdef __MACH__
+  host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &cclock);
+  clock_get_time(cclock, &mts);
+  mach_port_deallocate(mach_task_self(), cclock);
+  ts.tv_sec = mts.tv_sec;
+  ts.tv_nsec = mts.tv_nsec;
+#else
   clock_gettime (CLOCK_MONOTONIC_RAW, &ts);
+#endif
   ticks  = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 
   if (frames == 0)
@@ -268,99 +322,108 @@ display (void)
   glutSwapBuffers ();
 }
 
-
 int
-load_texture (char    *filename,
-              GLenum   type,
-              GLenum  *tex_id,
-              char     nearest,
-              char     repeat)
+load_texture (const char *filename,
+              GLenum     *tex_id,
+              char        nearest,
+              char        repeat)
 {
-  GdkPixbuf *pixbuf;
-  int width, height;
-  uint8_t *data;
-  GLfloat *tex_data;
-  int rowstride;
-  int cpp, bps;
-  int x, y, c;
-
-  pixbuf = gdk_pixbuf_new_from_file (filename, NULL);
-
-  width = gdk_pixbuf_get_width (pixbuf);
-  height = gdk_pixbuf_get_height (pixbuf);
-
-  data = gdk_pixbuf_get_pixels (pixbuf);
-  rowstride = gdk_pixbuf_get_rowstride (pixbuf);
-  bps = gdk_pixbuf_get_bits_per_sample (pixbuf);
-  cpp = gdk_pixbuf_get_n_channels (pixbuf);
-
-  if (bps != 8 && bps != 16)
-    {
-      fprintf (stderr, "unexpected bits per sample: %d\n", bps);
-      return 0;
+    FREE_IMAGE_FORMAT format = FreeImage_GetFileType(filename, 0);
+    if (format == -1)
+        format = FreeImage_GetFIFFromFilename(filename);
+    if (!FreeImage_FIFSupportsReading(format)) {
+        fprintf(stderr, "!read texture format %s\n", filename);
+        return 0;
     }
 
-  if (cpp != 3 && cpp != 4)
-    {
-      fprintf (stderr, "unexpected n_channels: %d\n", cpp);
-      return 0;
+    FIBITMAP* bitmap = FreeImage_Load(format, filename, 0);
+    if (bitmap == NULL) {
+        fprintf(stderr, "!file %s\n", filename);
+        return 0;
     }
+    int bitsPerPixel = FreeImage_GetBPP(bitmap);
+    FIBITMAP* bitmap32 = NULL;
+    if (bitsPerPixel == 32)
+        bitmap32 = bitmap;
+    else
+        bitmap32 = FreeImage_ConvertTo32Bits(bitmap); // --> RGBa
 
-  tex_data = malloc (width * height * cpp * sizeof (GLfloat));
-  for (y = 0; y < height; y++)
-    {
-      uint8_t  *cur_row8  = (uint8_t *)  (data + y * rowstride);
-      uint16_t *cur_row16 = (uint16_t *) (data + y * rowstride);
+    int imageWidth  = FreeImage_GetWidth(bitmap32);
+    int imageHeight = FreeImage_GetHeight(bitmap32);
+    // We don't need to delete or delete[] this textureData because it's not on the heap
+    GLubyte* textureData = FreeImage_GetBits(bitmap32);
+    glGenTextures(1, tex_id);
+    glBindTexture(GL_TEXTURE_2D, *tex_id);
+    // Note: The 'Data format' is the format of the image data as provided by the image library. FreeImage decodes images into
+    // BGR/BGRA format, but we want to work with it in the more common RGBA format, so we specify the 'Internal format' as such.
 
-      for (x = 0; x < width; x++)
-        {
-          for (c = 0; c < cpp; c++)
-            {
-              if (bps == 8)
-                tex_data[(y * width + x) * cpp + c] = ((GLfloat) cur_row8[x * cpp + c]) / 255.0;
-              else
-                tex_data[(y * width + x) * cpp + c] = ((GLfloat) cur_row16[x * cpp + c]) / 65535.0;
-            }
+    GLfloat *tex_data = NULL;
+    tex_data = (GLfloat *) malloc(imageWidth * imageHeight * 4 * sizeof (GLfloat));
+    for (int y = 0; y < imageHeight; ++y) {
+        uint8_t *curr_row = (uint8_t *) (textureData + y * imageWidth * 4);
+        for (int x = 0; x < imageWidth; ++x) {
+            tex_data[(y * imageWidth + x) * 4 + 0] = ((GLfloat) curr_row[x * 4 + 0]) / 255.0;
+            tex_data[(y * imageWidth + x) * 4 + 1] = ((GLfloat) curr_row[x * 4 + 1]) / 255.0;
+            tex_data[(y * imageWidth + x) * 4 + 2] = ((GLfloat) curr_row[x * 4 + 2]) / 255.0;
+            tex_data[(y * imageWidth + x) * 4 + 3] = ((GLfloat) curr_row[x * 4 + 3]) / 255.0;
         }
     }
 
-  glGenTextures (1, tex_id);
-  glBindTexture (type, *tex_id);
-  glTexImage2D (type, 0, GL_RGBA,
-                width, height,
-                0, cpp == 3 ? GL_RGB : GL_RGBA,
-                GL_FLOAT,
-                tex_data);
-  if (nearest)
-    {
-      glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D,    // Type of texture
+                 0,                // Mipmap level (0 being the top level i.e. full size)
+                 GL_RGBA,          // Internal format
+                 imageWidth,       // Width of the texture
+                 imageHeight,      // Height of the texture,
+                 0,                // Border in pixels
+                 /* GL_BGRA,          // Data format */
+                 GL_RGBA,
+                 //GL_RGB |||| GL_RGBA
+                 /* GL_UNSIGNED_BYTE, // Type of texture data */
+                 GL_FLOAT,
+                 /* textureData);     // The image data to use for this texture */
+                 tex_data);
+
+    if (nearest) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    } else {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
-  else
-    {
-      glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-      glGenerateMipmap (GL_TEXTURE_2D);
+    if (repeat) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    } else {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     }
 
-  if (repeat)
-    {
-      glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-      glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    switch (glGetError()) {
+    case GL_NO_ERROR:
+        break;
+    case GL_INVALID_ENUM:
+        fprintf(stderr, "!gl enum %s\n", filename);
+        return 0;
+    case GL_INVALID_VALUE:
+        fprintf(stderr, "!gl value %s\n", filename);
+        return 0;
+    case GL_INVALID_OPERATION:
+        fprintf(stderr, "!gl operation %s\n", filename);
+        return 0;
+    default:
+        fprintf(stderr, "!GL_ENUM %s\n", filename);
+        return 0;
     }
-  else
-    {
-      glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-      glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    }
 
-  free (tex_data);
-  g_object_unref (pixbuf);
+    free(tex_data);
+    FreeImage_Unload(bitmap32);
+    if (bitsPerPixel != 32)
+        FreeImage_Unload(bitmap);
 
-  fprintf (stderr, "texture: %s, %dx%d, %d (%d) --> id %d\n",
-           filename, width, height, cpp, bps, *tex_id);
-
-  return 1;
+    fprintf(stdout, "texture: %s, %dx%d, (%d) --> id %d\n",
+            filename, imageWidth, imageHeight, bitsPerPixel, *tex_id);
+    return 1;
 }
 
 
@@ -381,7 +444,7 @@ compile_shader (const GLenum  shader_type,
     return shader;
 
   glGetShaderiv (shader, GL_INFO_LOG_LENGTH, &loglen);
-  error_message = calloc (loglen, sizeof (GLchar));
+  error_message = (char *) calloc (loglen, sizeof (GLchar));
   glGetShaderInfoLog (shader, loglen, NULL, error_message);
   fprintf (stderr, "shader failed to compile:\n   %s\n", error_message);
   free (error_message);
@@ -416,7 +479,7 @@ link_program (const GLchar *shader_source)
   if (status != GL_TRUE)
     {
       glGetProgramiv (program, GL_INFO_LOG_LENGTH, &loglen);
-      error_message = calloc (loglen, sizeof (GLchar));
+      error_message = (char *) calloc (loglen, sizeof (GLchar));
       glGetProgramInfoLog (program, loglen, NULL, error_message);
       fprintf (stderr, "program failed to link:\n   %s\n", error_message);
       free (error_message);
@@ -486,7 +549,7 @@ load_file (char *filename)
   size = ftell (f);
   fseek (f, 0, SEEK_SET);
 
-  data = malloc (size + 1);
+  data = (char *) malloc (size + 1);
   if (fread (data, size, 1, f) < 1)
     {
       fprintf (stderr, "problem reading file %s\n", filename);
@@ -650,12 +713,14 @@ main (int   argc,
                   }
               }
 
-            if (optarg[c] != ':' ||
-                !load_texture (optarg + c + 1, GL_TEXTURE_2D, &tex[slot], nearest, repeat))
+            FreeImage_Initialise(FALSE);
+            if (optarg[c] != ':'
+                || !load_texture(optarg+c+1, &tex[slot], nearest, repeat))
               {
                 fprintf (stderr, "Failed to load texture. Aborting.\n");
                 exit (1);
               }
+            FreeImage_DeInitialise();
             break;
 
           case 'h':

@@ -1,12 +1,20 @@
 all: compile
 
-modes = snowmen base fromfile boxes
+modes = snowmen base fromfile boxes shaders
 MODE ?= snowmen
 
 compile: ext/dlib/ build/
 	cd build/ && cmake -DMODE_$(MODE)=ON .. && cmake --build .
 	cp build/$(MODE) .
 .PHONY: compile
+
+clean:
+	$(if $(wildcard build/*), rm -r build/)
+
+distclean: clean
+	$(if $(wildcard ext/*), rm -r ext/)
+	$(foreach bin, $(modes), \
+            $(if $(wildcard $(bin)), rm $(bin);))
 
 build/:
 	mkdir $@
@@ -19,16 +27,6 @@ ext/$(DLIB_ver): ext/
 	wget -O ext/$(DLIB_ver) $(DLIB_url) || rm ext/$(DLIB_ver)
 ext/dlib: ext/$(DLIB_ver)
 	cd ext/ && tar jxf $(DLIB_ver) && mv dlib-*/ dlib/ #&& rm -f $(DLIB_ver)
-
-
-clean:
-	$(if $(wildcard build/*), rm -r build/)
-
-distclean: clean
-	$(if $(wildcard ext/*), rm -r ext/)
-	$(foreach bin, $(modes), \
-            $(if $(wildcard $(bin)), rm $(bin);))
-
 
 
 dat = 'shape_predictor_68_face_landmarks.dat'
