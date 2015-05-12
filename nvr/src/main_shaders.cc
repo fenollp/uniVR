@@ -50,6 +50,15 @@
 # include <mach/mach.h>
 #endif
 
+#include <iostream>
+#include <fstream>
+#include <streambuf>
+#include <regex>
+
+#define NAME "shaders"
+#define winWidth  640
+#define winHeight 480
+
 /* width, height, x0, y0 (top left) */
 static double geometry[4] = { 0, };
 
@@ -61,10 +70,68 @@ static int window_y0 = -1;
 static int window_width = -1;
 static int window_height = -1;
 
-static GLint prog = 0;
-static GLenum tex[4];
-static int sockfd  = -1;
+bool
+load_texture (const std::string& filename,
+              GLint       tex_type,
+              GLenum     *tex_id);
 
+std::string
+load_file (const std::string& filename, GLint types[4]);
+
+GLint
+link_program (const std::string& shader_source);
+
+class Shader {
+public:
+    GLint prog = 0;
+    GLenum tex[4];
+    std::string file;
+    std::string code;
+    std::string textures[4];
+    GLint       tex_types[4];
+    Shader (const std::string& f,
+            const std::string t0, GLint d0,
+            const std::string t1, GLint d1,
+            const std::string t2, GLint d2,
+            const std::string t3, GLint d3)
+        : file("data/" + f)
+        {
+            textures[0] = t0; tex_types[0] = d0;
+            textures[1] = t1; tex_types[1] = d1;
+            textures[2] = t2; tex_types[2] = d2;
+            textures[3] = t3; tex_types[3] = d3;
+        }
+    void load_textures () {
+        FreeImage_Initialise(false);
+        for (int i = 0; i < 4; ++i)
+            if (!textures[i].empty())
+                load_texture("data/presets/"+textures[i], tex_types[i], &tex[i]);
+        FreeImage_DeInitialise();
+    }
+    bool load_then_link () {
+        code = load_file(file, tex_types);
+        prog = link_program(code);
+        return prog >= 0;
+    }
+};
+
+static Shader shaders[] = {
+    Shader("Volcanic.glsl", "tex16.png",GL_TEXTURE_2D, "tex06.jpg",GL_TEXTURE_2D, "tex09.jpg",GL_TEXTURE_2D, "",0),
+    Shader("Bacterium.glsl", "tex03.jpg",GL_TEXTURE_2D, "",0, "",0, "",0),
+    Shader("Artificial.glsl", "cube04_0.png",GL_TEXTURE_3D, "",0, "",0, "",0),
+    Shader("Juliabulb.glsl", "",0, "",0, "",0, "",0),
+    Shader("Seascape.glsl", "",0, "",0, "",0, "",0),
+    Shader("XdlSDs.glsl", "",0, "",0, "",0, "",0), //2d
+    Shader("lsBSDz.glsl", "",0, "",0, "",0, "",0),
+    Shader("ltS3zd.glsl", "",0, "",0, "",0, "",0),
+    Shader("ngRay1.glsl", "",0, "",0, "",0, "",0),
+    Shader("Xyptonjtroz.glsl", "",0, "",0, "",0, "",0)
+};
+static int shader = 0;
+
+static bool channels_loaded = false;
+
+static int sockfd = -1;
 #define IPC_ADDR (0x7f000000)
 #define IPC_PORT (4242)
 
@@ -137,37 +204,54 @@ mouse_move_handler (int x, int y)
 
 
 void
-keyboard_handler (unsigned char key, int x, int y)
-{
-  switch (key)
-    {
-      case '\x1b':  /* Escape */
-      case 'q':
-      case 'Q':
+show (int n) {
+    std::cout << "Switching to " << n << ": " << shaders[n].file << std::endl;
+    shader = n;
+    channels_loaded = false;
+}
+
+void
+keyboard_handler (unsigned char key
+                  , int // x
+                  , int // y
+    ) {
+    switch (key) {
+    case '\x1b':  /* Escape */
+    case 'q':
+    case 'Q':
         /* glutLeaveMainLoop (); */
-          exit(0);
+        exit(0);
+
+    case 'f': /* fullscreen */
+    case 'F':
+        /* glutFullScreenToggle (); */
+        if (window_width < 0) {
+            window_x0 = glutGet(GLUT_WINDOW_X);
+            window_y0 = glutGet(GLUT_WINDOW_Y);
+            window_width  = glutGet(GLUT_WINDOW_WIDTH);
+            window_height = glutGet(GLUT_WINDOW_HEIGHT);
+            glutFullScreen();
+        } else {
+            glutPositionWindow(window_x0, window_y0);
+            glutReshapeWindow(window_width, window_height);
+            window_width = -1;
+        }
         break;
 
-      case 'f': /* fullscreen */
-      case 'F':
-        /* glutFullScreenToggle (); */
-          if (window_width < 0)
-          {
-              window_x0 = glutGet (GLUT_WINDOW_X);
-              window_y0 = glutGet (GLUT_WINDOW_Y);
-              window_width = glutGet (GLUT_WINDOW_WIDTH);
-              window_height = glutGet (GLUT_WINDOW_HEIGHT);
-              glutFullScreen ();
-          }
-          else
-          {
-              glutPositionWindow (window_x0, window_y0);
-              glutReshapeWindow (window_width, window_height);
-              window_width = -1;
-          }
-          break;
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+        show(key - '0');
+        break;
 
-      default:
+    default:
         break;
     }
 }
@@ -206,7 +290,7 @@ display (void)
 #endif
   struct timespec ts;
 
-  glUseProgram (prog);
+  glUseProgram (shaders[shader].prog);
 
   x0     = glutGet (GLUT_WINDOW_X);
   y0     = glutGet (GLUT_WINDOW_Y);
@@ -234,15 +318,15 @@ display (void)
       frames = 0;
     }
 
-  uindex = glGetUniformLocation (prog, "iGlobalTime");
+  uindex = glGetUniformLocation (shaders[shader].prog, "iGlobalTime");
   if (uindex >= 0)
     glUniform1f (uindex, ((float) ticks) / 1000.0);
 
-  uindex = glGetUniformLocation (prog, "time");
+  uindex = glGetUniformLocation (shaders[shader].prog, "time");
   if (uindex >= 0)
     glUniform1f (uindex, ((float) ticks) / 1000.0);
 
-  uindex = glGetUniformLocation (prog, "iResolution");
+  uindex = glGetUniformLocation (shaders[shader].prog, "iResolution");
   if (uindex >= 0)
     {
       if (geometry[0] > 0.1 && geometry[1] > 0.1)
@@ -251,59 +335,35 @@ display (void)
         glUniform3f (uindex, width, height, 1.0);
     }
 
-  uindex = glGetUniformLocation (prog, "iOffset");
+  uindex = glGetUniformLocation (shaders[shader].prog, "iOffset");
   if (uindex >= 0)
     {
       if (geometry[0] > 0.1 && geometry[1] > 0.1)
-        {
           glUniform2f (uindex,
                        x0 + geometry[2],
                        geometry[1] - (y0 + height) - geometry[3]);
-        }
       else
-        {
           glUniform2f (uindex, 0.0, 0.0);
-        }
     }
 
-  uindex = glGetUniformLocation (prog, "iMouse");
+  uindex = glGetUniformLocation (shaders[shader].prog, "iMouse");
   if (uindex >= 0)
     glUniform4f (uindex, mouse[0],  mouse[1], mouse[2], mouse[3]);
 
-
-  uindex = glGetUniformLocation (prog, "iChannel0");
-  if (uindex >= 0)
-    {
-      glActiveTexture (GL_TEXTURE0 + 0);
-      glBindTexture (GL_TEXTURE_2D, tex[0]);
-      glUniform1i (uindex, 0);
+  if (!channels_loaded) {
+    for (int k = 0; k < 4; ++k) {
+        auto chan = "iChannel" + std::to_string(k);
+        uindex = glGetUniformLocation(shaders[shader].prog, chan.c_str());
+        if (uindex >= 0) {
+            glActiveTexture(GL_TEXTURE0 + k);
+            glBindTexture(shaders[shader].tex_types[k], shaders[shader].tex[k]);
+            glUniform1i(uindex, k);
+        }
     }
+    channels_loaded = true;
+  }
 
-  uindex = glGetUniformLocation (prog, "iChannel1");
-  if (uindex >= 0)
-    {
-      glActiveTexture (GL_TEXTURE0 + 1);
-      glBindTexture (GL_TEXTURE_2D, tex[1]);
-      glUniform1i (uindex, 1);
-    }
-
-  uindex = glGetUniformLocation (prog, "iChannel2");
-  if (uindex >= 0)
-    {
-      glActiveTexture (GL_TEXTURE0 + 2);
-      glBindTexture (GL_TEXTURE_2D, tex[1]);
-      glUniform1i (uindex, 2);
-    }
-
-  uindex = glGetUniformLocation (prog, "iChannel3");
-  if (uindex >= 0)
-    {
-      glActiveTexture (GL_TEXTURE0 + 3);
-      glBindTexture (GL_TEXTURE_2D, tex[1]);
-      glUniform1i (uindex, 3);
-    }
-
-  uindex = glGetUniformLocation (prog, "resolution");
+  uindex = glGetUniformLocation (shaders[shader].prog, "resolution");
   if (uindex >= 0)
     {
       if (geometry[0] > 0.1 && geometry[1] > 0.1)
@@ -312,7 +372,7 @@ display (void)
         glUniform2f (uindex, width, height);
     }
 
-  uindex = glGetUniformLocation (prog, "led_color");
+  uindex = glGetUniformLocation (shaders[shader].prog, "led_color");
   if (uindex >= 0)
     glUniform3f (uindex, 0.5, 0.3, 0.8);
 
@@ -322,24 +382,22 @@ display (void)
   glutSwapBuffers ();
 }
 
-int
-load_texture (const char *filename,
-              GLenum     *tex_id,
-              char        nearest,
-              char        repeat)
-{
-    FREE_IMAGE_FORMAT format = FreeImage_GetFileType(filename, 0);
+bool
+load_texture (const std::string& filename,
+              GLint       tex_type,
+              GLenum     *tex_id) {
+    FREE_IMAGE_FORMAT format = FreeImage_GetFileType(filename.c_str(), 0);
     if (format == -1)
-        format = FreeImage_GetFIFFromFilename(filename);
+        format = FreeImage_GetFIFFromFilename(filename.c_str());
     if (!FreeImage_FIFSupportsReading(format)) {
-        fprintf(stderr, "!read texture format %s\n", filename);
-        return 0;
+        std::cerr << "!read texture format " << filename << std::endl;
+        return false;
     }
 
-    FIBITMAP* bitmap = FreeImage_Load(format, filename, 0);
+    FIBITMAP* bitmap = FreeImage_Load(format, filename.c_str(), 0);
     if (bitmap == NULL) {
-        fprintf(stderr, "!file %s\n", filename);
-        return 0;
+        std::cerr << "!file " << filename << std::endl;
+        return false;
     }
     int bitsPerPixel = FreeImage_GetBPP(bitmap);
     FIBITMAP* bitmap32 = NULL;
@@ -357,8 +415,7 @@ load_texture (const char *filename,
     // Note: The 'Data format' is the format of the image data as provided by the image library. FreeImage decodes images into
     // BGR/BGRA format, but we want to work with it in the more common RGBA format, so we specify the 'Internal format' as such.
 
-    GLfloat *tex_data = NULL;
-    tex_data = (GLfloat *) malloc(imageWidth * imageHeight * 4 * sizeof (GLfloat));
+    auto tex_data = new GLfloat[imageWidth * imageHeight * 4];
     for (int y = 0; y < imageHeight; ++y) {
         uint8_t *curr_row = (uint8_t *) (textureData + y * imageWidth * 4);
         for (int x = 0; x < imageWidth; ++x) {
@@ -383,47 +440,47 @@ load_texture (const char *filename,
                  /* textureData);     // The image data to use for this texture */
                  tex_data);
 
-    if (nearest) {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    if (false) { // = nearest
+        glTexParameteri(tex_type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(tex_type, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     } else {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        glTexParameteri(tex_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(tex_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glGenerateMipmap(tex_type);
     }
-    if (repeat) {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    if (true) { // = repeat
+        glTexParameteri(tex_type, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(tex_type, GL_TEXTURE_WRAP_T, GL_REPEAT);
     } else {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        glTexParameteri(tex_type, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(tex_type, GL_TEXTURE_WRAP_T, GL_CLAMP);
     }
 
     switch (glGetError()) {
     case GL_NO_ERROR:
         break;
     case GL_INVALID_ENUM:
-        fprintf(stderr, "!gl enum %s\n", filename);
-        return 0;
+        std::cerr << "!gl enum " << filename << std::endl;
+        return false;
     case GL_INVALID_VALUE:
-        fprintf(stderr, "!gl value %s\n", filename);
-        return 0;
+        std::cerr << "!gl value " << filename << std::endl;
+        return false;
     case GL_INVALID_OPERATION:
-        fprintf(stderr, "!gl operation %s\n", filename);
-        return 0;
+        std::cerr << "!gl operation " << filename << std::endl;
+        return false;
     default:
-        fprintf(stderr, "!GL_ENUM %s\n", filename);
-        return 0;
+        std::cerr << "!GL_ENUM " << filename << std::endl;
+        return false;
     }
 
-    free(tex_data);
+    delete[] tex_data;
     FreeImage_Unload(bitmap32);
     if (bitsPerPixel != 32)
         FreeImage_Unload(bitmap);
 
     fprintf(stdout, "texture: %s, %dx%d, (%d) --> id %d\n",
-            filename, imageWidth, imageHeight, bitsPerPixel, *tex_id);
-    return 1;
+            filename.c_str(), imageWidth, imageHeight, bitsPerPixel, *tex_id);
+    return true;
 }
 
 
@@ -433,8 +490,6 @@ compile_shader (const GLenum  shader_type,
 {
   GLuint shader = glCreateShader (shader_type);
   GLint status = GL_FALSE;
-  GLint loglen;
-  GLchar *error_message;
 
   glShaderSource (shader, 1, &shader_source, NULL);
   glCompileShader (shader);
@@ -443,18 +498,19 @@ compile_shader (const GLenum  shader_type,
   if (status == GL_TRUE)
     return shader;
 
+  GLint loglen;
   glGetShaderiv (shader, GL_INFO_LOG_LENGTH, &loglen);
-  error_message = (char *) calloc (loglen, sizeof (GLchar));
-  glGetShaderInfoLog (shader, loglen, NULL, error_message);
-  fprintf (stderr, "shader failed to compile:\n   %s\n", error_message);
-  free (error_message);
+  auto msg = new GLchar[loglen]();
+  glGetShaderInfoLog (shader, loglen, NULL, msg);
+  fprintf (stderr, "shader failed to compile:\n%s\n", msg);
+  delete[] msg;
 
   return -1;
 }
 
 
 GLint
-link_program (const GLchar *shader_source)
+link_program (const std::string& shader_source)
 {
   GLint frag, program;
   GLint status = GL_FALSE;
@@ -465,7 +521,7 @@ link_program (const GLchar *shader_source)
   GLchar name[80];
   GLsizei namelen;
 
-  frag = compile_shader (GL_FRAGMENT_SHADER, shader_source);
+  frag = compile_shader(GL_FRAGMENT_SHADER, shader_source.c_str());
   if (frag < 0)
     return -1;
 
@@ -531,36 +587,84 @@ init_glew (void)
 }
 
 
-char *
-load_file (char *filename)
-{
-  FILE *f;
-  int size;
-  char *data;
+// std::string
+// may_add (const std::string& str,
+//          const std::string& var) {
+//     // std::string rgx;
+//     // for (auto c : var) {
+//     //     if (c == '[' || c == ']') rgx += ".";
+//     //     else rgx += (c == ' ') ? "\\s" : std::string(c);
+//     // }
+//     std::string rgx("uniform[\\s]+float[\\s]+iGlobalTime;");
+//     std::cout << "rgx " << rgx << std::endl;
+//     std::regex regexp(rgx);
+//     std::smatch matches;
+//     if (!std::regex_match(str, matches, regexp))
+//         return var + "\n";
+//     else
+//         for (auto& match : matches)
+//             std::cout << "\tMATCHED " << match.str() << std::endl;
+//     return "";
+// }
 
-  f = fopen (filename, "rb");
-  if (f == NULL)
-    {
-      perror ("error opening file");
-      return NULL;
+std::string
+may_add (const std::string& str,
+         const std::string& lhs,
+         const std::string& var) {
+    if (str.find(var) == std::string::npos)
+        return lhs + var + "\n";
+    return "";
+}
+
+std::string
+load_file (const std::string& filename, GLint types[4]) {
+    std::ifstream ifs(filename);
+    if (!ifs.is_open()) {
+        std::cerr << "!read " << filename << std::endl;
+        exit(1);
     }
-
-  fseek (f, 0, SEEK_END);
-  size = ftell (f);
-  fseek (f, 0, SEEK_SET);
-
-  data = (char *) malloc (size + 1);
-  if (fread (data, size, 1, f) < 1)
-    {
-      fprintf (stderr, "problem reading file %s\n", filename);
-      free (data);
-      return NULL;
+    std::string str( (std::istreambuf_iterator<char>(ifs))
+                    , std::istreambuf_iterator<char>());
+    for (int i = 0; i < 4; ++i) {
+        std::string channel = "iChannel" + std::to_string(i) + ";";
+        /// input channel. XX = 2D/Cube
+        if (types[i] == GL_TEXTURE_2D)
+            str = may_add(str, "uniform sampler2D ", channel) + str;
+        else if (types[i] == GL_TEXTURE_3D)
+            str = may_add(str, "uniform samplerCube ", channel) + str;
+        else continue;
     }
-  fclose(f);
-
-  data[size] = '\0';
-
-  return data;
+    return
+        /// viewport resolution (in pixels)
+        may_add(str, "uniform vec3 ", "iResolution;") +
+        /// shader playback time (in seconds)
+        // may_add(str, "uniform float iGlobalTime;") + //FIXME
+        ( (filename == "data/Xyptonjtroz.glsl")
+          ? ""
+          : ( (filename == "data/ltS3zd.glsl") ? "uniform float iGlobalTime;"
+              : may_add(str, "uniform float ", "iGlobalTime;"))) + //FIXME
+        /// channel playback time (in seconds)
+        may_add(str, "uniform float ", "iChannelTime[4];") +
+        /// channel resolution (in pixels)
+        may_add(str, "uniform vec3 ", "iChannelResolution[4];") +
+        /// mouse pixel coords. xy: current (if MLB down), zw: click
+        may_add(str, "uniform vec4 ", "iMouse;") +
+        /// (year, month, day, time in secs)
+        // may_add(str, "uniform vec4 ", "iDate;") +
+        /// sound sample rate (i.e., 44100)
+        // may_add(str, "uniform float ", "iSampleRate;") +
+        str + "\n" +
+        ((str.find("main(") == std::string::npos) ?
+         "void main(void)\n"
+         "{\n"
+         "    //vec4 color[4];\n"
+         "    //mainImage(color[0], gl_FragCoord.xy);\n"
+         "    //gl_FragColor = color[0];\n"
+         "    vec4 color = vec4(0.0, 0.0, 0.0, 1.0);\n"
+         "    mainImage(color, gl_FragCoord.xy);\n"
+         "    color.w = 1.0;\n"
+         "    gl_FragColor = color;\n"
+         "}\n" : std::string());
 }
 
 
@@ -636,123 +740,24 @@ ipc_socket_open (int port)
 
 
 int
-main (int   argc,
-      char *argv[])
-{
-  char *frag_code = NULL;
-  glutInit (&argc, argv);
+main (int argc, char *argv[]) {
+    glutInit(&argc, argv);
 
-  static struct option long_options[] = {
-      { "texture",  required_argument, NULL,  't' },
-      { "geometry", required_argument, NULL,  'g' },
-      { "help",     no_argument, NULL,        'h' },
-      { 0,          0,                 NULL,  0   }
-  };
+    glutInitWindowSize(winWidth, winHeight);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
+    glutCreateWindow(NAME);
 
-  glutInitWindowSize (800, 600);
-  glutInitDisplayMode (GLUT_RGBA | GLUT_DOUBLE);
-  glutCreateWindow ("Shadertoy");
+    init_glew ();
 
-  init_glew ();
-
-  /* option parsing */
-  while (1)
-    {
-      int c, slot, i;
-      char nearest, repeat;
-
-      c = getopt_long (argc, argv, ":t:g:?", long_options, NULL);
-      if (c == -1)
-        break;
-
-      switch (c)
-        {
-          case 'g':
-            for (i = 0; i < 4; i++)
-              {
-                char *token = strsep (&optarg, "x+");
-                if (!token)
-                  break;
-                geometry[i] = atof (token);
-              }
-
-            fprintf (stderr, "geometry: %.0fx%.0f+%.0f+%.0f\n",
-                     geometry[0], geometry[1], geometry[2], geometry[3]);
-            break;
-
-          case 't':
-            if (optarg[0] <  '0' || optarg[0] >  '3' || strchr (optarg, ':') == NULL)
-              {
-                fprintf (stderr, "Argument for texture file needs a slot from 0 to 3\n");
-                exit (1);
-              }
-
-            slot = optarg[0] - '0';
-
-            repeat = 1;
-            nearest = 0;
-
-            for (c = 1; optarg[c] != ':' && optarg[c] != '\0'; c++)
-              {
-                switch (optarg[c])
-                  {
-                    case 'r':
-                      repeat = 1;
-                      break;
-                    case 'o':
-                      repeat = 0;
-                      break;
-                    case 'i':
-                      nearest = 0;
-                      break;
-                    case 'n':
-                      nearest = 1;
-                      break;
-                    default:
-                      break;
-                  }
-              }
-
-            FreeImage_Initialise(FALSE);
-            if (optarg[c] != ':'
-                || !load_texture(optarg+c+1, &tex[slot], nearest, repeat))
-              {
-                fprintf (stderr, "Failed to load texture. Aborting.\n");
-                exit (1);
-              }
-            FreeImage_DeInitialise();
-            break;
-
-          case 'h':
-          case ':':
-          default:
-            fprintf (stderr, "Usage:\n  %s [options] <shaderfile>\n", argv[0]);
-            fprintf (stderr, "Options:    --help\n");
-            fprintf (stderr, "            --texture [0-3]:<textureimage>\n");
-            exit (c == ':' ? 1 : 0);
-            break;
+    for (int s = sizeof(shaders)/sizeof(Shader) -1; s >= 0; --s) {
+        std::cout << "Loading " << shaders[s].file << std::endl;
+        shaders[s].load_textures();
+        if (!shaders[s].load_then_link()) {
+            fprintf (stderr, "Failed to link shader program %i. Aborting\n", s);
+            exit (-1);
         }
     }
-
-  if (optind != argc - 1)
-    {
-      fprintf (stderr, "No shaderfile specified. Aborting.\n");
-      exit (-1);
-    }
-
-  frag_code = load_file (argv[optind]);
-  if (!frag_code)
-    {
-      fprintf (stderr, "Failed to load Shaderfile. Aborting.\n");
-      exit (-1);
-    }
-
-  prog = link_program (frag_code);
-  if (prog < 0)
-    {
-      fprintf (stderr, "Failed to link shader program. Aborting\n");
-      exit (-1);
-    }
+    show(2);
 
   ipc_socket_open (IPC_PORT);
 
