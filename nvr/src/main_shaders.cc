@@ -16,14 +16,6 @@
  */
 
 #include <stdio.h>
-#include <string.h>
-#include <getopt.h>
-#include <poll.h>
-#include <stdlib.h>
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 
 #include <GL/glew.h>
 #ifdef __APPLE_CC__
@@ -102,11 +94,9 @@ public:
             textures[3] = t3; tex_types[3] = d3;
         }
     void load_textures () {
-        FreeImage_Initialise(false);
         for (int i = 0; i < 4; ++i)
             if (!textures[i].empty())
                 load_texture("data/presets/"+textures[i], tex_types[i], &tex[i]);
-        FreeImage_DeInitialise();
     }
     bool load_then_link () {
         code = load_file(file, tex_types);
@@ -131,77 +121,45 @@ static int shader = 0;
 
 static bool channels_loaded = false;
 
-static int sockfd = -1;
-#define IPC_ADDR (0x7f000000)
-#define IPC_PORT (4242)
-
-void ipc_socket_handle_message (void);
-void ipc_socket_send_message (char *msg);
-
-void
-mouse_press_handler (int button, int state, int x, int y)
-{
-  char msg[1000];
-  int x0, y0, height;
-
-  if (button != GLUT_LEFT_BUTTON)
-    return;
-
-  if (state == GLUT_DOWN)
-    {
-      x0     = glutGet (GLUT_WINDOW_X);
-      y0     = glutGet (GLUT_WINDOW_Y);
-      height = glutGet (GLUT_WINDOW_HEIGHT);
-
-      if (geometry[0] > 0.1 && geometry[1] > 0.1)
-        {
-          mouse[2] = mouse[0] =               geometry[2] + x0 + x;
-          mouse[3] = mouse[1] = geometry[1] - geometry[3] - y0 - y;
-        }
-      else
-        {
-          mouse[2] = mouse[0] = x;
-          mouse[3] = mouse[1] = height - y;
-        }
-    }
-  else
-    {
-      mouse[2] = -1;
-      mouse[3] = -1;
-    }
-
-  snprintf (msg, sizeof (msg), "iMouse:%.0f,%.0f,%.0f,%.0f",
-            mouse[0], mouse[1], mouse[2], mouse[3]);
-  ipc_socket_send_message (msg);
-}
 
 
 void
-mouse_move_handler (int x, int y)
-{
-  char msg[1000];
-  int x0, y0, height;
+mouse_press_handler (int button, int state, int x, int y) {
+    if (button != GLUT_LEFT_BUTTON)
+        return;
 
-      x0     = glutGet (GLUT_WINDOW_X);
-      y0     = glutGet (GLUT_WINDOW_Y);
-      height = glutGet (GLUT_WINDOW_HEIGHT);
+    if (state == GLUT_DOWN) {
+        int x0     = glutGet(GLUT_WINDOW_X);
+        int y0     = glutGet(GLUT_WINDOW_Y);
+        int height = glutGet(GLUT_WINDOW_HEIGHT);
 
-      if (geometry[0] > 0.1 && geometry[1] > 0.1)
-        {
-          mouse[0] =               geometry[2] + x0 + x;
-          mouse[1] = geometry[1] - geometry[3] - y0 - y;
+        if (geometry[0] > 0.1 && geometry[1] > 0.1) {
+            mouse[2] = mouse[0] =               geometry[2] + x0 + x;
+            mouse[3] = mouse[1] = geometry[1] - geometry[3] - y0 - y;
+        } else {
+            mouse[2] = mouse[0] = x;
+            mouse[3] = mouse[1] = height - y;
         }
-      else
-        {
-          mouse[0] = x;
-          mouse[1] = height - y;
-        }
-
-  snprintf (msg, sizeof (msg), "iMouse:%.0f,%.0f,%.0f,%.0f",
-            mouse[0], mouse[1], mouse[2], mouse[3]);
-  ipc_socket_send_message (msg);
+    } else {
+        mouse[2] = -1;
+        mouse[3] = -1;
+    }
 }
 
+void
+mouse_move_handler (int x, int y) {
+    int x0     = glutGet(GLUT_WINDOW_X);
+    int y0     = glutGet(GLUT_WINDOW_Y);
+    int height = glutGet(GLUT_WINDOW_HEIGHT);
+
+    if (geometry[0] > 0.1 && geometry[1] > 0.1) {
+        mouse[0] =               geometry[2] + x0 + x;
+        mouse[1] = geometry[1] - geometry[3] - y0 - y;
+    } else {
+        mouse[0] = x;
+        mouse[1] = height - y;
+    }
+}
 
 void
 show (int n) {
@@ -258,21 +216,9 @@ keyboard_handler (unsigned char key
 
 
 void
-redisplay (int value)
-{
-  struct pollfd udp;
-  int ret;
-
-  udp.fd = sockfd;
-  udp.events = POLLIN;
-
-  while ((ret = poll (&udp, 1, 0)) >= 1)
-    {
-      ipc_socket_handle_message ();
-    }
-
-  glutPostRedisplay ();
-  glutTimerFunc (value, redisplay, value);
+redisplay (int value) {
+    glutPostRedisplay();
+    glutTimerFunc(value, redisplay, value);
 }
 
 
@@ -499,9 +445,9 @@ compile_shader (const GLenum  shader_type,
     return shader;
 
   GLint loglen;
-  glGetShaderiv (shader, GL_INFO_LOG_LENGTH, &loglen);
+  glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &loglen);
   auto msg = new GLchar[loglen]();
-  glGetShaderInfoLog (shader, loglen, NULL, msg);
+  glGetShaderInfoLog(shader, loglen, NULL, msg);
   fprintf (stderr, "shader failed to compile:\n%s\n", msg);
   delete[] msg;
 
@@ -514,12 +460,7 @@ link_program (const std::string& shader_source)
 {
   GLint frag, program;
   GLint status = GL_FALSE;
-  GLint loglen, n_uniforms;
-  GLchar *error_message;
-  GLint i;
-
-  GLchar name[80];
-  GLsizei namelen;
+  GLint n_uniforms;
 
   frag = compile_shader(GL_FRAGMENT_SHADER, shader_source.c_str());
   if (frag < 0)
@@ -532,26 +473,27 @@ link_program (const std::string& shader_source)
   // glDeleteShader (frag);
 
   glGetProgramiv (program, GL_LINK_STATUS, &status);
-  if (status != GL_TRUE)
-    {
-      glGetProgramiv (program, GL_INFO_LOG_LENGTH, &loglen);
-      error_message = (char *) calloc (loglen, sizeof (GLchar));
-      glGetProgramInfoLog (program, loglen, NULL, error_message);
-      fprintf (stderr, "program failed to link:\n   %s\n", error_message);
-      free (error_message);
+  if (status != GL_TRUE) {
+      GLint loglen;
+      glGetProgramiv(program, GL_INFO_LOG_LENGTH, &loglen);
+      auto msg = new GLchar[loglen]();
+      glGetProgramInfoLog(program, loglen, NULL, msg);
+      fprintf (stderr, "program failed to link:\n%s\n", msg);
+      delete[] msg;
       return -1;
     }
 
-  /* diagnostics */
   glGetProgramiv (program, GL_ACTIVE_UNIFORMS, &n_uniforms);
   fprintf (stderr, "%d uniforms:\n", n_uniforms);
 
-  for (i = 0; i < n_uniforms; i++)
+  for (GLint i = 0; i < n_uniforms; i++)
     {
       GLint size;
       GLenum type;
+      GLchar name[20];
+      GLsizei namelen;
 
-      glGetActiveUniform (program, i, 79, &namelen, &size, &type, name);
+      glGetActiveUniform (program, i, 19, &namelen, &size, &type, name);
       name[namelen] = '\0';
       fprintf (stderr, "  %2d: %-20s (type: 0x%04x, size: %d)\n", i, name, type, size);
     }
@@ -587,32 +529,14 @@ init_glew (void)
 }
 
 
-// std::string
-// may_add (const std::string& str,
-//          const std::string& var) {
-//     // std::string rgx;
-//     // for (auto c : var) {
-//     //     if (c == '[' || c == ']') rgx += ".";
-//     //     else rgx += (c == ' ') ? "\\s" : std::string(c);
-//     // }
-//     std::string rgx("uniform[\\s]+float[\\s]+iGlobalTime;");
-//     std::cout << "rgx " << rgx << std::endl;
-//     std::regex regexp(rgx);
-//     std::smatch matches;
-//     if (!std::regex_match(str, matches, regexp))
-//         return var + "\n";
-//     else
-//         for (auto& match : matches)
-//             std::cout << "\tMATCHED " << match.str() << std::endl;
-//     return "";
-// }
-
 std::string
 may_add (const std::string& str,
-         const std::string& lhs,
+         const std::string& matcher,
          const std::string& var) {
-    if (str.find(var) == std::string::npos)
-        return lhs + var + "\n";
+    std::regex re(matcher);
+    std::smatch matches; // Useless but http://stackoverflow.com/a/26696318/1418165
+    if (!std::regex_search(str, matches, re))
+        return var + "\n";
     return "";
 }
 
@@ -625,34 +549,34 @@ load_file (const std::string& filename, GLint types[4]) {
     }
     std::string str( (std::istreambuf_iterator<char>(ifs))
                     , std::istreambuf_iterator<char>());
+    std::regex coms("//[^\\n]+\\n");
+    str = std::regex_replace(str, coms, "");
+
     for (int i = 0; i < 4; ++i) {
         std::string channel = "iChannel" + std::to_string(i) + ";";
         /// input channel. XX = 2D/Cube
         if (types[i] == GL_TEXTURE_2D)
-            str = may_add(str, "uniform sampler2D ", channel) + str;
+            str = may_add(str, "uniform\\s+sampler2D\\s+"+channel, "uniform sampler2D "+channel) + str;
         else if (types[i] == GL_TEXTURE_3D)
-            str = may_add(str, "uniform samplerCube ", channel) + str;
+            str = may_add(str, "uniform\\s+samplerCube\\s+"+channel, "uniform samplerCube "+channel) + str;
         else continue;
     }
+
     return
         /// viewport resolution (in pixels)
-        may_add(str, "uniform vec3 ", "iResolution;") +
+        may_add(str, "uniform\\s+vec3\\s+iResolution", "uniform vec3 iResolution;") +
         /// shader playback time (in seconds)
-        // may_add(str, "uniform float iGlobalTime;") + //FIXME
-        ( (filename == "data/Xyptonjtroz.glsl")
-          ? ""
-          : ( (filename == "data/ltS3zd.glsl") ? "uniform float iGlobalTime;"
-              : may_add(str, "uniform float ", "iGlobalTime;"))) + //FIXME
+        may_add(str, "uniform\\s+float\\s+iGlobalTime", "uniform float iGlobalTime;") +
         /// channel playback time (in seconds)
-        may_add(str, "uniform float ", "iChannelTime[4];") +
+        may_add(str, "uniform\\s+float\\s+iChannelTime", "uniform float iChannelTime[4];") +
         /// channel resolution (in pixels)
-        may_add(str, "uniform vec3 ", "iChannelResolution[4];") +
+        may_add(str, "uniform\\s+vec3\\s+iChannelResolution", "uniform vec3 iChannelResolution[4];") +
         /// mouse pixel coords. xy: current (if MLB down), zw: click
-        may_add(str, "uniform vec4 ", "iMouse;") +
+        may_add(str, "uniform\\s+vec4\\s+iMouse", "uniform vec4 iMouse;") +
         /// (year, month, day, time in secs)
-        // may_add(str, "uniform vec4 ", "iDate;") +
+        // may_add(str, "uniform\\s+vec4\\s+iDate", "uniform vec4 iDate;") +
         /// sound sample rate (i.e., 44100)
-        // may_add(str, "uniform float ", "iSampleRate;") +
+        // may_add(str, "uniform\\s+float\\s+iSampleRate", "uniform float iSampleRate;") +
         str + "\n" +
         ((str.find("main(") == std::string::npos) ?
          "void main(void)\n"
@@ -664,78 +588,7 @@ load_file (const std::string& filename, GLint types[4]) {
          "    mainImage(color, gl_FragCoord.xy);\n"
          "    color.w = 1.0;\n"
          "    gl_FragColor = color;\n"
-         "}\n" : std::string());
-}
-
-
-void
-ipc_socket_send_message (char *msg)
-{
-  struct sockaddr_in servaddr;
-
-  bzero (&servaddr, sizeof (servaddr));
-  servaddr.sin_family      = AF_INET;
-  servaddr.sin_addr.s_addr = htonl (IPC_ADDR);
-  servaddr.sin_port        = htons (IPC_PORT);
-
-  sendto (sockfd, msg ,strlen (msg), 0,
-          (struct sockaddr *) &servaddr, sizeof(servaddr));
-}
-
-
-void
-ipc_socket_handle_message (void)
-{
-  char msg[1000];
-  int len;
-  char *pos, *token;
-
-  len = recvfrom (sockfd, msg, sizeof (msg) - 1, 0, NULL, NULL);
-
-  msg[len] = '\0';
-
-  pos = msg;
-  token = strsep (&pos, ":");
-
-  if (strcmp (token, "iMouse") == 0)
-    {
-      int i = 0;
-
-      for (i = 0; i < 4; i++)
-        {
-          token = strsep (&pos, ",");
-          if (!token)
-            break;
-          mouse[i] = atof (token);
-        }
-    }
-}
-
-
-int
-ipc_socket_open (int port)
-{
-  struct sockaddr_in servaddr;
-  int ret;
-  int flag = 1;
-
-  sockfd = socket (AF_INET, SOCK_DGRAM, 0);
-  if (sockfd < 0)
-    perror ("socket");
-
-  setsockopt (sockfd, SOL_SOCKET, SO_REUSEPORT, (char*) &flag, sizeof (flag));
-  setsockopt (sockfd, SOL_SOCKET, SO_BROADCAST, (char*) &flag, sizeof (flag));
-
-  bzero (&servaddr, sizeof (servaddr));
-  servaddr.sin_family      = AF_INET;
-  servaddr.sin_addr.s_addr = htonl (IPC_ADDR);
-  servaddr.sin_port        = htons (port);
-
-  ret = bind (sockfd, (struct sockaddr *) &servaddr, sizeof (servaddr));
-  if (ret < 0)
-    perror ("bind");
-
-  return sockfd;
+         "}\n" : std::string('\n', 1));
 }
 
 
@@ -747,8 +600,9 @@ main (int argc, char *argv[]) {
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
     glutCreateWindow(NAME);
 
-    init_glew ();
+    init_glew();
 
+    FreeImage_Initialise(false);
     for (int s = sizeof(shaders)/sizeof(Shader) -1; s >= 0; --s) {
         std::cout << "Loading " << shaders[s].file << std::endl;
         shaders[s].load_textures();
@@ -757,19 +611,17 @@ main (int argc, char *argv[]) {
             exit (-1);
         }
     }
+    FreeImage_DeInitialise();
     show(2);
 
-  ipc_socket_open (IPC_PORT);
+    glutDisplayFunc(display);
+    glutMouseFunc(mouse_press_handler);
+    glutMotionFunc(mouse_move_handler);
+    glutKeyboardFunc(keyboard_handler);
 
-  glutDisplayFunc  (display);
-  glutMouseFunc    (mouse_press_handler);
-  glutMotionFunc   (mouse_move_handler);
-  glutKeyboardFunc (keyboard_handler);
+    redisplay(1000/60);
 
-  redisplay (1000/60);
+    glutMainLoop();
 
-  glutMainLoop ();
-
-  return 0;
+    return 0;
 }
-
