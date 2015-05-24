@@ -27,12 +27,12 @@
 #include <OpenGL/glu.h>
 #include <OpenGL/glext.h>
 #include <GLUT/glut.h>
-#else
-# include <GL/gl.h>
-# include <GL/glu.h>
+// #else
+// # include <GL/gl.h>
+// # include <GL/glu.h>
 
-#include <GL/glut.h>
-#include <GL/freeglut_ext.h>
+// #include <GL/glut.h>
+// #include <GL/freeglut_ext.h>
 #endif
 
 #include <FreeImage.h>
@@ -57,6 +57,7 @@ static double geometry[4] = { 0, };
 /* x, y, x_press, y_press  (in target coords) */
 static double mouse[4] = { 0, };
 
+static bool in_fullscreen = false;
 static int window_x0 = -1;
 static int window_y0 = -1;
 static int window_width = -1;
@@ -82,16 +83,16 @@ public:
     std::string textures[4];
     GLint       tex_types[4];
     Shader (const std::string& f,
-            const std::string t0, GLint d0,
-            const std::string t1, GLint d1,
-            const std::string t2, GLint d2,
-            const std::string t3, GLint d3)
+            const std::string& t0,
+            const std::string& t1,
+            const std::string& t2,
+            const std::string& t3)
         : file("data/" + f)
         {
-            textures[0] = t0; tex_types[0] = d0;
-            textures[1] = t1; tex_types[1] = d1;
-            textures[2] = t2; tex_types[2] = d2;
-            textures[3] = t3; tex_types[3] = d3;
+            textures[0] = t0; tex_types[0] = (t0.find("cube") == 0) ? GL_TEXTURE_3D : GL_TEXTURE_2D;
+            textures[1] = t1; tex_types[1] = (t1.find("cube") == 0) ? GL_TEXTURE_3D : GL_TEXTURE_2D;
+            textures[2] = t2; tex_types[2] = (t2.find("cube") == 0) ? GL_TEXTURE_3D : GL_TEXTURE_2D;
+            textures[3] = t3; tex_types[3] = (t3.find("cube") == 0) ? GL_TEXTURE_3D : GL_TEXTURE_2D;
         }
     void load_textures () {
         for (int i = 0; i < 4; ++i)
@@ -106,16 +107,107 @@ public:
 };
 
 static Shader shaders[] = {
-    Shader("Volcanic.glsl", "tex16.png",GL_TEXTURE_2D, "tex06.jpg",GL_TEXTURE_2D, "tex09.jpg",GL_TEXTURE_2D, "",0),
-    Shader("Bacterium.glsl", "tex03.jpg",GL_TEXTURE_2D, "",0, "",0, "",0),
-    Shader("Artificial.glsl", "cube04_0.png",GL_TEXTURE_3D, "",0, "",0, "",0),
-    Shader("Juliabulb.glsl", "",0, "",0, "",0, "",0),
-    Shader("Seascape.glsl", "",0, "",0, "",0, "",0),
-    Shader("XdlSDs.glsl", "",0, "",0, "",0, "",0), //2d
-    Shader("lsBSDz.glsl", "",0, "",0, "",0, "",0),
-    Shader("ltS3zd.glsl", "",0, "",0, "",0, "",0),
-    Shader("ngRay1.glsl", "",0, "",0, "",0, "",0),
-    Shader("Xyptonjtroz.glsl", "",0, "",0, "",0, "",0)
+//    Shader("pyroclastic explosion.glsl", "", "", "", ""),//tooslow
+//    Shader("XlsGz4.glsl", "", "tex09.jpg", "tex16.png", ""), //20, mouse, nice
+//    Shader("XsB3Wc.glsl", "tex16.png", "", "", ""),//tooslow
+//    Shader("MdXGW2.glsl", "tex11.png", "tex00.jpg", "tex09.jpg", "tex05.jpg"),//wow 15 mouse
+//    Shader("4dSXDd.glsl", "", "", "", ""),//mouse 40 nice
+//    Shader("4slGWM.glsl", "", "", "", ""),//40 nice fire mouse
+//    Shader("MsBGWm.glsl", "tex16.png", "tex01.jpg", "", ""),//mouse 40 ok
+//    Shader("4dBXWD.glsl", "", "", "", ""),//nice 50 mouse
+//    Shader("MsSSWV.glsl", "", "", "", ""),//tooslow mouse nice
+//    Shader("XtfGzj.glsl", "", "", "", ""),
+//    Shader("MtfGR8.glsl", "tex07.jpg", "tex05.jpg", "tex12.png", "cube02_0.jpg"),//wow 24 mouse
+//    Shader("Xsf3zX.glsl", "", "", "", ""),//meh
+//    Shader("lsfXz4.glsl", "", "", "", ""),//tooslow wow mouse
+   Shader("MdBGDK.glsl", "", "", "", ""),//60 mouse wowwwwwww
+//    Shader("MsXXWH.glsl", "tex09.jpg", "tex11.png", "", ""),//good mouse 20
+//    Shader("XljGDz.glsl", "", "", "", ""),//mouse 30 ok
+//    Shader("ldB3DK.glsl", "", "", "", ""),//waytooslow
+//    Shader("MtX3Ws.glsl", "cube02_0.jpg", "", "", ""),//nice mouse 20
+//    Shader("MdjGRw.glsl", "tex16.png", "tex01.jpg", "", ""),//20 nice mouse
+//    Shader("MdsGz8.glsl", "", "", "", ""),//20 mouse ok
+//    Shader("4dBGDy.glsl", "tex12.png", "", "", ""),//wow nomouse 20
+//    Shader("MdjGRy.glsl", "", "", "", ""),//kb 60 mouse lolitsagraph
+//    Shader("Xls3D2.glsl", "", "", "", ""),//10 wow mouse
+   Shader("ldXGDr.glsl", "", "", "", ""),//nicemap 60 mouse
+   Shader("Md2Xzm.glsl", "tex16.png", "cube02_0.jpg", "", ""),//mouse nicecube 60
+//    Shader("XlfGWl.glsl", "", "", "", ""),//wowmoving 20 mouse
+//    Shader("MsXGR2.glsl", "", "", "", ""),//60 wow nomouse
+//    Shader("4sXGzn.glsl", "tex03.jpg", "", "", ""),//mouse nice 60
+//    Shader("XllGzN.glsl", "", "", "", ""),//nicestars mouse 40
+//    Shader("lssGzn.glsl", "tex05.jpg", "", "tex14.png", "tex11.png"), //missing vid00.ogv //wow3dscene mouse 40
+//    Shader("4tlGDM.glsl", "", "", "", ""),//5 wowplanes nomouse
+//    Shader("lslSRf.glsl", "cube00_0.jpg", "cube01_0.png", "", ""),//wowstuff 10 mouse
+//    Shader("lssGRM.glsl", "", "", "", ""),//10 wowflying 10
+//    Shader("lssGW7.glsl", "tex09.jpg", "tex01.jpg", "tex07.jpg", "tex03.jpg"),//nice 20 mouse meh
+//    Shader("4ssXW2.glsl", "tex16.png", "", "", ""),//nice 15 mouse meh
+//    Shader("4dS3RG.glsl", "tex06.jpg", "", "", ""),//wow 25 mouse
+//    Shader("lsX3WH.glsl", "", "", "", ""),//nomouse 30 ok
+//    Shader("XsSGzG.glsl", "", "", "", ""),//teapot 10 mouse
+//    Shader("4dB3Dw.glsl", "tex16.png", "", "", ""),//unresponding
+//    Shader("Msf3Dj.glsl", "tex16.png", "cube04_0.png", "", ""),//unresponding
+//    Shader("MdS3zm.glsl", "tex05.jpg", "tex04.jpg", "", ""),//30 nomouse cool
+   Shader("MdlXWr.glsl", "", "", "", ""),//60 starsnice mouse
+//    Shader("MsX3Rf.glsl", "", "", "", ""),//fuckedup
+//    Shader("ls2GDw.glsl", "tex03.jpg", "tex09.jpg", "tex02.jpg", "cube01_0.png"),//wowwoods 50 mouse
+//    Shader("4ssSRX.glsl", "tex05.jpg", "", "", ""),//10 wow mouse
+//    Shader("4dBXzw.glsl", "tex09.jpg", "", "", ""),//nicetargets 60 mouse
+//    Shader("XdfGW4.glsl", "", "", "", ""),//20 nicenodes mouse
+//    Shader("ld2Gz3.glsl", "", "", "", ""),//50 mouse niceraytracingshperes
+//    Shader("MsjSzz.glsl", "", "", "", ""),//nice 2
+//    Shader("Volcanic.glsl", "tex16.png", "tex06.jpg", "tex09.jpg", ""),//nicefuckedlava 10 mouse
+//    Shader("Bacterium.glsl", "tex03.jpg", "", "", ""),//nice nomouse 30
+//    Shader("Artificial.glsl", "cube04_0.png", "", "", ""),//50 mouse wow3d
+//    Shader("Juliabulb.glsl", "", "", "", ""),//10 nice nomouse
+//    Shader("Seascape.glsl", "", "", "", ""),//nicefucked 30 mouse
+//    Shader("XdlSDs.glsl", "", "", "", ""), //2dnice 60 nomouse
+//    Shader("ltS3zd.glsl", "", "", "", ""),//2dok 60 nomouse
+//    Shader("ngRay1.glsl", "", "", "", ""),//30 nice nomouse
+//    Shader("Generators.glsl", "", "", "", ""),//30 wowcata mouse
+//    Shader("Bridge.glsl", "tex00.jpg", "tex09.jpg", "tex16.png", ""),//10 wowfucked mouse
+//    Shader("Catacombs.glsl", "", "", "", ""),//20 mouse wowinside
+//    Shader("Hand-Drawn Sketch.glsl", "", "", "", ""), //nicecartoon 60 mouse
+//    Shader("crystal beacon.glsl", "", "", "", ""), //nomouse 50 wow
+//    Shader("MdXSzS.glsl", "", "", "", ""),//nomouse nice 20
+//    Shader("Mss3WN.glsl", "", "", "", ""),//nice 30 mouse
+//    Shader("ld2GRz.glsl", "cube04_0.png", "", "", ""),//mouse 10 okfucked
+//    Shader("4ds3WS.glsl", "tex16.png", "tex01.jpg", "", ""),//10 nicefucked mouse
+//    Shader("ldl3DS.glsl", "", "", "", ""),//nomouse 60 nice
+//    Shader("MljGzR.glsl", "", "", "", ""),//60 nomouse meh
+//    Shader("4tl3RM.glsl", "tex02.jpg", "tex16.png", "cube04_0.png", "cube05_0.png"), //nomouse 15 ok
+//    Shader("Msj3zD.glsl", "", "", "", ""),//cool 60 nomouse 2d
+//    Shader("4sjXzG.glsl", "tex03.jpg", "tex16.png", "", "tex08.jpg"),//20 nice mouse
+//    Shader("XdB3Dw.glsl", "", "", "", ""),//meh 40 nomouse
+//    Shader("ldl3zn.glsl", "tex00.jpg", "tex05.jpg", "", ""),//ok mouse 20
+//    Shader("llj3Rz.glsl", "tex09.jpg", "", "", ""), //onlymousex 60 nice
+
+//    Shader("lsl3W2.glsl", "cube02_0.jpg", "tex16.png", "", ""),//blank
+//    Shader("MdlGz4.glsl", "", "", "", ""),//blank
+//    Shader("MdlGz4.glsl", "", "", "", ""),//blank
+//    Shader("Msf3z4.glsl", "cube00_0.jpg", "cube01_0.png", "", ""),//blank
+//    Shader("4dsGD7.glsl", "", "", "", ""),//blank
+//    Shader("Mdf3zr.glsl", "", "", "", ""),//blank
+//    Shader("starDust.glsl", "", "", "", ""),//blank
+
+    // Shader("XtS3DD.glsl", "tex16.png", "", "", ""),//iChannelResolution
+    // Shader("Grid of Cylinders.glsl", "tex01.jpg", "tex16.png", "tex12.png", "tex05.jpg"),//iChannelResolution
+    // Shader("4tsGD7.glsl", "", "", "", ""),//iDate
+    // Shader("MtlGWM.glsl", "", "", "", ""),//iDate
+    // Shader("lssGRX.glsl", "tex16.png", "", "", ""),//iChannelResolution
+    // Shader("Md23Wz.glsl", "tex12.png", "", "", ""),//iChannelResolution
+    // Shader("4sB3D1.glsl", "tex08.jpg", "tex16.png", "", ""),//iChannelResolution
+    // Shader("XdfXDB.glsl", "tex09.jpg", "tex16.png", "tex12.png", "tex07.jpg"),//iChannelResolution
+    // Shader("XsSGDy.glsl", "tex16.png", "tex02.jpg", "", ""),//iChannelResolution
+    // Shader("XsXSWN.glsl", "tex00.jpg", "", "cube00_0.jpg", "cube01_0.png"),//iChannelResolution
+    // Shader("Xss3DS.glsl", "tex16.png", "", "", ""),//iChannelResolution
+    // Shader("MtBGRD.glsl", "", "", "", ""),//kb0 compilerror
+    // Shader("4s23WV.glsl", "tex11.png", "", "", ""),//iChannelResolution
+    // Shader("leizex.glsl", "", "", "", ""), //good fps, off, iCamera
+
+   Shader("XdlGzH.glsl", "tex04.jpg", "", "", ""),//nomouse 50 streetview
+
+    Shader("Xyptonjtroz.glsl", "", "", "", "")
 };
 static int shader = 0;
 
@@ -124,30 +216,7 @@ static bool channels_loaded = false;
 
 
 void
-mouse_press_handler (int button, int state, int x, int y) {
-    if (button != GLUT_LEFT_BUTTON)
-        return;
-
-    if (state == GLUT_DOWN) {
-        int x0     = glutGet(GLUT_WINDOW_X);
-        int y0     = glutGet(GLUT_WINDOW_Y);
-        int height = glutGet(GLUT_WINDOW_HEIGHT);
-
-        if (geometry[0] > 0.1 && geometry[1] > 0.1) {
-            mouse[2] = mouse[0] =               geometry[2] + x0 + x;
-            mouse[3] = mouse[1] = geometry[1] - geometry[3] - y0 - y;
-        } else {
-            mouse[2] = mouse[0] = x;
-            mouse[3] = mouse[1] = height - y;
-        }
-    } else {
-        mouse[2] = -1;
-        mouse[3] = -1;
-    }
-}
-
-void
-mouse_move_handler (int x, int y) {
+update_mouse_xy (int x, int y) {
     int x0     = glutGet(GLUT_WINDOW_X);
     int y0     = glutGet(GLUT_WINDOW_Y);
     int height = glutGet(GLUT_WINDOW_HEIGHT);
@@ -162,7 +231,31 @@ mouse_move_handler (int x, int y) {
 }
 
 void
+mouse_press_handler (int button, int state, int x, int y) {
+    if (button != GLUT_LEFT_BUTTON)
+        return;
+
+    if (state == GLUT_DOWN) {
+        update_mouse_xy(x, y);
+
+        mouse[2] = mouse[0];
+        mouse[3] = mouse[1];
+    } else {
+        mouse[2] = -1;
+        mouse[3] = -1;
+    }
+}
+
+void
+mouse_move_handler (int x, int y) {
+    update_mouse_xy(x, y);
+}
+
+void
 show (int n) {
+    if (n == shader) return;
+    if      (n < 0) n = sizeof(shaders)/sizeof(Shader) -1;
+    else if (n > (sizeof(shaders)/sizeof(Shader) -1)) n = 0;
     std::cout << "Switching to " << n << ": " << shaders[n].file << std::endl;
     shader = n;
     channels_loaded = false;
@@ -174,25 +267,24 @@ keyboard_handler (unsigned char key
                   , int // y
     ) {
     switch (key) {
-    case '\x1b':  /* Escape */
+    case 27: // = ESC
     case 'q':
     case 'Q':
-        /* glutLeaveMainLoop (); */
         exit(0);
 
-    case 'f': /* fullscreen */
+    case 'f':
     case 'F':
-        /* glutFullScreenToggle (); */
-        if (window_width < 0) {
+        if (!in_fullscreen) {
             window_x0 = glutGet(GLUT_WINDOW_X);
             window_y0 = glutGet(GLUT_WINDOW_Y);
             window_width  = glutGet(GLUT_WINDOW_WIDTH);
             window_height = glutGet(GLUT_WINDOW_HEIGHT);
+            in_fullscreen = true;
             glutFullScreen();
         } else {
+            in_fullscreen = false;
             glutPositionWindow(window_x0, window_y0);
             glutReshapeWindow(window_width, window_height);
-            window_width = -1;
         }
         break;
 
@@ -214,6 +306,18 @@ keyboard_handler (unsigned char key
     }
 }
 
+void
+kb_arrows (int key, int, int) {
+    if (GLUT_KEY_LEFT == key) {
+        show(shader -1);
+        return;
+    }
+    if (GLUT_KEY_RIGHT == key) {
+        show(shader +1);
+        return;
+    }
+}
+
 
 void
 redisplay (int value) {
@@ -226,8 +330,6 @@ void
 display (void)
 {
   static int frames, last_time;
-  int x0, y0, width, height, ticks;
-  GLint uindex;
 #ifdef __MACH__
   /// https://github.com/SIPp/sipp/pull/104/files
   // OS X does not have clock_gettime, use clock_get_time
@@ -238,10 +340,10 @@ display (void)
 
   glUseProgram (shaders[shader].prog);
 
-  x0     = glutGet (GLUT_WINDOW_X);
-  y0     = glutGet (GLUT_WINDOW_Y);
-  width  = glutGet (GLUT_WINDOW_WIDTH);
-  height = glutGet (GLUT_WINDOW_HEIGHT);
+  int x0     = glutGet(GLUT_WINDOW_X);
+  int y0     = glutGet(GLUT_WINDOW_Y);
+  int width  = glutGet(GLUT_WINDOW_WIDTH);
+  int height = glutGet(GLUT_WINDOW_HEIGHT);
 #ifdef __MACH__
   host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &cclock);
   clock_get_time(cclock, &mts);
@@ -251,27 +353,25 @@ display (void)
 #else
   clock_gettime (CLOCK_MONOTONIC_RAW, &ts);
 #endif
-  ticks  = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+  int ticks = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 
   if (frames == 0)
     last_time = ticks;
-
   frames++;
-
   if (ticks - last_time >= 5000)
     {
       fprintf (stderr, "FPS: %.2f\n", 1000.0 * frames / (ticks - last_time));
       frames = 0;
     }
 
+  GLint uindex;
+
+  /// shader playback time (in seconds)
   uindex = glGetUniformLocation (shaders[shader].prog, "iGlobalTime");
   if (uindex >= 0)
     glUniform1f (uindex, ((float) ticks) / 1000.0);
 
-  uindex = glGetUniformLocation (shaders[shader].prog, "time");
-  if (uindex >= 0)
-    glUniform1f (uindex, ((float) ticks) / 1000.0);
-
+  /// viewport resolution (in pixels)
   uindex = glGetUniformLocation (shaders[shader].prog, "iResolution");
   if (uindex >= 0)
     {
@@ -281,6 +381,7 @@ display (void)
         glUniform3f (uindex, width, height, 1.0);
     }
 
+  /// viewport offset (in pixels)
   uindex = glGetUniformLocation (shaders[shader].prog, "iOffset");
   if (uindex >= 0)
     {
@@ -292,10 +393,12 @@ display (void)
           glUniform2f (uindex, 0.0, 0.0);
     }
 
+  /// mouse pixel coords. xy: current (if MLB down), zw: click
   uindex = glGetUniformLocation (shaders[shader].prog, "iMouse");
   if (uindex >= 0)
     glUniform4f (uindex, mouse[0],  mouse[1], mouse[2], mouse[3]);
 
+  /// input channel. XX = 2D/Cube
   if (!channels_loaded) {
     for (int k = 0; k < 4; ++k) {
         auto chan = "iChannel" + std::to_string(k);
@@ -308,19 +411,6 @@ display (void)
     }
     channels_loaded = true;
   }
-
-  uindex = glGetUniformLocation (shaders[shader].prog, "resolution");
-  if (uindex >= 0)
-    {
-      if (geometry[0] > 0.1 && geometry[1] > 0.1)
-        glUniform2f (uindex, geometry[0], geometry[1]);
-      else
-        glUniform2f (uindex, width, height);
-    }
-
-  uindex = glGetUniformLocation (shaders[shader].prog, "led_color");
-  if (uindex >= 0)
-    glUniform3f (uindex, 0.5, 0.3, 0.8);
 
   glClear (GL_COLOR_BUFFER_BIT);
   glRectf (-1.0, -1.0, 1.0, 1.0);
@@ -352,6 +442,8 @@ load_texture (const std::string& filename,
     else
         bitmap32 = FreeImage_ConvertTo32Bits(bitmap); // --> RGBa
 
+    FreeImage_FlipVertical(bitmap32); // = TRUE
+
     int imageWidth  = FreeImage_GetWidth(bitmap32);
     int imageHeight = FreeImage_GetHeight(bitmap32);
     // We don't need to delete or delete[] this textureData because it's not on the heap
@@ -378,12 +470,12 @@ load_texture (const std::string& filename,
                  imageWidth,       // Width of the texture
                  imageHeight,      // Height of the texture,
                  0,                // Border in pixels
-                 /* GL_BGRA,          // Data format */
+                 // GL_BGRA,          // Data format
                  GL_RGBA,
                  //GL_RGB |||| GL_RGBA
-                 /* GL_UNSIGNED_BYTE, // Type of texture data */
+                 // GL_UNSIGNED_BYTE, // Type of texture data
                  GL_FLOAT,
-                 /* textureData);     // The image data to use for this texture */
+                 // textureData);     // The image data to use for this texture
                  tex_data);
 
     if (false) { // = nearest
@@ -535,8 +627,10 @@ may_add (const std::string& str,
          const std::string& var) {
     std::regex re(matcher);
     std::smatch matches; // Useless but http://stackoverflow.com/a/26696318/1418165
-    if (!std::regex_search(str, matches, re))
+    if (!std::regex_search(str, matches, re)) {
+        std::cout << "Using  " << var << std::endl;
         return var + "\n";
+    }
     return "";
 }
 
@@ -550,11 +644,10 @@ load_file (const std::string& filename, GLint types[4]) {
     std::string str( (std::istreambuf_iterator<char>(ifs))
                     , std::istreambuf_iterator<char>());
     std::regex coms("//[^\\n]+\\n");
-    str = std::regex_replace(str, coms, "");
+    str = std::regex_replace(str, coms, "\n");
 
     for (int i = 0; i < 4; ++i) {
         std::string channel = "iChannel" + std::to_string(i) + ";";
-        /// input channel. XX = 2D/Cube
         if (types[i] == GL_TEXTURE_2D)
             str = may_add(str, "uniform\\s+sampler2D\\s+"+channel, "uniform sampler2D "+channel) + str;
         else if (types[i] == GL_TEXTURE_3D)
@@ -563,32 +656,33 @@ load_file (const std::string& filename, GLint types[4]) {
     }
 
     return
-        /// viewport resolution (in pixels)
         may_add(str, "uniform\\s+vec3\\s+iResolution", "uniform vec3 iResolution;") +
-        /// shader playback time (in seconds)
         may_add(str, "uniform\\s+float\\s+iGlobalTime", "uniform float iGlobalTime;") +
-        /// channel playback time (in seconds)
-        may_add(str, "uniform\\s+float\\s+iChannelTime", "uniform float iChannelTime[4];") +
-        /// channel resolution (in pixels)
-        may_add(str, "uniform\\s+vec3\\s+iChannelResolution", "uniform vec3 iChannelResolution[4];") +
-        /// mouse pixel coords. xy: current (if MLB down), zw: click
         may_add(str, "uniform\\s+vec4\\s+iMouse", "uniform vec4 iMouse;") +
-        /// (year, month, day, time in secs)
-        // may_add(str, "uniform\\s+vec4\\s+iDate", "uniform vec4 iDate;") +
-        /// sound sample rate (i.e., 44100)
-        // may_add(str, "uniform\\s+float\\s+iSampleRate", "uniform float iSampleRate;") +
+        may_add(str, "uniform\\s+vec2\\s+iOffset", "uniform vec2 iOffset;") +
+        // "uniform float     iChannelTime[4];"       /// channel playback time (in seconds)
+        // "uniform vec3      iChannelResolution[4];" /// channel resolution (in pixels)
+        // "uniform vec4      iDate;"                 /// (year, month, day, time in seconds)
+        // "uniform float     iSampleRate;" /// sound sample rate (i.e., 44100)
+        // "struct Camera {"
+        // "  int  active;"/// external camera active
+        // "  mat4 position;"/// external camera position
+        // "  vec3 screen;"/// external camera screen spec (halfSizeX, halfSizeY, distanceZ)
+        // "};"
+        // "uniform Camera    iCamera;" /// Oculus HMD eye position
+
         str + "\n" +
-        ((str.find("main(") == std::string::npos) ?
-         "void main(void)\n"
-         "{\n"
-         "    //vec4 color[4];\n"
-         "    //mainImage(color[0], gl_FragCoord.xy);\n"
-         "    //gl_FragColor = color[0];\n"
-         "    vec4 color = vec4(0.0, 0.0, 0.0, 1.0);\n"
-         "    mainImage(color, gl_FragCoord.xy);\n"
-         "    color.w = 1.0;\n"
-         "    gl_FragColor = color;\n"
-         "}\n" : std::string('\n', 1));
+        may_add(str, "void\\s+main\\s*\\(",
+                "void main(void)\n"
+                "{\n"
+                // "    vec4 color[4];\n"
+                // "    mainImage(color[0], gl_FragCoord.xy);\n"
+                // "    gl_FragColor = color[0];\n"
+                "    vec4 color = vec4(0.0, 0.0, 0.0, 1.0);\n"
+                "    mainImage(color, gl_FragCoord.xy);\n"
+                "    color.w = 1.0;\n"
+                "    gl_FragColor = color;\n"
+                "}\n");
 }
 
 
@@ -612,12 +706,13 @@ main (int argc, char *argv[]) {
         }
     }
     FreeImage_DeInitialise();
-    show(2);
+    show(0);
 
     glutDisplayFunc(display);
     glutMouseFunc(mouse_press_handler);
     glutMotionFunc(mouse_move_handler);
     glutKeyboardFunc(keyboard_handler);
+    glutSpecialFunc(kb_arrows);
 
     redisplay(1000/60);
 

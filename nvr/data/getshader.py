@@ -26,17 +26,18 @@ shaderinfo = """\
 // Description: %(description)s
 """
 
-shaderdecls = """
-uniform vec3      iResolution;           // viewport resolution (in pixels)
-uniform float     iGlobalTime;           // shader playback time (in seconds)
-uniform float     iChannelTime[4];       // channel playback time (in seconds)
-uniform vec3      iChannelResolution[4]; // channel resolution (in pixels)
-uniform vec4      iMouse;                // mouse pixel coords. xy: current (if MLB down), zw: click
-uniform sampler2D iChannel0;             // input channel. XX = 2D/Cube
-uniform sampler2D iChannel1;             // input channel. XX = 2D/Cube
-uniform vec4      iDate;                 // (year, month, day, time in secs)
-uniform float     iSampleRate;           // sound sample rate (i.e., 44100)
-\n"""
+# shaderdecls = """
+# uniform vec3      iResolution;           // viewport resolution (in pixels)
+# uniform float     iGlobalTime;           // shader playback time (in seconds)
+# uniform float     iChannelTime[4];       // channel playback time (in seconds)
+# uniform vec3      iChannelResolution[4]; // channel resolution (in pixels)
+# uniform vec4      iMouse;                // mouse pixel coords. xy: current (if MLB down), zw: click
+# uniform sampler2D iChannel0;             // input channel. XX = 2D/Cube
+# uniform sampler2D iChannel1;             // input channel. XX = 2D/Cube
+# uniform vec4      iDate;                 // (year, month, day, time in secs)
+# uniform float     iSampleRate;           // sound sample rate (i.e., 44100)
+# \n"""
+shaderdecls = ""
 
 def get_shader (id):
    url = 'https://www.shadertoy.com/shadertoy'
