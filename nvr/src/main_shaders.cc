@@ -47,6 +47,15 @@
 #include <streambuf>
 #include <regex>
 
+#include "nvr.hh"
+
+// Shared memory between the 2 main loops
+nvr::UniVR ovr;
+nvr::data  data;
+size_t dropper = 0;
+static int shader = 0;
+static bool channels_loaded = false;
+
 #define NAME "shaders"
 #define winWidth  640
 #define winHeight 480
@@ -107,111 +116,26 @@ public:
 };
 
 static Shader shaders[] = {
-//    Shader("pyroclastic explosion.glsl", "", "", "", ""),//tooslow
-//    Shader("XlsGz4.glsl", "", "tex09.jpg", "tex16.png", ""), //20, mouse, nice
-//    Shader("XsB3Wc.glsl", "tex16.png", "", "", ""),//tooslow
-//    Shader("MdXGW2.glsl", "tex11.png", "tex00.jpg", "tex09.jpg", "tex05.jpg"),//wow 15 mouse
-//    Shader("4dSXDd.glsl", "", "", "", ""),//mouse 40 nice
-//    Shader("4slGWM.glsl", "", "", "", ""),//40 nice fire mouse
-//    Shader("MsBGWm.glsl", "tex16.png", "tex01.jpg", "", ""),//mouse 40 ok
-//    Shader("4dBXWD.glsl", "", "", "", ""),//nice 50 mouse
-//    Shader("MsSSWV.glsl", "", "", "", ""),//tooslow mouse nice
-//    Shader("XtfGzj.glsl", "", "", "", ""),
-//    Shader("MtfGR8.glsl", "tex07.jpg", "tex05.jpg", "tex12.png", "cube02_0.jpg"),//wow 24 mouse
-//    Shader("Xsf3zX.glsl", "", "", "", ""),//meh
-//    Shader("lsfXz4.glsl", "", "", "", ""),//tooslow wow mouse
+   Shader("4dBXWD.glsl", "", "", "", ""),//nice 50 mouse
+   Shader("XtfGzj.glsl", "", "", "", ""),
    Shader("MdBGDK.glsl", "", "", "", ""),//60 mouse wowwwwwww
-//    Shader("MsXXWH.glsl", "tex09.jpg", "tex11.png", "", ""),//good mouse 20
-//    Shader("XljGDz.glsl", "", "", "", ""),//mouse 30 ok
-//    Shader("ldB3DK.glsl", "", "", "", ""),//waytooslow
-//    Shader("MtX3Ws.glsl", "cube02_0.jpg", "", "", ""),//nice mouse 20
-//    Shader("MdjGRw.glsl", "tex16.png", "tex01.jpg", "", ""),//20 nice mouse
-//    Shader("MdsGz8.glsl", "", "", "", ""),//20 mouse ok
-//    Shader("4dBGDy.glsl", "tex12.png", "", "", ""),//wow nomouse 20
-//    Shader("MdjGRy.glsl", "", "", "", ""),//kb 60 mouse lolitsagraph
-//    Shader("Xls3D2.glsl", "", "", "", ""),//10 wow mouse
    Shader("ldXGDr.glsl", "", "", "", ""),//nicemap 60 mouse
    Shader("Md2Xzm.glsl", "tex16.png", "cube02_0.jpg", "", ""),//mouse nicecube 60
-//    Shader("XlfGWl.glsl", "", "", "", ""),//wowmoving 20 mouse
-//    Shader("MsXGR2.glsl", "", "", "", ""),//60 wow nomouse
-//    Shader("4sXGzn.glsl", "tex03.jpg", "", "", ""),//mouse nice 60
-//    Shader("XllGzN.glsl", "", "", "", ""),//nicestars mouse 40
-//    Shader("lssGzn.glsl", "tex05.jpg", "", "tex14.png", "tex11.png"), //missing vid00.ogv //wow3dscene mouse 40
-//    Shader("4tlGDM.glsl", "", "", "", ""),//5 wowplanes nomouse
-//    Shader("lslSRf.glsl", "cube00_0.jpg", "cube01_0.png", "", ""),//wowstuff 10 mouse
-//    Shader("lssGRM.glsl", "", "", "", ""),//10 wowflying 10
-//    Shader("lssGW7.glsl", "tex09.jpg", "tex01.jpg", "tex07.jpg", "tex03.jpg"),//nice 20 mouse meh
-//    Shader("4ssXW2.glsl", "tex16.png", "", "", ""),//nice 15 mouse meh
-//    Shader("4dS3RG.glsl", "tex06.jpg", "", "", ""),//wow 25 mouse
-//    Shader("lsX3WH.glsl", "", "", "", ""),//nomouse 30 ok
-//    Shader("XsSGzG.glsl", "", "", "", ""),//teapot 10 mouse
-//    Shader("4dB3Dw.glsl", "tex16.png", "", "", ""),//unresponding
-//    Shader("Msf3Dj.glsl", "tex16.png", "cube04_0.png", "", ""),//unresponding
-//    Shader("MdS3zm.glsl", "tex05.jpg", "tex04.jpg", "", ""),//30 nomouse cool
+   Shader("MsXGR2.glsl", "", "", "", ""),//60 wow nomouse
+   Shader("4sXGzn.glsl", "tex03.jpg", "", "", ""),//mouse nice 60
    Shader("MdlXWr.glsl", "", "", "", ""),//60 starsnice mouse
-//    Shader("MsX3Rf.glsl", "", "", "", ""),//fuckedup
-//    Shader("ls2GDw.glsl", "tex03.jpg", "tex09.jpg", "tex02.jpg", "cube01_0.png"),//wowwoods 50 mouse
-//    Shader("4ssSRX.glsl", "tex05.jpg", "", "", ""),//10 wow mouse
-//    Shader("4dBXzw.glsl", "tex09.jpg", "", "", ""),//nicetargets 60 mouse
-//    Shader("XdfGW4.glsl", "", "", "", ""),//20 nicenodes mouse
-//    Shader("ld2Gz3.glsl", "", "", "", ""),//50 mouse niceraytracingshperes
-//    Shader("MsjSzz.glsl", "", "", "", ""),//nice 2
-//    Shader("Volcanic.glsl", "tex16.png", "tex06.jpg", "tex09.jpg", ""),//nicefuckedlava 10 mouse
-//    Shader("Bacterium.glsl", "tex03.jpg", "", "", ""),//nice nomouse 30
-//    Shader("Artificial.glsl", "cube04_0.png", "", "", ""),//50 mouse wow3d
-//    Shader("Juliabulb.glsl", "", "", "", ""),//10 nice nomouse
-//    Shader("Seascape.glsl", "", "", "", ""),//nicefucked 30 mouse
-//    Shader("XdlSDs.glsl", "", "", "", ""), //2dnice 60 nomouse
-//    Shader("ltS3zd.glsl", "", "", "", ""),//2dok 60 nomouse
-//    Shader("ngRay1.glsl", "", "", "", ""),//30 nice nomouse
-//    Shader("Generators.glsl", "", "", "", ""),//30 wowcata mouse
-//    Shader("Bridge.glsl", "tex00.jpg", "tex09.jpg", "tex16.png", ""),//10 wowfucked mouse
-//    Shader("Catacombs.glsl", "", "", "", ""),//20 mouse wowinside
-//    Shader("Hand-Drawn Sketch.glsl", "", "", "", ""), //nicecartoon 60 mouse
-//    Shader("crystal beacon.glsl", "", "", "", ""), //nomouse 50 wow
-//    Shader("MdXSzS.glsl", "", "", "", ""),//nomouse nice 20
-//    Shader("Mss3WN.glsl", "", "", "", ""),//nice 30 mouse
-//    Shader("ld2GRz.glsl", "cube04_0.png", "", "", ""),//mouse 10 okfucked
-//    Shader("4ds3WS.glsl", "tex16.png", "tex01.jpg", "", ""),//10 nicefucked mouse
-//    Shader("ldl3DS.glsl", "", "", "", ""),//nomouse 60 nice
-//    Shader("MljGzR.glsl", "", "", "", ""),//60 nomouse meh
-//    Shader("4tl3RM.glsl", "tex02.jpg", "tex16.png", "cube04_0.png", "cube05_0.png"), //nomouse 15 ok
-//    Shader("Msj3zD.glsl", "", "", "", ""),//cool 60 nomouse 2d
-//    Shader("4sjXzG.glsl", "tex03.jpg", "tex16.png", "", "tex08.jpg"),//20 nice mouse
-//    Shader("XdB3Dw.glsl", "", "", "", ""),//meh 40 nomouse
-//    Shader("ldl3zn.glsl", "tex00.jpg", "tex05.jpg", "", ""),//ok mouse 20
-//    Shader("llj3Rz.glsl", "tex09.jpg", "", "", ""), //onlymousex 60 nice
-
-//    Shader("lsl3W2.glsl", "cube02_0.jpg", "tex16.png", "", ""),//blank
-//    Shader("MdlGz4.glsl", "", "", "", ""),//blank
-//    Shader("MdlGz4.glsl", "", "", "", ""),//blank
-//    Shader("Msf3z4.glsl", "cube00_0.jpg", "cube01_0.png", "", ""),//blank
-//    Shader("4dsGD7.glsl", "", "", "", ""),//blank
-//    Shader("Mdf3zr.glsl", "", "", "", ""),//blank
-//    Shader("starDust.glsl", "", "", "", ""),//blank
-
-    // Shader("XtS3DD.glsl", "tex16.png", "", "", ""),//iChannelResolution
-    // Shader("Grid of Cylinders.glsl", "tex01.jpg", "tex16.png", "tex12.png", "tex05.jpg"),//iChannelResolution
-    // Shader("4tsGD7.glsl", "", "", "", ""),//iDate
-    // Shader("MtlGWM.glsl", "", "", "", ""),//iDate
-    // Shader("lssGRX.glsl", "tex16.png", "", "", ""),//iChannelResolution
-    // Shader("Md23Wz.glsl", "tex12.png", "", "", ""),//iChannelResolution
-    // Shader("4sB3D1.glsl", "tex08.jpg", "tex16.png", "", ""),//iChannelResolution
-    // Shader("XdfXDB.glsl", "tex09.jpg", "tex16.png", "tex12.png", "tex07.jpg"),//iChannelResolution
-    // Shader("XsSGDy.glsl", "tex16.png", "tex02.jpg", "", ""),//iChannelResolution
-    // Shader("XsXSWN.glsl", "tex00.jpg", "", "cube00_0.jpg", "cube01_0.png"),//iChannelResolution
-    // Shader("Xss3DS.glsl", "tex16.png", "", "", ""),//iChannelResolution
-    // Shader("MtBGRD.glsl", "", "", "", ""),//kb0 compilerror
-    // Shader("4s23WV.glsl", "tex11.png", "", "", ""),//iChannelResolution
-    // Shader("leizex.glsl", "", "", "", ""), //good fps, off, iCamera
-
+   Shader("ls2GDw.glsl", "tex03.jpg", "tex09.jpg", "tex02.jpg", "cube01_0.png"),//wowwoods 50 mouse
+   Shader("4dBXzw.glsl", "tex09.jpg", "", "", ""),//nicetargets 60 mouse
+   Shader("Artificial.glsl", "cube04_0.png", "", "", ""),//50 mouse wow3d
+   Shader("Hand-Drawn Sketch.glsl", "", "", "", ""), //nicecartoon 60 mouse
+   Shader("crystal beacon.glsl", "", "", "", ""), //nomouse 50 wow
+   Shader("ldl3DS.glsl", "", "", "", ""),//nomouse 60 nice
+   Shader("MljGzR.glsl", "", "", "", ""),//60 nomouse meh
+   Shader("Msj3zD.glsl", "", "", "", ""),//cool 60 nomouse 2d
+   Shader("llj3Rz.glsl", "tex09.jpg", "", "", ""), //onlymousex 60 nice
    Shader("XdlGzH.glsl", "tex04.jpg", "", "", ""),//nomouse 50 streetview
-
-    Shader("Xyptonjtroz.glsl", "", "", "", "")
+   Shader("Xyptonjtroz.glsl", "", "", "", "")
 };
-static int shader = 0;
-
-static bool channels_loaded = false;
 
 
 
@@ -220,7 +144,6 @@ update_mouse_xy (int x, int y) {
     int x0     = glutGet(GLUT_WINDOW_X);
     int y0     = glutGet(GLUT_WINDOW_Y);
     int height = glutGet(GLUT_WINDOW_HEIGHT);
-
     if (geometry[0] > 0.1 && geometry[1] > 0.1) {
         mouse[0] =               geometry[2] + x0 + x;
         mouse[1] = geometry[1] - geometry[3] - y0 - y;
@@ -234,21 +157,14 @@ void
 mouse_press_handler (int button, int state, int x, int y) {
     if (button != GLUT_LEFT_BUTTON)
         return;
-
     if (state == GLUT_DOWN) {
         update_mouse_xy(x, y);
-
         mouse[2] = mouse[0];
         mouse[3] = mouse[1];
     } else {
         mouse[2] = -1;
         mouse[3] = -1;
     }
-}
-
-void
-mouse_move_handler (int x, int y) {
-    update_mouse_xy(x, y);
 }
 
 void
@@ -300,9 +216,6 @@ keyboard_handler (unsigned char key
     case '9':
         show(key - '0');
         break;
-
-    default:
-        break;
     }
 }
 
@@ -318,6 +231,17 @@ kb_arrows (int key, int, int) {
     }
 }
 
+
+void
+univr () {
+    ++dropper;
+    if (10*dropper == 30) {
+        ovr.step(data);
+        dropper = 0;
+    }
+    int scale = 37;
+    update_mouse_xy(scale * data.eyeX, scale * data.eyeY);
+}
 
 void
 redisplay (int value) {
@@ -338,7 +262,8 @@ display (void)
 #endif
   struct timespec ts;
 
-  glUseProgram (shaders[shader].prog);
+  glUseProgram(shaders[shader].prog);
+  univr();
 
   int x0     = glutGet(GLUT_WINDOW_X);
   int y0     = glutGet(GLUT_WINDOW_Y);
@@ -688,6 +613,10 @@ load_file (const std::string& filename, GLint types[4]) {
 
 int
 main (int argc, char *argv[]) {
+    if (argc != 1 +1) {
+        std::cout << argv[0] << " trained_landmarks.dat" << std::endl;
+        return 1;
+    }
     glutInit(&argc, argv);
 
     glutInitWindowSize(winWidth, winHeight);
@@ -710,11 +639,13 @@ main (int argc, char *argv[]) {
 
     glutDisplayFunc(display);
     glutMouseFunc(mouse_press_handler);
-    glutMotionFunc(mouse_move_handler);
+    glutMotionFunc(update_mouse_xy);
     glutKeyboardFunc(keyboard_handler);
     glutSpecialFunc(kb_arrows);
 
     redisplay(1000/60);
+
+    ovr.init(argv[1]);  // UniVR init
 
     glutMainLoop();
 
