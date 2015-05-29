@@ -448,85 +448,75 @@ load_texture (const std::string& filename,
 
 
 GLint
-compile_shader (const GLenum  shader_type,
-                const GLchar *shader_source)
-{
-  GLuint shader = glCreateShader (shader_type);
-  GLint status = GL_FALSE;
+compile_shader (const std::string& shader_source) {
+    GLint status = GL_FALSE;
+    auto source = shader_source.c_str();
+    GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
 
-  glShaderSource (shader, 1, &shader_source, NULL);
-  glCompileShader (shader);
+    glShaderSource(shader, 1, &source, NULL);
+    glCompileShader(shader);
 
-  glGetShaderiv (shader, GL_COMPILE_STATUS, &status);
-  if (status == GL_TRUE)
-    return shader;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+    if (status == GL_TRUE)
+        return shader;
 
-  GLint loglen;
-  glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &loglen);
-  auto msg = new GLchar[loglen]();
-  glGetShaderInfoLog(shader, loglen, NULL, msg);
-  fprintf (stderr, "shader failed to compile:\n%s\n", msg);
-  delete[] msg;
-
-  return -1;
+    GLint loglen;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &loglen);
+    auto msg = new GLchar[loglen]();
+    glGetShaderInfoLog(shader, loglen, NULL, msg);
+    std::cerr << "!compile" << std::endl
+              << msg        << std::endl;
+    delete[] msg;
+    return -1;
 }
 
 
 GLint
-link_program (const std::string& shader_source)
-{
-  GLint frag, program;
-  GLint status = GL_FALSE;
-  GLint n_uniforms;
+link_program (const std::string& shader_source) {
+    GLint status = GL_FALSE;
+    GLint n_uniforms;
 
-  frag = compile_shader(GL_FRAGMENT_SHADER, shader_source.c_str());
-  if (frag < 0)
-    return -1;
+    GLint frag = compile_shader(shader_source);
+    if (frag < 0)
+        return -1;
 
-  program = glCreateProgram ();
+    GLint program = glCreateProgram();
+    glAttachShader(program, frag);
+    glLinkProgram(program);
+    // glDeleteShader(frag);
 
-  glAttachShader (program, frag);
-  glLinkProgram (program);
-  // glDeleteShader (frag);
-
-  glGetProgramiv (program, GL_LINK_STATUS, &status);
-  if (status != GL_TRUE) {
-      GLint loglen;
-      glGetProgramiv(program, GL_INFO_LOG_LENGTH, &loglen);
-      auto msg = new GLchar[loglen]();
-      glGetProgramInfoLog(program, loglen, NULL, msg);
-      fprintf (stderr, "program failed to link:\n%s\n", msg);
-      delete[] msg;
-      return -1;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (status != GL_TRUE) {
+        GLint loglen;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &loglen);
+        auto msg = new GLchar[loglen]();
+        glGetProgramInfoLog(program, loglen, NULL, msg);
+        std::cerr << "!link" << std::endl
+                  << msg     << std::endl;
+        delete[] msg;
+        return -1;
     }
 
-  glGetProgramiv (program, GL_ACTIVE_UNIFORMS, &n_uniforms);
-  fprintf (stderr, "%d uniforms:\n", n_uniforms);
-
-  for (GLint i = 0; i < n_uniforms; i++)
-    {
-      GLint size;
-      GLenum type;
-      GLchar name[20];
-      GLsizei namelen;
-
-      glGetActiveUniform (program, i, 19, &namelen, &size, &type, name);
-      name[namelen] = '\0';
-      fprintf (stderr, "  %2d: %-20s (type: 0x%04x, size: %d)\n", i, name, type, size);
+    glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &n_uniforms);
+    std::cerr << n_uniforms << " uniforms:" << std::endl;
+    for (GLint i = 0; i < n_uniforms; ++i) {
+        GLint size;
+        GLenum type;
+        GLchar name[20];
+        GLsizei namelen;
+        glGetActiveUniform(program, i, 19, &namelen, &size, &type, name);
+        name[namelen] = '\0';
+        std::cerr << i << ": " << name << "  type: " << type << ", " << size << std::endl;
     }
 
-  return program;
+    return program;
 }
 
 void
-init_glew (void)
-{
-  GLenum status;
+init_glew () {
+    GLenum status = glewInit();
 
-  status = glewInit ();
-
-  if (status != GLEW_OK)
-    {
+    if (status != GLEW_OK) {
       fprintf (stderr, "glewInit error: %s\n", glewGetErrorString (status));
       exit (-1);
     }
@@ -538,11 +528,10 @@ init_glew (void)
            glGetString (GL_RENDERER), glewGetString (GLEW_VERSION),
            glGetString (GL_SHADING_LANGUAGE_VERSION));
 
-  if (!GLEW_VERSION_2_1)
-    {
+  if (!GLEW_VERSION_2_1) {
       fprintf (stderr, "OpenGL 2.1 or better required for GLSL support.");
       exit (-1);
-    }
+  }
 }
 
 
