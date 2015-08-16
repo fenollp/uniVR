@@ -34,6 +34,29 @@ else()
 endif()
 
 
+if(MODE_shaders)
+  set(target_name shaders)
+  find_package(GLEW REQUIRED)
+  include_directories(${GLEW_INCLUDE_DIRS})
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+  find_package(FreeImage REQUIRED)
+  include_directories(${FreeImage_INCLUDE_DIRS})
+  # add_definitions( -Dwindow_debug )
+  add_executable(${target_name}
+    src/nvr.cc
+    src/main_${target_name}.cc
+  )
+  include(ext/dlib/dlib/cmake)
+  target_link_libraries(${target_name}
+    ${OpenCV_LIBS}
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    ${GLEW_LIBRARIES}
+    ${FreeImage_LIBRARIES}
+    dlib
+  )
+endif(MODE_shaders)
+
 if(MODE_snowmen)
   set(target_name snowmen)
   add_definitions( -Dwindow_debug )
@@ -94,9 +117,3 @@ if(MODE_boxes)
     dlib
   )
 endif(MODE_boxes)
-
-
-# if (NOT DLIB_NO_GUI_SUPPORT)
-#    add_subdirectory(gui)
-#    add_subdirectory(examples)
-# endif()
