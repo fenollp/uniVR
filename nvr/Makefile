@@ -21,7 +21,7 @@ build/:
 ext/:
 	mkdir $@
 
-DLIB = 18.15
+DLIB = 18.16
 DLIB_file = dlib-$(DLIB).tar.bz2
 ext/$(DLIB_file): ext/
 	wget -O ext/$(DLIB_file) 'http://freefr.dl.sourceforge.net/project/dclib/dlib/v$(DLIB)/dlib-$(DLIB).tar.bz2' || rm ext/$(DLIB_file)
