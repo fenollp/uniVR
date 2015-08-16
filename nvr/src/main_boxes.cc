@@ -42,7 +42,7 @@ size_t dropper = 0;
 void DrawGLScene () {
     double t = (double)cvGetTickCount();
     ++dropper;
-    if (10*dropper == 30) {
+    if (10*dropper == 20) {
         ovr.step(data);
         dropper = 0;
     } else
@@ -378,6 +378,9 @@ keyPressed (unsigned char key, int, int) {
     case 'f':
     case 'F':
         toggle_fullscreen();
+        break;
+    case ' ':
+        ovr.detect_now();
         break;
     case 'q':
     case 27: // ESCAPE
