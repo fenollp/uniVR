@@ -285,6 +285,7 @@ namespace nvr {
         rc_ = 0;
         rr_ = 0;
         inited_ = false;
+        detected_ = false;
     }
 
     UniVR::~UniVR () {
@@ -359,6 +360,46 @@ namespace nvr {
 
     ///////////////////////////////////////////////////////////////////////////
 
+    void
+    UniVR::detect_now () {
+        detected_ = true;
+    }
+
+    void
+    UniVR::detect_then_track () {
+        if (!detected_) {
+            ++I_;
+            if (I_ % DROP_AMOUNT == 0) {
+                /// Detection
+                I_ = 0;
+                std::cout << "Detection" << std::endl;
+                auto dets = detector_(img_);
+#ifdef window_debug
+                for (const auto& det : dets)
+                    rectangle(frame_, det, 1);
+#endif
+                if (!dets.empty()) {
+                    rect_found_ = biggest_rectangle(dets);
+#ifdef window_debug
+                    rectangle(frame_, rect_found_, 4);
+#endif
+                    detected_ = true;
+                    tracker_.start_track(img_, rect_found_);
+                    ++Ds_;
+                }
+            }
+        } else {
+            /// Tracking
+            tracker_.update(img_); // Returns confidence as a double
+            rect_found_ = tracker_.get_position();
+#ifdef window_debug
+            rectangle(frame_, rect_found_, 2);
+#endif
+            if (rect_found_.is_empty())
+                detected_ = false;
+        }
+    }
+
     bool
     UniVR::step (data& data) {
         if (!inited_)
@@ -368,27 +409,7 @@ namespace nvr {
             return false;
 
         rect_found_ = dlib::rectangle();
-
-        bool detected = false;
-        ++I_;
-        if (I_ % DROP_AMOUNT == 0) {
-            /// Detection
-            I_ = 0;
-            std::cout << "Detection" << std::endl;
-            auto dets = detector_(img_);
-#ifdef window_debug
-            for (const auto& det : dets)
-                rectangle(frame_, det, 1);
-#endif
-            if (!dets.empty()) {
-                rect_found_ = biggest_rectangle(dets);
-#ifdef window_debug
-                rectangle(frame_, rect_found_, 4);
-#endif
-                detected = true;
-                ++Ds_;
-            }
-        }
+        detect_then_track(); // Sets rect_found_
         if (rect_found_.is_empty())
             if (!zones_.empty())
                 rect_found_ = zones_.back();

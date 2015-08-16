@@ -117,21 +117,21 @@ public:
 
 static Shader shaders[] = {
    Shader("4dBXWD.glsl", "", "", "", ""),//nice 50 mouse
-   Shader("XtfGzj.glsl", "", "", "", ""),
+//   Shader("XtfGzj.glsl", "", "", "", ""),
    Shader("MdBGDK.glsl", "", "", "", ""),//60 mouse wowwwwwww
    Shader("ldXGDr.glsl", "", "", "", ""),//nicemap 60 mouse
    Shader("Md2Xzm.glsl", "tex16.png", "cube02_0.jpg", "", ""),//mouse nicecube 60
-   Shader("MsXGR2.glsl", "", "", "", ""),//60 wow nomouse
-   Shader("4sXGzn.glsl", "tex03.jpg", "", "", ""),//mouse nice 60
-   Shader("MdlXWr.glsl", "", "", "", ""),//60 starsnice mouse
-   Shader("ls2GDw.glsl", "tex03.jpg", "tex09.jpg", "tex02.jpg", "cube01_0.png"),//wowwoods 50 mouse
-   Shader("4dBXzw.glsl", "tex09.jpg", "", "", ""),//nicetargets 60 mouse
+//   Shader("MsXGR2.glsl", "", "", "", ""),//60 wow nomouse
+//   Shader("4sXGzn.glsl", "tex03.jpg", "", "", ""),//mouse nice 60
+//   Shader("MdlXWr.glsl", "", "", "", ""),//60 starsnice mouse
+//   Shader("ls2GDw.glsl", "tex03.jpg", "tex09.jpg", "tex02.jpg", "cube01_0.png"),//wowwoods 50 mouse
+//   Shader("4dBXzw.glsl", "tex09.jpg", "", "", ""),//nicetargets 60 mouse
    Shader("Artificial.glsl", "cube04_0.png", "", "", ""),//50 mouse wow3d
    Shader("Hand-Drawn Sketch.glsl", "", "", "", ""), //nicecartoon 60 mouse
-   Shader("crystal beacon.glsl", "", "", "", ""), //nomouse 50 wow
-   Shader("ldl3DS.glsl", "", "", "", ""),//nomouse 60 nice
-   Shader("MljGzR.glsl", "", "", "", ""),//60 nomouse meh
-   Shader("Msj3zD.glsl", "", "", "", ""),//cool 60 nomouse 2d
+//   Shader("crystal beacon.glsl", "", "", "", ""), //nomouse 50 wow
+//   Shader("ldl3DS.glsl", "", "", "", ""),//nomouse 60 nice
+//   Shader("MljGzR.glsl", "", "", "", ""),//60 nomouse meh
+//   Shader("Msj3zD.glsl", "", "", "", ""),//cool 60 nomouse 2d
    Shader("llj3Rz.glsl", "tex09.jpg", "", "", ""), //onlymousex 60 nice
    Shader("XdlGzH.glsl", "tex04.jpg", "", "", ""),//nomouse 50 streetview
    Shader("Xyptonjtroz.glsl", "", "", "", "")
@@ -202,6 +202,10 @@ keyboard_handler (unsigned char key
             glutPositionWindow(window_x0, window_y0);
             glutReshapeWindow(window_width, window_height);
         }
+        break;
+
+    case ' ':
+        ovr.detect_now();
         break;
 
     case '0':

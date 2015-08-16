@@ -212,8 +212,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     //camera
 	vec3 ro = vec3(0.,0.,3.5);
     vec3 rd = normalize(vec3(p,-1.4));
-    mat2 mx = mm2(time*0.25+um.x*6.);
-    mat2 my = mm2(time*0.27+um.y*6.); 
+    mat2 mx = mm2(/*time*0.25+*/um.x*6.);
+    mat2 my = mm2(/*time*0.27+*/um.y*6.);
     ro.xz *= mx;rd.xz *= mx;
     ro.xy *= my;rd.xy *= my;
     

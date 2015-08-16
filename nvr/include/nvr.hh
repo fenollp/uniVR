@@ -84,6 +84,7 @@ namespace nvr {
         FrameStream capture_; // Stream from webcam
         Frame       frame_;   // Frame from webcam
         dlib::frontal_face_detector detector_;  // HoG face detector
+        dlib::correlation_tracker   tracker_;   // Track the face found with HoG
         dlib::shape_predictor       extractor_; // Landmarks extractor
         dlib::array2d<dlib::rgb_pixel> img_; // dlib's input image
         dlib::rectangle rect_found_; // ≈ zones_.last()
@@ -92,6 +93,7 @@ namespace nvr {
         size_t I_, Ds_; // I_: counter to drop detections
         bool inited_; // Set to true after a call to init/1
         int rc_, rr_; // Ratio of camera frame over pyramied-down img
+        bool detected_; // Whether detector_ successfully found something for tracker_
 
     public:
         UniVR ();
@@ -103,6 +105,7 @@ namespace nvr {
         /// step/1: calls next_frame/0 for new data then collect_data/3 &
         ///  updates face with newly processed data
         bool step (data& face);
+        void detect_now (); // Force face detection then branches into detect_then_track/0
     protected:
         bool next_frame (); // Extracts new frame from the capture device
     private:
@@ -112,6 +115,7 @@ namespace nvr {
         int norm (const Landmarks& face, int part1, int part2);
         double angle (const Landmarks& face,
                       int part1, int part2, int Part1, int Part2);
+        void detect_then_track ();
         /// Does all the math to extract new data
         void collect_data (data& data, const Landmarks& face,
                            const dlib::rectangle& face_zone);

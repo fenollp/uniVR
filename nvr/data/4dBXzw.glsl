@@ -258,7 +258,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
     dir = rotate(dir,rot);
     mat4 head = rot * getPosMatrix(ori);
     
-    // change camera
+/*    // change camera
 #ifdef CAMERA_CHANGE
     rot = fromEuler(vec3(0.0,1.0,0.0));
     vec3 ori2 = vec3(0.0,0.0,2.0);
@@ -270,6 +270,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
     ori = mix(ori,ori2,camera_change_factor);
     dir = normalize(mix(dir,dir2,camera_change_factor));
 #endif
+*/
     
     // tracing
     vec3 p;

@@ -220,8 +220,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 	
 	vec3 ro = vec3(smoothstep(0.,1.,tri(time*.45)*2.)*0.1, smoothstep(0.,1.,tri(time*0.9)*2.)*0.07, -time*0.6);
     ro.y -= height(ro.zx)+0.05;
-    mo.x += smoothstep(0.6,1.,sin(time*.6)*0.5+0.5)-1.5;
-    vec3 eyedir = normalize(vec3(cos(mo.x),mo.y*2.-0.2+sin(time*0.45*1.57)*0.1,sin(mo.x)));
+    mo.x += smoothstep(0.6,1.,/*sin(time*.6)*0.5+*/0.5)-1.5; // EDIT: Makes camera move
+    vec3 eyedir = normalize(vec3(cos(mo.x),mo.y*2.-0.2/*+sin(time*0.45*1.57)*0.1*/,sin(mo.x)));
+//    vec3 eyedir = vec3(cos(mo.x), 0.0, mo.y);//EDIT
     vec3 rightdir = normalize(vec3(cos(mo.x+1.5708),0.,sin(mo.x+1.5708)));
     vec3 updir = normalize(cross(rightdir,eyedir));
 	vec3 rd=normalize((p.x*rightdir+p.y*updir)*1.+eyedir);
