@@ -3,8 +3,11 @@ all: compile
 modes = snowmen base fromfile boxes shaders
 MODE ?= snowmen
 
+CMAKE = cmake --config Release #-DCMAKE_C_COMPILER=/usr/local/bin/gcc-5 -DCMAKE_CXX_COMPILER=/usr/local/bin/g++-5
+
 compile: ext/dlib/ build/
-	cd build/ && cmake -DMODE_$(MODE)=ON .. && cmake --build .
+#	export CC=/usr/local/bin/gcc-5 && export CXX=/usr/local/bin/g++-5 &&
+	cd build/ && $(CMAKE) -DMODE_$(MODE)=ON .. && $(CMAKE) --build .
 	cp build/$(MODE) .
 .PHONY: compile
 
@@ -24,7 +27,8 @@ ext/:
 DLIB = 18.16
 DLIB_file = dlib-$(DLIB).tar.bz2
 ext/$(DLIB_file): ext/
-	wget -O ext/$(DLIB_file) 'http://freefr.dl.sourceforge.net/project/dclib/dlib/v$(DLIB)/dlib-$(DLIB).tar.bz2' || rm ext/$(DLIB_file)
+#	wget -O ext/$(DLIB_file) 'http://freefr.dl.sourceforge.net/project/dclib/dlib/v$(DLIB)/dlib-$(DLIB).tar.bz2' || rm ext/$(DLIB_file)
+	cp ~/wefwefwef/nvr/$(DLIB_file) ext/
 ext/dlib: ext/$(DLIB_file)
 	cd ext/ && tar jxf $(DLIB_file) && mv dlib-*/ dlib/ #&& rm -f $(DLIB_file)
 
