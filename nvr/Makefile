@@ -31,6 +31,7 @@ ext/dlib: ext/$(DLIB_file)
 
 dat = 'shape_predictor_68_face_landmarks.dat'
 dat_url = 'http://ftp.jaist.ac.jp/pub/sourceforge/d/dc/dclib/dlib/v18.10/'$(dat)'.bz2'
+# https://copy.com/VvOZA9yL6WHAx2N8
 $(dat):
 	wget -O ext/$(dat).bz2 $(dat_url) || rm ext/$(dat).bz2
 	cd ext/ && tar jf $(dat).bz2
