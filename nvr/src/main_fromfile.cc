@@ -30,7 +30,28 @@ main (int argc, const char* argv[]) {
                       << t.count() << ','
                       << face.gx   << ','
                       << face.gy   << ','
-                      << face.chin << std::endl;
+                      << face.chin << ','
+
+                      << face.eyeX << ','
+                      << face.eyeY << ','
+                      << face.eyeZ << ','
+
+                      << face.n << ','
+                      << face.er << ','
+                      << face.el << ','
+                      << face.ar << ','
+                      << face.al << ','
+                      << face.das << ','
+                      << face.w << ','
+                      << face.h << ','
+                      << face.headWidth << ','
+                      << face.headHeight << ','
+                      << face.upperHeadX << ','
+                      << face.upperHeadY << ','
+                      << face.headX << ','
+                      << face.headY << ','
+                      << face.headDist
+                      << std::endl;
 
             if (cv::waitKey(5) == 'q')
                 break;
@@ -40,5 +61,8 @@ main (int argc, const char* argv[]) {
     catch (std::exception& e) {
         std::cout << std::endl << "exception thrown!"
                   << std::endl << e.what() << std::endl;
+        return 2;
     }
+
+    return 0;
 }

@@ -46,6 +46,10 @@ This code should compile | run with
 * OpenCV ≥ 2.4.9
 * Dlib ≥ 18.10
 * Apple LLVM version 5.1 (clang-503.0.40) (based on LLVM 3.4svn)
+* FreeImage
+* GLUT
+* GLEW
+* OpenGL
 
 
 ### nvr/*
@@ -70,6 +74,11 @@ This code should compile | run with
         * Both papers dating 2014
     * Related database (of still images): [helen](http://www.ifp.illinois.edu/~vuongle2/helen/)
 * [dlib documentation](http://dlib.net/term_index.html)
+* Possible additions:
+    * Demos:
+        1. Combine 3D screen / glasses & render a 3D video stream
+        1. Mirror the user's face on a 3D OpenGL head (map texture?)
+        1. RUN ON A WEBSITE
 
 
 ### motion/*

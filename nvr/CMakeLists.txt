@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
+
 
 PROJECT(nvr)
 
@@ -27,11 +28,11 @@ include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 if(COMPILER_SUPPORTS_CXX11)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 elseif(COMPILER_SUPPORTS_CXX0X)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 else()
-        message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+  message(STATUS "Compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler")
 endif()
 
 
@@ -58,9 +59,9 @@ if(MODE_shaders)
   )
 endif(MODE_shaders)
 
-if(MODE_snowmen)
-  set(target_name snowmen)
-  add_definitions( -Dwindow_debug )
+if(MODE_boxes)
+  set(target_name boxes)
+# add_definitions( -Dwindow_debug )
   add_executable(${target_name}
     src/nvr.cc
     src/main_${target_name}.cc
@@ -72,21 +73,7 @@ if(MODE_snowmen)
     ${GLUT_LIBRARIES}
     dlib
   )
-endif(MODE_snowmen)
-
-if(MODE_base)
-  set(target_name base)
-  add_definitions( -Dwindow_debug )
-  add_executable(${target_name}
-    src/nvr.cc
-    src/main_${target_name}.cc
-  )
-  include(ext/dlib/dlib/cmake)
-  target_link_libraries(${target_name}
-    ${OpenCV_LIBS}
-    dlib
-  )
-endif(MODE_base)
+endif(MODE_boxes)
 
 if(MODE_fromfile)
   set(target_name fromfile)
@@ -103,9 +90,23 @@ if(MODE_fromfile)
   )
 endif(MODE_fromfile)
 
-if(MODE_boxes)
-  set(target_name boxes)
-# add_definitions( -Dwindow_debug )
+if(MODE_base)
+  set(target_name base)
+  add_definitions( -Dwindow_debug )
+  add_executable(${target_name}
+    src/nvr.cc
+    src/main_${target_name}.cc
+  )
+  include(ext/dlib/dlib/cmake)
+  target_link_libraries(${target_name}
+    ${OpenCV_LIBS}
+    dlib
+  )
+endif(MODE_base)
+
+if(MODE_snowmen)
+  set(target_name snowmen)
+  add_definitions( -Dwindow_debug )
   add_executable(${target_name}
     src/nvr.cc
     src/main_${target_name}.cc
@@ -117,4 +118,4 @@ if(MODE_boxes)
     ${GLUT_LIBRARIES}
     dlib
   )
-endif(MODE_boxes)
+endif(MODE_snowmen)
