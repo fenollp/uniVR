@@ -24,8 +24,7 @@ ext/:
 DLIB = 18.16
 DLIB_file = dlib-$(DLIB).tar.bz2
 ext/$(DLIB_file): ext/
-	cp ../../$(DLIB_file) ext/
-#	wget -O ext/$(DLIB_file) 'http://freefr.dl.sourceforge.net/project/dclib/dlib/v$(DLIB)/dlib-$(DLIB).tar.bz2' || rm ext/$(DLIB_file)
+	cp ../../$(DLIB_file) ext/ 2>/dev/null || wget -O ext/$(DLIB_file) 'http://freefr.dl.sourceforge.net/project/dclib/dlib/v$(DLIB)/dlib-$(DLIB).tar.bz2' || rm ext/$(DLIB_file)
 ext/dlib: ext/$(DLIB_file)
 	cd ext/ && tar jxf $(DLIB_file) && mv dlib-*/ dlib/ #&& rm -f $(DLIB_file)
 
