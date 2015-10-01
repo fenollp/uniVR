@@ -48,7 +48,7 @@ if(MODE_shaders)
     src/nvr.cc
     src/main_${target_name}.cc
   )
-  include(ext/dlib/dlib/cmake)
+  include(dlib/cmake)
   target_link_libraries(${target_name}
     ${OpenCV_LIBS}
     ${OPENGL_LIBRARIES}
@@ -66,7 +66,7 @@ if(MODE_boxes)
     src/nvr.cc
     src/main_${target_name}.cc
   )
-  include(ext/dlib/dlib/cmake)
+  include(dlib/cmake)
   target_link_libraries(${target_name}
     ${OpenCV_LIBS}
     ${OPENGL_LIBRARIES}
@@ -83,7 +83,7 @@ if(MODE_fromfile)
     src/nvr.cc
     src/main_${target_name}.cc
   )
-  include(ext/dlib/dlib/cmake)
+  include(dlib/cmake)
   target_link_libraries(${target_name}
     ${OpenCV_LIBS}
     dlib
@@ -97,7 +97,7 @@ if(MODE_base)
     src/nvr.cc
     src/main_${target_name}.cc
   )
-  include(ext/dlib/dlib/cmake)
+  include(dlib/cmake)
   target_link_libraries(${target_name}
     ${OpenCV_LIBS}
     dlib
@@ -111,7 +111,7 @@ if(MODE_snowmen)
     src/nvr.cc
     src/main_${target_name}.cc
   )
-  include(ext/dlib/dlib/cmake)
+  include(dlib/cmake)
   target_link_libraries(${target_name}
     ${OpenCV_LIBS}
     ${OPENGL_LIBRARIES}
