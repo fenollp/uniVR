@@ -6,11 +6,6 @@ PROJECT(nvr)
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 
-find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIRS})
-find_package(GLUT REQUIRED)
-include_directories(${GLUT_INCLUDE_DIR})
-
 include_directories(include)
 
 
@@ -38,6 +33,10 @@ endif()
 
 if(MODE_shaders)
   set(target_name shaders)
+  find_package(OpenGL REQUIRED)
+  include_directories(${OPENGL_INCLUDE_DIRS})
+  find_package(GLUT REQUIRED)
+  include_directories(${GLUT_INCLUDE_DIR})
   find_package(GLEW REQUIRED)
   include_directories(${GLEW_INCLUDE_DIRS})
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
@@ -61,6 +60,10 @@ endif(MODE_shaders)
 
 if(MODE_boxes)
   set(target_name boxes)
+  find_package(OpenGL REQUIRED)
+  include_directories(${OPENGL_INCLUDE_DIRS})
+  find_package(GLUT REQUIRED)
+  include_directories(${GLUT_INCLUDE_DIR})
 # add_definitions( -Dwindow_debug )
   add_executable(${target_name}
     src/nvr.cc
@@ -106,6 +109,10 @@ endif(MODE_base)
 
 if(MODE_snowmen)
   set(target_name snowmen)
+  find_package(OpenGL REQUIRED)
+  include_directories(${OPENGL_INCLUDE_DIRS})
+  find_package(GLUT REQUIRED)
+  include_directories(${GLUT_INCLUDE_DIR})
   add_definitions( -Dwindow_debug )
   add_executable(${target_name}
     src/nvr.cc
