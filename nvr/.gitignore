@@ -1,8 +1,4 @@
-build
-
-snowmen
-base
-fromfile
-boxes
-shaders
+build/
+nvr_*
 *_debug
+nvr_*.js

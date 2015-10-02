@@ -5,23 +5,22 @@ MODE ?= boxes
 
 compile: build/
 	cd build/ && cmake -DMODE_$(MODE)=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && cmake --build . --config Release
-	cp build/$(MODE) .
+	cp build/$(MODE) nvr_$(MODE)
 .PHONY: compile
+
+js: includes = -I . -I include `pkg-config --cflags opencv`
+#js: dlib = -DDLIB_NO_GUI_SUPPORT dlib/all/source.cpp
+###js: dlib = -I/opt/X11/include dlib/all/source.cpp -lpthread -lX11
+js: dlib = build/dlib_build/libdlib.a
+js: #compile
+	em++ -O3 -std=c++11 -v $(includes) $(dlib) src/nvr.cc src/main_$(MODE).cc -o nvr_$(MODE).html -s ASSERTIONS=1
 
 clean:
 	$(if $(wildcard build/*), rm -r build/)
 
 distclean: clean
 	$(foreach bin, $(modes), \
-            $(if $(wildcard $(bin)), rm $(bin);))
+            $(if $(wildcard nvr_$(bin)), rm nvr_$(bin);))
 
 build/:
 	mkdir $@
-
-
-dat = 'shape_predictor_68_face_landmarks.dat'
-dat_url = 'http://ftp.jaist.ac.jp/pub/sourceforge/d/dc/dclib/dlib/v18.10/'$(dat)'.bz2'
-# https://copy.com/VvOZA9yL6WHAx2N8
-$(dat):
-	wget -O ext/$(dat).bz2 $(dat_url) || rm ext/$(dat).bz2
-	cd ext/ && tar jf $(dat).bz2
