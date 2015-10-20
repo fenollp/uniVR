@@ -379,7 +379,10 @@ keyPressed (unsigned char key, int, int) {
     case 'F':
         toggle_fullscreen();
         break;
-    case ' ':
+    case ' ': // = 32
+        std::cout << "got SPACE" << std::endl;
+    case 'R':
+    case 'r':
         ovr.detect_now();
         break;
     case 'q':
