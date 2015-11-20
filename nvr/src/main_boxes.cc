@@ -418,10 +418,6 @@ specialKeyPressed (int key, int, int) {
 
 int
 main (int argc, char *argv[]) {
-    if (argc != 3) {
-        std::cout << "$0 trained_landmarks.dat data/crate.bmp" << std::endl;
-        return 1;
-    }
     glutInit(&argc, argv);
 
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
@@ -435,9 +431,9 @@ main (int argc, char *argv[]) {
     glutKeyboardFunc(&keyPressed);
     glutSpecialFunc(&specialKeyPressed);
 
-    InitGL(argv[2], winWidth, winHeight);
+    InitGL("data/crate.bmp", winWidth, winHeight);
 
-    ovr.init(argv[1]);  // UniVR init
+    ovr.init("data/ldmrks68.dat");  // UniVR init
 
     glutMainLoop();
     return 0;
