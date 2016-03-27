@@ -18,20 +18,20 @@
 #include <stdio.h>
 
 #include <GL/glew.h>
-#ifdef __APPLE_CC__
+#ifdef __APPLE__
 # define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
-# include <OpenGL/gl3.h>
+# include <OpenGL/gl.h>
 # include <OpenGL/glu.h>
-
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <OpenGL/glext.h>
-#include <GLUT/glut.h>
-// #else
-// # include <GL/gl.h>
-// # include <GL/glu.h>
-
-// #include <GL/glut.h>
+# include <GLUT/glut.h>
+# include <OpenGL/gl3.h>
+# include <OpenGL/glext.h>
+#else
+# ifdef _WIN32
+#  include <windows.h>
+# endif
+# include <GL/gl.h>
+# include <GL/glu.h>
+# include <GL/glut.h>
 // #include <GL/freeglut_ext.h>
 #endif
 
@@ -127,7 +127,7 @@ static Shader shaders[] = {
 //   Shader("ls2GDw.glsl", "tex03.jpg", "tex09.jpg", "tex02.jpg", "cube01_0.png"),//wowwoods 50 mouse
 //   Shader("4dBXzw.glsl", "tex09.jpg", "", "", ""),//nicetargets 60 mouse
    Shader("Artificial.glsl", "cube04_0.png", "", "", ""),//50 mouse wow3d
-   Shader("Hand-Drawn Sketch.glsl", "", "", "", ""), //nicecartoon 60 mouse
+   Shader("Hand-drawn Sketch.glsl", "", "", "", ""), //nicecartoon 60 mouse
 //   Shader("crystal beacon.glsl", "", "", "", ""), //nomouse 50 wow
 //   Shader("ldl3DS.glsl", "", "", "", ""),//nomouse 60 nice
 //   Shader("MljGzR.glsl", "", "", "", ""),//60 nomouse meh
@@ -606,10 +606,6 @@ load_file (const std::string& filename, GLint types[4]) {
 
 int
 main (int argc, char *argv[]) {
-    if (argc != 1 +1) {
-        std::cout << argv[0] << " trained_landmarks.dat" << std::endl;
-        return 1;
-    }
     glutInit(&argc, argv);
 
     glutInitWindowSize(winWidth, winHeight);
@@ -638,7 +634,7 @@ main (int argc, char *argv[]) {
 
     redisplay(1000/60);
 
-    ovr.init(argv[1]);  // UniVR init
+    ovr.init("data/ldmrks68.dat");  // UniVR init
 
     glutMainLoop();
 

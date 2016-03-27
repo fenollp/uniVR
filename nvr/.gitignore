@@ -1,8 +1,2 @@
-build
-
-snowmen
-base
-fromfile
-boxes
-shaders
-*_debug
+build/
+nvr_*

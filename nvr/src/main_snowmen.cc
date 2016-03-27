@@ -122,6 +122,7 @@ drawSnowman () {
 
 void  /// Update with each idle event
 update () {
+    std::cout << "updating..." << std::endl;
     ovr.step(data);
     if (data.gx == 0 || data.gy == 0)
         return;
@@ -144,6 +145,7 @@ update () {
               << " y:"  <<  y
               << " deltaMove:" << deltaMove
               << std::endl;/*/
+    std::cout << "updating... done!" << std::endl;
 }
 
 void  /// Draw the entire scene
@@ -183,12 +185,6 @@ stopKey (unsigned char key, int /*mouse_x*/, int /*mouse_y*/) {
 
 int
 main (int argc, const char *argv[]) {
-    if (argc != 2) {
-        std::cout << "Call this program like this:" << std::endl
-                  << "./$0 68_face_landmarks.dat" << std::endl;
-        return 1;
-    }
-
     char *my_argv[] = {(char*)NAME, NULL};
     int   my_argc = 1;
     glutInit(&my_argc, my_argv);
@@ -207,8 +203,10 @@ main (int argc, const char *argv[]) {
     glEnable(GL_DEPTH_TEST);
 
     // UniVR init
-    std::string trained(argv[1]);
+    std::string trained("src/main_snowmen.cc");
+    std::cout << "init..." << std::endl;
     ovr.init(trained);
+    std::cout << "init... done!" << std::endl;
 
     glutMainLoop();
 

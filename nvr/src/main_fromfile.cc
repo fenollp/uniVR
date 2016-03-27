@@ -3,16 +3,16 @@
 int
 main (int argc, const char* argv[]) {
     try {
-        if (argc != 3) {
+        if (argc != 2) {
             std::cout << "Call this program like this:" << std::endl
-                      << "./$0 68_face_landmarks.dat video.mp4" << std::endl;
+                      << "./$0 <video.mp4>" << std::endl;
             return 1;
         }
 
-        std::string trained(argv[1]);
+        std::string trained("data/ldmrks68.dat");
         nvr::UniVR ovr;
         auto video_opener = [&](nvr::FrameStream& capture) {
-            return capture.open(argv[2]) && capture.isOpened();
+            return capture.open(argv[1]) && capture.isOpened();
         };
         ovr.init(trained, video_opener);
 
