@@ -44,7 +44,7 @@ if(MODE_shaders)
   include_directories(${FreeImage_INCLUDE_DIRS})
   # add_definitions( -Dwindow_debug )
   add_executable(${target_name}
-    src/nvr.cc
+    lib/nvr.cc
     src/main_${target_name}.cc
   )
   include(dlib/cmake)
@@ -66,7 +66,7 @@ if(MODE_boxes)
   include_directories(${GLUT_INCLUDE_DIR})
 # add_definitions( -Dwindow_debug )
   add_executable(${target_name}
-    src/nvr.cc
+    lib/nvr.cc
     src/main_${target_name}.cc
   )
   include(dlib/cmake)
@@ -83,7 +83,7 @@ if(MODE_fromfile)
   # Same as MODE_base, except no -Dwindow_debug
 #  add_definitions( -Dwindow_debug )#####
   add_executable(${target_name}
-    src/nvr.cc
+    lib/nvr.cc
     src/main_${target_name}.cc
   )
   include(dlib/cmake)
@@ -97,7 +97,7 @@ if(MODE_base)
   set(target_name base)
   add_definitions( -Dwindow_debug )
   add_executable(${target_name}
-    src/nvr.cc
+    lib/nvr.cc
     src/main_${target_name}.cc
   )
   include(dlib/cmake)
@@ -115,7 +115,7 @@ if(MODE_snowmen)
   include_directories(${GLUT_INCLUDE_DIR})
   add_definitions( -Dwindow_debug )
   add_executable(${target_name}
-    src/nvr.cc
+    lib/nvr.cc
     src/main_${target_name}.cc
   )
   include(dlib/cmake)
