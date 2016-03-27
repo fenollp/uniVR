@@ -606,10 +606,6 @@ load_file (const std::string& filename, GLint types[4]) {
 
 int
 main (int argc, char *argv[]) {
-    if (argc != 1 +1) {
-        std::cout << argv[0] << " trained_landmarks.dat" << std::endl;
-        return 1;
-    }
     glutInit(&argc, argv);
 
     glutInitWindowSize(winWidth, winHeight);
@@ -638,7 +634,7 @@ main (int argc, char *argv[]) {
 
     redisplay(1000/60);
 
-    ovr.init(argv[1]);  // UniVR init
+    ovr.init("data/ldmrks68.dat");  // UniVR init
 
     glutMainLoop();
 

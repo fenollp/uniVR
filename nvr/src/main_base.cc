@@ -3,12 +3,7 @@
 int
 main (int argc, const char* argv[]) {
     try {
-        if (argc != 2) {
-            std::cout << "Call this program like this:" << std::endl
-                      << "./$0 68_face_landmarks.dat" << std::endl;
-            return 1;
-        }
-        std::string trained(argv[1]);
+        std::string trained("data/ldmrks68.dat");
         nvr::UniVR ovr;
         ovr.init(trained);
         nvr::data face;
