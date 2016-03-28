@@ -96,7 +96,7 @@ public:
             const std::string& t1,
             const std::string& t2,
             const std::string& t3)
-        : file("data/" + f)
+        : file("data/shaders/glsl/" + f)
         {
             textures[0] = t0; tex_types[0] = (t0.find("cube") == 0) ? GL_TEXTURE_3D : GL_TEXTURE_2D;
             textures[1] = t1; tex_types[1] = (t1.find("cube") == 0) ? GL_TEXTURE_3D : GL_TEXTURE_2D;
@@ -106,7 +106,7 @@ public:
     void load_textures () {
         for (int i = 0; i < 4; ++i)
             if (!textures[i].empty())
-                load_texture("data/presets/"+textures[i], tex_types[i], &tex[i]);
+                load_texture("data/shaders/presets/"+textures[i], tex_types[i], &tex[i]);
     }
     bool load_then_link () {
         code = load_file(file, tex_types);
