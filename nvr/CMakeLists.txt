@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-
-
 PROJECT(nvr)
-
-find_package(OpenCV REQUIRED)
-include_directories(${OPENCV_INCLUDE_DIRS})
 
 include_directories(include)
 
@@ -14,6 +9,13 @@ add_definitions( -Wno-deprecated )
 add_definitions( -W -Wextra -pedantic )
 add_definitions( -O3 )
 add_definitions( -march=native )
+
+# add_definitions( -DUSE_SSE2_INSTRUCTIONS=ON )
+# add_definitions( -DUSE_SSE4_INSTRUCTIONS=ON )
+# add_definitions( -DUSE_AVX_INSTRUCTIONS=ON )
+
+# add_definitions( -fsanitize=address )
+# http://clang.llvm.org/docs/UsersManual.html#controlling-code-generation
 
 #This warning is for project developers.  Use -Wno-dev to suppress it.#
 #add_definitions( -Wno-dev )
@@ -31,8 +33,17 @@ else()
 endif()
 
 
+include_directories("lib/")
+include_directories(".")
+add_library(uniVR STATIC
+  lib/emjs.cc
+  )
+
+
 if(MODE_shaders)
   set(target_name shaders)
+  find_package(OpenCV REQUIRED)
+  include_directories(${OPENCV_INCLUDE_DIRS})
   find_package(OpenGL REQUIRED)
   include_directories(${OPENGL_INCLUDE_DIRS})
   find_package(GLUT REQUIRED)
@@ -60,6 +71,8 @@ endif(MODE_shaders)
 
 if(MODE_boxes)
   set(target_name boxes)
+  find_package(OpenCV REQUIRED)
+  include_directories(${OPENCV_INCLUDE_DIRS})
   find_package(OpenGL REQUIRED)
   include_directories(${OPENGL_INCLUDE_DIRS})
   find_package(GLUT REQUIRED)
@@ -78,10 +91,10 @@ if(MODE_boxes)
   )
 endif(MODE_boxes)
 
-if(MODE_fromfile)
+if(MODE_fromfile) # Same as MODE_base, except no -Dwindow_debug
   set(target_name fromfile)
-  # Same as MODE_base, except no -Dwindow_debug
-#  add_definitions( -Dwindow_debug )#####
+  find_package(OpenCV REQUIRED)
+  include_directories(${OPENCV_INCLUDE_DIRS})
   add_executable(${target_name}
     lib/nvr.cc
     src/main_${target_name}.cc
@@ -95,6 +108,8 @@ endif(MODE_fromfile)
 
 if(MODE_base)
   set(target_name base)
+  find_package(OpenCV REQUIRED)
+  include_directories(${OPENCV_INCLUDE_DIRS})
   add_definitions( -Dwindow_debug )
   add_executable(${target_name}
     lib/nvr.cc
@@ -107,8 +122,10 @@ if(MODE_base)
   )
 endif(MODE_base)
 
-if(MODE_snowmen)
+if(MODE_snowmen) # What it used to be like
   set(target_name snowmen)
+  find_package(OpenCV REQUIRED)
+  include_directories(${OPENCV_INCLUDE_DIRS})
   find_package(OpenGL REQUIRED)
   include_directories(${OPENGL_INCLUDE_DIRS})
   find_package(GLUT REQUIRED)

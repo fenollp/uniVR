@@ -1,18 +1,23 @@
 #ifndef NVR_HH
 # define NVR_HH
 
-# include <opencv2/opencv.hpp>
-# include <opencv2/core/core.hpp>
-# include <opencv2/highgui/highgui.hpp>
+# include <cmath>
+# include <iostream>
 
-# include <dlib/opencv.h> // Right after OpenCV's includes
+# ifndef __EMSCRIPTEN__
+#  include <opencv2/opencv.hpp>
+#  include <opencv2/core/core.hpp>
+#  include <opencv2/highgui/highgui.hpp>
+
+#  include <dlib/opencv.h> // Right after OpenCV's includes
+# else
+#  include "emscripten/html5video.h"
+# endif
+
 # include <dlib/image_processing/frontal_face_detector.h>
 # include <dlib/image_processing/render_face_detections.h>
 # include <dlib/image_processing.h>
 # include <dlib/image_io.h>
-
-# include <cmath>
-# include <iostream>
 
 namespace nvr {
 
@@ -42,8 +47,14 @@ namespace nvr {
     ///  so as to use your own video capturing technology
 
     // Somewhat public types
+#ifndef __EMSCRIPTEN__
     typedef cv::VideoCapture FrameStream;
     typedef cv::Mat          Frame;
+#else
+    typedef int FrameStream;
+    typedef uint8_t Pixel;
+    typedef Pixel* Frame;
+#endif
 
     // Somewhat private types
     typedef dlib::full_object_detection Landmarks;
@@ -94,12 +105,15 @@ namespace nvr {
         bool inited_; // Set to true after a call to init/1
         int rc_, rr_; // Ratio of camera frame over pyramied-down img
         bool detected_; // Whether detector_ successfully found something for tracker_
+#ifdef __EMSCRIPTEN__
+        int frame_rows_;
+        int frame_cols_;
+#endif
 
     public:
         UniVR ();
         ~UniVR ();
         /// init/1,2: builds the capture & loads trained landmarks
-        void init (const std::string& trained_data);
         void init (const std::string& trained_data,
                    std::function<bool(FrameStream&)> capture_opener);
         /// step/1: calls next_frame/0 for new data then collect_data/3 &
