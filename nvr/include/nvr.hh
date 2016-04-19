@@ -16,6 +16,21 @@
 
 namespace nvr {
 
+# define LANDMARKS_COUNT 68
+# if LANDMARKS_COUNT == 68
+    /// For a 68-landmarks extractor: different points of interest
+    static constexpr size_t LANDMARK_NT = 27;  // Nose
+    static constexpr size_t LANDMARK_NB = 30;
+    static constexpr size_t LANDMARK_LER = 42; // Left eye
+    static constexpr size_t LANDMARK_LEL = 45;
+    static constexpr size_t LANDMARK_RER = 36; // Right eye
+    static constexpr size_t LANDMARK_REL = 39;
+    static constexpr size_t LANDMARK_CL = 9; // Chin
+    static constexpr size_t LANDMARK_CR = 7;
+    static constexpr size_t LANDMARK_JL = 16; // Jaw
+    static constexpr size_t LANDMARK_JR = 0;
+# endif
+
 # define HEAD_HIST_SZ_ 5
     /// Data exchanged with the 3rd-party application
     typedef struct {
@@ -34,6 +49,8 @@ namespace nvr {
         double headHist[HEAD_HIST_SZ_];
         // --
         double eyeX, eyeY, eyeZ;
+        // --
+        int landmarks[LANDMARKS_COUNT * 2];
     } data;
 
     std::ostream& operator<< (std::ostream& o, const data& rhs);
@@ -65,18 +82,6 @@ namespace nvr {
     static constexpr double VGPP = 40.0 / (1.0*WINHEIGHT);
     static constexpr double PI180 = 3.141592654 / 180;
     static constexpr double MEAN_HEAD_WIDTH = 0.12; // 12cm
-
-    /// For a 68-landmarks extractor: different points of interest
-    static constexpr size_t LANDMARK_NT = 27;  // Nose
-    static constexpr size_t LANDMARK_NB = 30;
-    static constexpr size_t LANDMARK_LER = 42; // Left eye
-    static constexpr size_t LANDMARK_LEL = 45;
-    static constexpr size_t LANDMARK_RER = 36; // Right eye
-    static constexpr size_t LANDMARK_REL = 39;
-    static constexpr size_t LANDMARK_CL = 9; // Chin
-    static constexpr size_t LANDMARK_CR = 7;
-    static constexpr size_t LANDMARK_JL = 16; // Jaw
-    static constexpr size_t LANDMARK_JR = 0;
 
 
     class UniVR {

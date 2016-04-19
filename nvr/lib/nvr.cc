@@ -33,7 +33,7 @@ namespace nvr {
 
     void
     dots (Frame& img, const Landmarks& face, size_t thickness) {
-        for (size_t k = 0; k < face.num_parts(); ++k) {
+        for (size_t k = 0; k < LANDMARKS_COUNT; ++k) {
             const auto& p = face.part(k);
             if (p == dlib::OBJECT_PART_NOT_PRESENT)
                 continue;
@@ -82,7 +82,7 @@ namespace nvr {
     dlib::rectangle  // Get a square box centered on the nose
     head_hull (const Landmarks& face) {
         dlib::rectangle rect;
-        for (size_t j = 0; j < face.num_parts(); ++j)
+        for (size_t j = 0; j < LANDMARKS_COUNT; ++j)
             rect += face.part(j);  // Enlarges rect's area
         const auto& nose = face.part(30);
         // FIXME use front-menton distance as rect's height/width
@@ -227,6 +227,12 @@ namespace nvr {
             data.eyeY = eyes[0].y;
             data.eyeZ = eyes[0].z;
             ++count;
+        }
+
+        for (int i = 0; i < LANDMARKS_COUNT * 2; i += 2) {
+            const auto& landmark = face.part(i / 2);
+            data.landmarks[i] = landmark.x();
+            data.landmarks[i + 1] = landmark.y();
         }
     }
 

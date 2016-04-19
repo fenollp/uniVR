@@ -50,8 +50,11 @@ main (int argc, const char* argv[]) {
                       << face.upperHeadY << ','
                       << face.headX << ','
                       << face.headY << ','
-                      << face.headDist
-                      << std::endl;
+                      << face.headDist;
+
+            for (int l = 0; l < LANDMARKS_COUNT * 2; ++l)
+                std::cout << ',' << face.landmarks[l];
+            std::cout << std::endl;
 
             if (cv::waitKey(5) == 'q')
                 break;
