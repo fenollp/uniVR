@@ -10,10 +10,6 @@
 #include <emscripten.h>
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define NAME "nvr_boxes"
 #define winWidth  640
 #define winHeight 480
@@ -488,9 +484,3 @@ main (int argc, char *argv[]) {
 
     return 0;
 }
-
-
-
-#ifdef __cplusplus
-}
-#endif

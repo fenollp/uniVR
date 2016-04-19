@@ -36,8 +36,6 @@ FLAGS += -I 'lib/'
 FLAGS += -I 'include/'
 #FLAGS += -Wno-warn-absolute-paths
 FLAGS += -std=c++14
-FLAGS += -Wall
-FLAGS += -O3
 FLAGS += --preload-file 'data/crate.bmp'
 FLAGS += --preload-file 'data/ldmrks68.dat'
 FLAGS += -I '.'
@@ -47,7 +45,7 @@ FLAGS += -Wall
 FLAGS += -Wno-deprecated
 FLAGS += -W -Wextra -pedantic
 FLAGS += -O3
-FLAGS += --std=c++11 -stdlib=libstdc++ -static -lstdc++
+#FLAGS += --std=c++11 -stdlib=libstdc++ -static -lstdc++
 
 ifeq ($(shell uname -o),Darwin)
 EMCC = emcc
@@ -59,8 +57,11 @@ EMCC = $(BASE) emcc
 EMXX = $(BASE) em++
 endif
 
-boxes.html: clean
-	$(EMXX) $(FLAGS) lib/emjs.cc src/main_emjs_boxes.cc -o $@
+boxes.html: clean build/
+	cd build/ && emcmake cmake --DCMAKE_VERBOSE_MAKEFILE=ON .. && make
+
+# boxes.html: clean
+# 	$(EMXX) $(FLAGS) lib/emjs.cc src/main_emjs_boxes.cc -o $@
 
 test: boxes.html
 	@echo Now open 'http://localhost:1992/$^'
