@@ -33,19 +33,20 @@ else()
 endif()
 
 
-include_directories("lib/")
-include_directories(".")
-#add_library(uniVR STATIC
-add_definitions( -v )
-add_definitions( --js-library 'lib/emscripten/library_html5video.js' )
-add_definitions( --preload-file 'data/crate.bmp' )
-add_definitions( --preload-file 'data/ldmrks68.dat' )
-add_definitions( -s TOTAL_MEMORY='218103808' )
-add_definitions( -o boxes.html )
-add_executable(emjs_boxes
-  lib/emjs.cc
-  src/main_emjs_boxes.cc
-  )
+if(MODE_emjs_base)
+  include_directories(lib/ .)
+  #add_library(uniVR STATIC
+  add_definitions( -v )
+  add_definitions( --js-library 'lib/emscripten/library_html5video.js' )
+  add_definitions( --preload-file 'data/crate.bmp' )
+  add_definitions( --preload-file 'data/ldmrks68.dat' )
+  add_definitions( -s TOTAL_MEMORY='218103808' )
+  add_definitions( -o base.html )
+  add_executable(emjs_base
+    lib/emjs.cc
+    src/main_emjs_base.cc
+    )
+endif(MODE_emjs_base)
 
 
 if(MODE_shaders)

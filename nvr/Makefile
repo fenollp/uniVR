@@ -5,16 +5,16 @@ all: compile
 modes = shaders boxes fromfile base snowmen
 MODE ?= boxes
 
+compile_all:
+	MODE='shaders' $(MAKE) -C . compile
+	MODE='boxes' $(MAKE) -C . compile
+	MODE='fromfile' $(MAKE) -C . compile
+	MODE='base' $(MAKE) -C . compile
+	MODE='snowmen' $(MAKE) -C . compile
+
 compile: build/
 	cd build/ && cmake -DMODE_$(MODE)=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && cmake --build . --config Release
 	cp build/$(MODE) nvr_$(MODE)
-
-compile_all:
-	MODE='shaders' $(MAKE) -C . clean compile
-	MODE='boxes' $(MAKE) -C . clean compile
-	MODE='fromfile' $(MAKE) -C . clean compile
-	MODE='base' $(MAKE) -C . clean compile
-	MODE='snowmen' $(MAKE) -C . clean compile
 
 clean: clean-emjs
 	$(if $(wildcard build/*), rm -r build/)
@@ -23,7 +23,7 @@ distclean: clean
 	$(foreach bin, $(modes), \
             $(if $(wildcard nvr_$(bin)), rm nvr_$(bin);))
 
-build/:
+build/: clean
 	mkdir $@
 
 
@@ -57,16 +57,16 @@ EMCC = $(BASE) emcc
 EMXX = $(BASE) em++
 endif
 
-boxes.html: clean build/
-	cd build/ && emcmake cmake --DCMAKE_VERBOSE_MAKEFILE=ON .. && make
+base.html: build/
+	cd build/ && emcmake cmake -DMODE_emjs_base=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && make
 
-# boxes.html: clean
-# 	$(EMXX) $(FLAGS) lib/emjs.cc src/main_emjs_boxes.cc -o $@
+# base.html: clean
+# 	$(EMXX) $(FLAGS) lib/emjs.cc src/main_emjs_base.cc -o $@
 
-test: boxes.html
+test: base.html
 	@echo Now open 'http://localhost:1992/$^'
 	@open 'http://localhost:1992/$^' || true
 	python -m SimpleHTTPServer 1992
 
 clean-emjs:
-	$(if $(wildcard boxes.*), rm -f boxes.*)
+	$(if $(wildcard base.*), rm -f base.*)
