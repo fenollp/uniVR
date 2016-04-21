@@ -23,7 +23,7 @@ distclean: clean
 	$(foreach bin, $(modes), \
             $(if $(wildcard nvr_$(bin)), rm nvr_$(bin);))
 
-build/: clean
+build: clean
 	mkdir $@
 
 
