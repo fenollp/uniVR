@@ -50,15 +50,17 @@ FLAGS += -O3
 ifeq ($(shell uname -o),Darwin)
 EMCC = emcc
 EMXX = em++
+EMCMAKE = emcmake
 else
 VSN = 1.35.23
 BASE = docker run -v "$$PWD":/src trzeci/emscripten:sdk-tag-$(VSN)-64bit
 EMCC = $(BASE) emcc
 EMXX = $(BASE) em++
+EMCMAKE = $(BASE) emcmake
 endif
 
 base.html: build/
-	cd build/ && emcmake cmake -DMODE_emjs_base=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && make
+	cd build/ && $(EMCMAKE) cmake -DMODE_emjs_base=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && make
 
 # base.html: clean
 # 	$(EMXX) $(FLAGS) lib/emjs.cc src/main_emjs_base.cc -o $@
