@@ -12,12 +12,12 @@ compile_all:
 	MODE='base' $(MAKE) -C . compile
 	MODE='snowmen' $(MAKE) -C . compile
 
-compile: build/
+compile: build
 	cd build/ && cmake -DMODE_$(MODE)=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && cmake --build . --config Release
 	cp build/$(MODE) nvr_$(MODE)
 
 clean: clean-emjs
-	$(if $(wildcard build/*), rm -r build/)
+	$(if $(wildcard build/), rm -r build/)
 
 distclean: clean
 	$(foreach bin, $(modes), \
@@ -50,18 +50,21 @@ FLAGS += -O3
 ifeq ($(shell uname -o),Darwin)
 EMCC = emcc
 EMXX = em++
+EMMAKE = emmake
 EMCMAKE = emcmake
 else
 VSN = 1.35.23
 BASE = docker run -v "$$PWD":/src trzeci/emscripten:sdk-tag-$(VSN)-64bit
 EMCC = $(BASE) emcc
 EMXX = $(BASE) em++
+EMMAKE = $(BASE) emmake
 EMCMAKE = $(BASE) emcmake
 endif
 
-base.html: build/
-	cd build/ && $(EMCMAKE) cmake -DMODE_emjs_base=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && make
+base.html: build
+	cd build/ && $(EMCMAKE) cmake -DMODE_emjs_base=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && $(EMMAKE) make
 
+# -DCMAKE_BUILD_TYPE=Release
 # base.html: clean
 # 	$(EMXX) $(FLAGS) lib/emjs.cc src/main_emjs_base.cc -o $@
 
