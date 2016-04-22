@@ -27,7 +27,12 @@ build: clean
 	mkdir $@
 
 
-FLAGS = -v
+emjs_base.html: build
+	cd build/ && $(EMCMAKE) cmake -DMODE_emjs_base=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && $(EMMAKE) make
+
+# -DCMAKE_BUILD_TYPE=Release
+
+#FLAGS = -v
 FLAGS += --js-library 'lib/emscripten/library_html5video.js'
 #FLAGS += --shell-file template.html
 FLAGS += -s ASSERTIONS=2
@@ -39,13 +44,16 @@ FLAGS += -std=c++14
 FLAGS += --preload-file 'data/crate.bmp'
 FLAGS += --preload-file 'data/ldmrks68.dat'
 FLAGS += -I '.'
-FLAGS += -s TOTAL_MEMORY='218103808'
 #FLAGS += -s LEGACY_GL_EMULATION=1
 FLAGS += -Wall
 FLAGS += -Wno-deprecated
 FLAGS += -W -Wextra -pedantic
 FLAGS += -O3
 #FLAGS += --std=c++11 -stdlib=libstdc++ -static -lstdc++
+#FLAGS += -fcolor-diagnostics=always
+#  FLAGS += -s ABORTING_MALLOC=0  # malloc returns NULL instead of halt
+#  FLAGS += -s TOTAL_MEMORY='218104808'
+FLAGS += -s ALLOW_MEMORY_GROWTH=1
 
 ifeq ($(shell uname -o),Darwin)
 EMCC = emcc
@@ -61,12 +69,12 @@ EMMAKE = $(BASE) emmake
 EMCMAKE = $(BASE) emcmake
 endif
 
-base.html: build
-	cd build/ && $(EMCMAKE) cmake -DMODE_emjs_base=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && $(EMMAKE) make
+CCs = dlib/base64/base64_kernel_1.cpp \
+      dlib/entropy_decoder/entropy_decoder_kernel_2.cpp \
+      lib/emjs.cc
 
-# -DCMAKE_BUILD_TYPE=Release
-# base.html: clean
-# 	$(EMXX) $(FLAGS) lib/emjs.cc src/main_emjs_base.cc -o $@
+base.html: clean
+	$(EMXX) $(FLAGS) $(CCs) src/main_emjs_base.cc -o $@
 
 test: base.html
 	@echo Now open 'http://localhost:1992/$^'
