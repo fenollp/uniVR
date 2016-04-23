@@ -451,14 +451,8 @@ main (int argc, char *argv[]) {
 
 void
 step () {
-    ++dropper;
-    if (10*dropper == 20) {
-        ovr.step(data);
-        dropper = 0;
-    } else
-        std::cout << "\treusing" << std::endl;
-
-    printf("X %lf\tY %lf\tZ %lf\n", data.eyeX,data.eyeY,data.eyeZ);
+    ovr.step(data);
+    // printf("X %lf\tY %lf\tZ %lf\n", data.eyeX,data.eyeY,data.eyeZ);
 }
 
 int

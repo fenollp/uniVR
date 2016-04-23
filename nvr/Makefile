@@ -55,7 +55,7 @@ FLAGS += -O3
 #  FLAGS += -s TOTAL_MEMORY='218104808'
 FLAGS += -s ALLOW_MEMORY_GROWTH=1
 
-ifeq ($(shell uname -o),Darwin)
+ifneq ($(shell which emcc),)
 EMCC = emcc
 EMXX = em++
 EMMAKE = emmake

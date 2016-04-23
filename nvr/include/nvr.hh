@@ -93,7 +93,11 @@ namespace nvr {
     class UniVR {
     private:
         FrameStream capture_; // Stream from webcam
+#ifndef __EMSCRIPTEN__
         Frame       frame_;   // Frame from webcam
+#else
+        Pixel       frame_[1280 * 720 * 3];
+#endif
         dlib::frontal_face_detector detector_;  // HoG face detector
         dlib::correlation_tracker   tracker_;   // Track the face found with HoG
         dlib::shape_predictor       extractor_; // Landmarks extractor

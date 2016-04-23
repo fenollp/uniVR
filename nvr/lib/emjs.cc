@@ -220,7 +220,6 @@ namespace nvr {
         frame_rows_ = 720;
         frame_cols_ = 1280;
         int sz = frame_cols_ * frame_rows_ * 3;
-        frame_ = new Pixel[sz]();
         std::cout << count_nonzero(frame_, sz) << std::endl;
         bool usePixels = true;
         html5video_grabber_update(capture_, usePixels, frame_);
@@ -239,7 +238,6 @@ namespace nvr {
                 dlib::assign_pixel(img_[row][col], p);
             }
         }
-        delete[] frame_;
 
 #define MAGIC__MINIMUM_CAMERA_HEIGHT  (300)
         if (frame_rows_ / 2 > MAGIC__MINIMUM_CAMERA_HEIGHT) {
@@ -265,27 +263,34 @@ namespace nvr {
 
     void
     UniVR::detect_then_track () {
-        if (!detected_) {
-            ++I_;
-            if (I_ % DROP_AMOUNT == 0) {
-                /// Detection
-                I_ = 0;
-                std::cout << "Detection" << std::endl;
-                auto dets = detector_(img_);
+        if (detected_)
+            std::cout << "detected_" << std::endl;
+        else
+            std::cout << "!detected_" << std::endl;
 
-                if (!dets.empty()) {
-                    rect_found_ = biggest_rectangle(dets);
-                    detected_ = true;
-                    tracker_.start_track(img_, rect_found_);
-                    ++Ds_;
-                }
-            }
-        } else {
+        if (detected_) {
             /// Tracking
             tracker_.update(img_); // Returns confidence as a double
             rect_found_ = tracker_.get_position();
             if (rect_found_.is_empty())
                 detected_ = false;
+        }
+
+        if (!detected_) {
+            /// Detection
+            ++I_;
+            if (I_ % DROP_AMOUNT == 0)
+                std::cout << "could detect only now" << std::endl;
+            std::cout << "Detection" << std::endl;
+            auto dets = detector_(img_);
+            std::cout << "#faces: " << dets.size() << std::endl;
+
+            if (dets.empty())
+                return;
+            rect_found_ = biggest_rectangle(dets);
+            tracker_.start_track(img_, rect_found_);
+            ++Ds_;
+            detected_ = true;
         }
     }
 
@@ -300,8 +305,14 @@ namespace nvr {
         rect_found_ = dlib::rectangle();
         detect_then_track(); // Sets rect_found_
         if (rect_found_.is_empty())
+            std::cout << "!rect_found_" << std::endl;
+        else
+            std::cout << "!rect_found_" << std::endl;
+        if (rect_found_.is_empty())
             if (!zones_.empty())
                 rect_found_ = zones_.back();
+            else
+                return false;
 
         if (!rect_found_.is_empty()) {
             /// Extraction
