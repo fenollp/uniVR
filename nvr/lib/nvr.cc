@@ -1,14 +1,18 @@
 #include "nvr.hh"
 
-#define WINDOW   "nvr"
-#define WINDOW_3 "face"
+#ifdef window_debug
+# define WINDOW   "nvr"
+# define WINDOW_3 "face"
 
-#define WHITE  (cv::Scalar::all(255))
-#define BLACK  (cv::Scalar::all(0))
-#define BLUE   (cv::Scalar(255, 0, 0))
-#define GREEN  (cv::Scalar(0, 255, 0))
+# define WHITE  (cv::Scalar::all(255))
+# define BLACK  (cv::Scalar::all(0))
+# define BLUE   (cv::Scalar(255, 0, 0))
+# define GREEN  (cv::Scalar(0, 255, 0))
+#endif
 
 namespace nvr {
+
+#ifdef window_debug
 
     void
     rectangle (Frame& img, const dlib::rectangle& rect, size_t thickness) {
@@ -67,6 +71,8 @@ namespace nvr {
         text_(img, origin, str);
     }
 
+#endif
+
     ///////////////////////////////////////////////////////////////////////////
 
     bool  // Used by biggest_rectangle.
@@ -100,10 +106,10 @@ namespace nvr {
         int sw = (x + r.width()) * rc_;
         int sh = (y + r.height()) * rr_;
         // Keep away from the edges
-        if (sw > frame_.cols)
-            sw = frame_.cols - 5;
-        if (sh > frame_.rows)
-            sh = frame_.rows - 5;
+        if (sw > frame_cols_)
+            sw = frame_cols_ - 5;
+        if (sh > frame_rows_)
+            sh = frame_rows_ - 5;
         auto r2 = dlib::rectangle(sx, sy, sw, sh);
         //std::cout << r << " -> " << r2 << std::endl;
         return r2;
@@ -159,8 +165,8 @@ namespace nvr {
     void
     UniVR::collect_data (data& data, const Landmarks& face,
                          const dlib::rectangle& face_zone) {
-        data.w = frame_.cols;
-        data.h = frame_.rows;
+        data.w = frame_cols_;
+        data.h = frame_rows_;
         data.n  = norm(face, LANDMARK_NT, LANDMARK_NB);
         data.er = norm(face, LANDMARK_RER, LANDMARK_REL);
         data.el = norm(face, LANDMARK_LER, LANDMARK_LEL);
@@ -191,9 +197,9 @@ namespace nvr {
             sumHeadDist += data.headHist[i];
         data.headDist = sumHeadDist / HEAD_HIST_SZ;
         double xAngle = HGPP * PI180 *
-            (WINWIDTH /2 - (data.upperHeadX + data.headWidth /2));
+            (VIEW_WINDOW_WIDTH / 2 - (data.upperHeadX + data.headWidth / 2));
         double yAngle = VGPP * PI180 *
-            (WINHEIGHT/2 - (data.upperHeadY + data.headHeight/2));
+            (VIEW_WINDOW_HEIGHT / 2 - (data.upperHeadY + data.headHeight / 2));
         data.headX = tan(xAngle) * data.headDist;
         data.headY = tan(yAngle) * data.headDist;
 
@@ -236,9 +242,11 @@ namespace nvr {
         }
     }
 
+#ifdef window_debug
+
     void
     project_coords (Frame& frame_, const data& data) {
-        int w = frame_.cols, h = frame_.rows;
+        int w = frame_cols_, h = frame_rows_;
         auto c = cv::Point(w/2, h/2);
         auto color = GREEN;
         auto  a_x_l = cv::Point(c.x - w,  c.y)
@@ -267,6 +275,8 @@ namespace nvr {
         textr(frame_,  0,  std::to_string(data.n)  + " :n");
         project_coords(frame_, data);
     }
+
+#endif
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -313,6 +323,8 @@ namespace nvr {
         inited_ = true;
     }
 
+#ifndef __EMSCRIPTEN__
+
     void
     UniVR::init (const std::string& trained_data) {
         /// Specialize this to your FrameStream
@@ -340,8 +352,53 @@ namespace nvr {
         // Make the image larger so we can detect small faces.
         ///dlib::pyramid_up(img); // Resizes image (use array2d with that)
 
-        // The detection is far and away the slowest part, so as long as
-        // you don't do it that often you should be fine.
+        frame_rows_ = frame_.rows;
+        frame_cols_ = frame_.cols;
+
+        return true;
+    }
+
+#else
+
+    int
+    count_nonzero (Frame data, int size) {
+        int sum = 0;
+        for (int i=0; i < size; ++i)
+            if (data[i] != 0)
+                ++sum;
+        return sum;
+    }
+
+    bool
+    UniVR::next_frame () {
+        frame_rows_ = FRAME_ROWS_;
+        frame_cols_ = FRAME_COLS_;
+
+        int sz = frame_cols_ * frame_rows_ * 3;
+        std::cout << count_nonzero(frame_, sz) << std::endl;
+        bool usePixels = true;
+        html5video_grabber_update(capture_, usePixels, frame_);
+        int updated = count_nonzero(frame_, sz);
+        if (0 == updated)
+            return false;
+
+        img_.set_size(frame_rows_, frame_cols_);
+        for (int row = 0; row < frame_rows_ * 3; ++row) {
+            for (int col = 0; col < frame_cols_; col += 3) {
+                auto ix = row * frame_cols_ + col;
+                dlib::rgb_pixel p;
+                p.red   = frame_[ix + 0];
+                p.green = frame_[ix + 1];
+                p.blue  = frame_[ix + 2];
+                dlib::assign_pixel(img_[row][col], p);
+            }
+        }
+    }
+
+#endif
+
+    void
+    UniVR::maybe_update_rows_cols () {
         // As for changing the detector, that is not so easy and would
         // require a deep understanding of a lot of things so I wouldn't
         // recommend it (except for changing the pyramid down part which
@@ -350,18 +407,16 @@ namespace nvr {
         // it will make it smaller than therefore faster for the detector
         // to run. But you won't be able to detect small faces.
 #define MAGIC__MINIMUM_CAMERA_HEIGHT  (300)
-        if (frame_.rows / 2 > MAGIC__MINIMUM_CAMERA_HEIGHT) {
+        if (frame_rows_ / 2 > MAGIC__MINIMUM_CAMERA_HEIGHT) {
             dlib::pyramid_down<2> pyr;
             pyr(img_);
-            //FIXME: compute ideal ratio given frame_.rows?
+            //FIXME: compute ideal ratio given frame_rows_?
         }
 
         if (rc_ == 0 || rr_ == 0) {
-            rc_ = frame_.cols / img_.nc();
-            rr_ = frame_.rows / img_.nr();
+            rc_ = frame_cols_ / img_.nc();
+            rr_ = frame_rows_ / img_.nr();
         }
-
-        return true;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -373,28 +428,12 @@ namespace nvr {
 
     void
     UniVR::detect_then_track () {
-        if (!detected_) {
-            ++I_;
-            if (I_ % DROP_AMOUNT == 0) {
-                /// Detection
-                I_ = 0;
-                std::cout << "Detection" << std::endl;
-                auto dets = detector_(img_);
-#ifdef window_debug
-                for (const auto& det : dets)
-                    rectangle(frame_, det, 1);
-#endif
-                if (!dets.empty()) {
-                    rect_found_ = biggest_rectangle(dets);
-#ifdef window_debug
-                    rectangle(frame_, rect_found_, 4);
-#endif
-                    detected_ = true;
-                    tracker_.start_track(img_, rect_found_);
-                    ++Ds_;
-                }
-            }
-        } else {
+        if (detected_)
+            std::cout << "detected_" << std::endl;
+        else
+            std::cout << "!detected_" << std::endl;
+
+        if (detected_) {
             /// Tracking
             tracker_.update(img_); // Returns confidence as a double
             rect_found_ = tracker_.get_position();
@@ -403,6 +442,29 @@ namespace nvr {
 #endif
             if (rect_found_.is_empty())
                 detected_ = false;
+        }
+
+        if (!detected_) {
+            /// Detection
+            ++I_;
+            if (I_ % DROP_AMOUNT == 0)
+                std::cout << "could detect only now" << std::endl;
+            std::cout << "Detection" << std::endl;
+            auto dets = detector_(img_);
+            std::cout << "#faces: " << dets.size() << std::endl;
+#ifdef window_debug
+            for (const auto& det : dets)
+                rectangle(frame_, det, 1);
+#endif
+            if (!dets.empty()) {
+                rect_found_ = biggest_rectangle(dets);
+#ifdef window_debug
+                rectangle(frame_, rect_found_, 4);
+#endif
+                tracker_.start_track(img_, rect_found_);
+                ++Ds_;
+                detected_ = true;
+            }
         }
     }
 
@@ -413,12 +475,20 @@ namespace nvr {
 
         if (!next_frame()) // Sets frame_
             return false;
+        maybe_update_rows_cols();
 
         rect_found_ = dlib::rectangle();
         detect_then_track(); // Sets rect_found_
         if (rect_found_.is_empty())
+            std::cout << "!rect_found_" << std::endl;
+        else
+            std::cout << "!rect_found_" << std::endl;
+        if (rect_found_.is_empty()) {
             if (!zones_.empty())
                 rect_found_ = zones_.back();
+            else
+                return false;
+        }
 
         if (!rect_found_.is_empty()) {
             /// Extraction
@@ -448,8 +518,8 @@ namespace nvr {
         text(frame_, 30, "Ds: " + std::to_string(Ds_));
         text(frame_, 60, std::to_string(img_.nc())
              +     "x" + std::to_string(img_.nr()));
-        text(frame_, 90, std::to_string(frame_.cols)
-             +     "x" + std::to_string(frame_.rows));
+        text(frame_, 90, std::to_string(frame_cols_)
+             +     "x" + std::to_string(frame_rows_));
         text(frame_, 120, "I: " + std::to_string(I_));
         text(frame_, 150, "DROP_AMOUNT: "+std::to_string(DROP_AMOUNT));
         text(frame_, 180, "BACKLOG_SZ: "+std::to_string(BACKLOG_SZ));

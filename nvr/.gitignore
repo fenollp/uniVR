@@ -1,2 +1,6 @@
 build/
 nvr_*
+*.data
+*.html.mem
+*.html
+*.js
