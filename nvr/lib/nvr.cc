@@ -469,12 +469,20 @@ namespace nvr {
 
         if (!next_frame()) // Sets frame_
             return false;
+        maybe_update_rows_cols();
 
         rect_found_ = dlib::rectangle();
         detect_then_track(); // Sets rect_found_
         if (rect_found_.is_empty())
+            std::cout << "!rect_found_" << std::endl;
+        else
+            std::cout << "!rect_found_" << std::endl;
+        if (rect_found_.is_empty()) {
             if (!zones_.empty())
                 rect_found_ = zones_.back();
+            else
+                return false;
+        }
 
         if (!rect_found_.is_empty()) {
             /// Extraction

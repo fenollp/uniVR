@@ -53,7 +53,8 @@ FLAGS += -O3
 #FLAGS += -fcolor-diagnostics=always
 #  FLAGS += -s ABORTING_MALLOC=0  # malloc returns NULL instead of halt
 #  FLAGS += -s TOTAL_MEMORY='218104808'
-FLAGS += -s ALLOW_MEMORY_GROWTH=1
+#  FLAGS += -s ALLOW_MEMORY_GROWTH=1
+FLAGS += -s TOTAL_MEMORY='268435456'
 
 ifneq ($(shell which emcc),)
 EMCC = emcc
