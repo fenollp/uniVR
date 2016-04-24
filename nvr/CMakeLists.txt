@@ -35,7 +35,7 @@ endif()
 
 if(MODE_emjs_base)
   set(target_name emjs_base)
-  include_directories(lib/ .)
+  include_directories( lib/ . )
   add_compile_options( -v )
 #  add_compile_options( --js-library 'lib/emscripten/library_html5video.js )
   add_definitions( --preload-file 'data/crate.bmp' )
@@ -58,7 +58,7 @@ if(MODE_emjs_base)
   add_executable(${target_name}
     dlib/base64/base64_kernel_1.cpp
     dlib/entropy_decoder/entropy_decoder_kernel_2.cpp
-    lib/emjs.cc
+    lib/nvr.cc
     src/main_emjs_base.cc
     )
 endif(MODE_emjs_base)

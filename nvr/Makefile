@@ -71,7 +71,7 @@ endif
 
 CCs = dlib/base64/base64_kernel_1.cpp \
       dlib/entropy_decoder/entropy_decoder_kernel_2.cpp \
-      lib/emjs.cc
+      lib/nvr.cc
 
 base.html: clean
 	$(EMXX) $(FLAGS) $(CCs) src/main_emjs_base.cc -o $@

@@ -21,42 +21,42 @@ var LibraryHTML5Video = {
                 && video.width != 0
                 && video.height != 0
                 && dstPixels != 0) {
-        	try {
-	            context.drawImage(video, 0, 0, video.width, video.height);
-	            imageData = context.getImageData(0, 0, video.width, video.height);
-	            srcPixels = imageData.data;
+                try {
+                    context.drawImage(video, 0, 0, video.width, video.height);
+                    imageData = context.getImageData(0, 0, video.width, video.height);
+                    srcPixels = imageData.data;
 
-	            if (video.pixelFormat == "RGBA") {
-		        //TODO: this is faster but under chrome, loop and set_time stop working
-		        array.set(imageData.data);
-		        // array = Module.HEAPU8.subarray(dstPixels, dstPixels + video.width * video.height * 4);
-		        // for (var i = 0 ; i < data.length; ++i) {
-		        //     array[i] = srcPixels[i];
-		        // }
-	            }
+                    if (video.pixelFormat == "RGBA") {
+                        //TODO: this is faster but under chrome, loop and set_time stop working
+                        // array.set(imageData.data);
+                        array = Module.HEAPU8.subarray(dstPixels, dstPixels + video.width * video.height * 4);
+                        for (var i = 0 ; i < data.length; ++i) {
+                            array[i] = srcPixels[i];
+                        }
+                    }
 
                     else if (video.pixelFormat == "RGB") {
-		        array = Module.HEAPU8.subarray(dstPixels, dstPixels + video.width * video.height * 3);
-		        for (var i = 0, j = 0; i < array.length; ) {
-		            array[i++] = srcPixels[j++];
-		            array[i++] = srcPixels[j++];
-		            array[i++] = srcPixels[j++];
-		            ++j;
-		        }
-	            }
+                        array = Module.HEAPU8.subarray(dstPixels, dstPixels + video.width * video.height * 3);
+                        for (var i = 0, j = 0; i < array.length; ) {
+                            array[i++] = srcPixels[j++];
+                            array[i++] = srcPixels[j++];
+                            array[i++] = srcPixels[j++];
+                            ++j;
+                        }
+                    }
 
                     else if (video.pixelFormat == "GRAY") {
-		        array = Module.HEAPU8.subarray(dstPixels, dstPixels + video.width * video.height);
-		        for (var i = 0, j = 0; i < array.length; ) {
-		            array[i++] = (((srcPixels[j++]|0) << 1)
+                        array = Module.HEAPU8.subarray(dstPixels, dstPixels + video.width * video.height);
+                        for (var i = 0, j = 0; i < array.length; ) {
+                            array[i++] = (((srcPixels[j++]|0) << 1)
                                           + ((srcPixels[j]|0) << 2)
                                           + (srcPixels[j++]|0)
                                           + (srcPixels[j++]|0)) >> 3;
-		            ++j;
-		        }
-	            }
+                            ++j;
+                        }
+                    }
 
-        	}
+                }
                 catch (e) {
                     console.log(e);
                 }
@@ -65,67 +65,67 @@ var LibraryHTML5Video = {
     },
 
     html5video_grabber_create: function () {
-    	if (VIDEO.getUserMedia()) {
-	    var video = document.createElement('video');
-	    video.autoplay = true;
-	    video.pixelFormat = "RGB";
+        if (VIDEO.getUserMedia()) {
+            var video = document.createElement('video');
+            video.autoplay = true;
+            video.pixelFormat = "RGB";
 
-	    var grabber_id = VIDEO.getNewGrabberId();
-	    VIDEO.grabbers[grabber_id] = video;
-	    return grabber_id;
-    	} else {
-    	    console.log("coudln't create grabber");
-    	    return -1;
-    	}
+            var grabber_id = VIDEO.getNewGrabberId();
+            VIDEO.grabbers[grabber_id] = video;
+            return grabber_id;
+        } else {
+            console.log("coudln't create grabber");
+            return -1;
+        }
     },
 
     html5video_grabber_init: function (id, w, h, framerate) {
-    	if (id != -1) {
+        if (id != -1) {
             VIDEO.grabbers[id].width = w;
             VIDEO.grabbers[id].height = h;
 
-    	    var videoImage = document.createElement('canvas');
-    	    videoImage.width = w;
-    	    videoImage.height = h;
+            var videoImage = document.createElement('canvas');
+            videoImage.width = w;
+            videoImage.height = h;
 
-    	    var videoImageContext = videoImage.getContext('2d');
-    	    // background color if no video present
-    	    videoImageContext.fillStyle = '#000000';
-    	    videoImageContext.fillRect(0, 0, w, h);
+            var videoImageContext = videoImage.getContext('2d');
+            // background color if no video present
+            videoImageContext.fillStyle = '#000000';
+            videoImageContext.fillRect(0, 0, w, h);
 
-    	    VIDEO.grabbersContexts[id] = videoImageContext;
+            VIDEO.grabbersContexts[id] = videoImageContext;
 
-    	    var errorCallback = function (e) {
-    		console.log("Couldn't init grabber!", e);
-    	    };
+            var errorCallback = function (e) {
+                console.log("Couldn't init grabber!", e);
+            };
 
-    	    if (framerate == -1) {
-    		var constraints = {
-	    	    video: {
-		    	mandatory: {
-		    	    maxWidth: w,
-		    	    maxHeight: h
-		    	}
-	    	    }
-    		};
-    	    } else {
-    		var constraints = {
-	    	    video: {
-		    	mandatory: {
-		    	    maxWidth: w,
-		    	    maxHeight: h,
-		    	},
-    			optional: [ { minFrameRate: framerate }
-		    	          ]
-	    	    }
-    		};
-    	    }
+            if (framerate == -1) {
+                var constraints = {
+                    video: {
+                        mandatory: {
+                            maxWidth: w,
+                            maxHeight: h
+                        }
+                    }
+                };
+            } else {
+                var constraints = {
+                    video: {
+                        mandatory: {
+                            maxWidth: w,
+                            maxHeight: h,
+                        },
+                        optional: [ { minFrameRate: framerate }
+                                  ]
+                    }
+                };
+            }
 
-    	    var getUserMedia = VIDEO.getUserMedia().bind(navigator);
-    	    getUserMedia(constraints, function (stream) {
-		VIDEO.grabbers[id].src = window.URL.createObjectURL(stream);
-	    }, errorCallback);
-    	}
+            var getUserMedia = VIDEO.getUserMedia().bind(navigator);
+            getUserMedia(constraints, function (stream) {
+                VIDEO.grabbers[id].src = window.URL.createObjectURL(stream);
+            }, errorCallback);
+        }
     },
 
     html5video_grabber_pixel_format: function (id) {
