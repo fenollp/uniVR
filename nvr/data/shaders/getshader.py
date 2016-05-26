@@ -67,13 +67,15 @@ def get_shader (id):
          code = (p['code'])
          return name, code, s['info']
 
-def do (ids):
+def do (prefix, ids):
    for id in ids:
       attempt = 0
       id = id.split('/')[-1]
-      name, code, info = get_shader(id)
+      name0, code, info = get_shader(id)
+      alnum_ascii = lambda c: 'A' <= c <= 'Z' or 'a' <= c <= 'z' or '0' <= c <= '9'
+      name = ''.join([c if alnum_ascii(c) else '_' for c in name0]).lower()
       code = ''.join(code.split('\r'))
-      fname = 'data/shaders/glsl/public/%s.glsl' % ''.join([c if c.isalnum() else '_' for c in name]).lower()
+      fname = prefix + '%s.glsl' % (id + ',' + name)
       with open(fname, 'w') as f:
          f.write(shaderinfo % info)
          f.write(shaderdecls)
@@ -85,5 +87,5 @@ if __name__ == '__main__':
    if len(sys.argv) < 2:
       j = get_json('https://www.shadertoy.com/api/v1/shaders?key=NtHKWH', {}, {})
       print (j['Shaders'])
-      do(j['Results'])
-   do(sys.argv[1:])
+      do('data/shaders/glsl/public/', j['Results'])
+   do('data/shaders/glsl/', sys.argv[1:])
