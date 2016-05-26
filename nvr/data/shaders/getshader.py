@@ -37,63 +37,53 @@ shaderinfo = """\
 # uniform vec4      iDate;                 // (year, month, day, time in secs)
 # uniform float     iSampleRate;           // sound sample rate (i.e., 44100)
 # \n"""
-shaderdecls = ""
+shaderdecls = ''
+
+def get_json (url, headers, values):
+   data = urllib.parse.urlencode(values).encode('utf-8')
+   req = urllib.request.Request(url, data, headers)
+   response = urllib.request.urlopen(req)
+   got_json = response.read().decode('utf-8')
+   return json.loads(got_json)
 
 def get_shader (id):
    url = 'https://www.shadertoy.com/shadertoy'
-   headers = { 'Referer' : 'https://www.shadertoy.com/' }
-   values  = { 's' : json.dumps ({'shaders' : [id]}) }
+   headers = {'Referer' : 'https://www.shadertoy.com/'}
+   values  = {'s' : json.dumps({'shaders' : [id]})}
+   j = get_json(url, headers, values)
 
-   data = urllib.parse.urlencode (values).encode ('utf-8')
-   req  = urllib.request.Request (url, data, headers)
-   response = urllib.request.urlopen (req)
-   shader_json = response.read ().decode ('utf-8')
-
-   j = json.loads (shader_json)
-   f = open ("/tmp/current-shader.json", "w")
-   f.write (json.dumps (j, indent=2))
-   f.close ()
+   with open('/tmp/current-shader.json', 'w') as f:
+      f.write(json.dumps(j, indent=2))
 
    assert (len (j) == 1)
 
    for s in j:
-      name = s["info"]["name"]
-      desc = s["info"]["description"]
-      desc = "".join (desc.split("\r"))
-      desc = "\n//    ".join (desc.split("\n"))
-      s["info"]["description"] = desc
-      for p in s["renderpass"]:
-         code = (p["code"])
-         return name, code, s["info"]
-   
+      name = s['info']['name']
+      desc = s['info']['description']
+      desc = ''.join(desc.split('\r'))
+      desc = '\n//    '.join(desc.split('\n'))
+      s['info']['description'] = desc
+      for p in s['renderpass']:
+         code = (p['code'])
+         return name, code, s['info']
+
+def do (ids):
+   for id in ids:
+      attempt = 0
+      id = id.split('/')[-1]
+      name, code, info = get_shader(id)
+      code = ''.join(code.split('\r'))
+      fname = 'data/shaders/glsl/public/%s.glsl' % ''.join([c if c.isalnum() else '_' for c in name]).lower()
+      with open(fname, 'w') as f:
+         f.write(shaderinfo % info)
+         f.write(shaderdecls)
+         f.write(code)
+      print ('wrote shader to "%s"' % fname, file=sys.stderr)
+
 
 if __name__ == '__main__':
-   if len (sys.argv) < 2:
-      print ("Usage: %s <id>" % sys.argv[0], file=sys.stderr)
-
-   for id in sys.argv[1:]:
-      attempt = 0
-      id = id.split("/")[-1]
-      name, code, info = get_shader (id)
-      code = "".join (code.split ("\r"))
-      f = None
-      while f == None:
-         try:
-            if attempt == 0:
-               fname = "%s.glsl" % name
-            else:
-               fname = "%s.glsl.%d" % (name, attempt)
-            f = open (fname, "x")
-
-         except FileExistsError:
-            attempt += 1
-            if attempt > 10:
-               print ("clean out your files please...", file=sys.stderr)
-               sys.exit (0)
-
-      f.write (shaderinfo % info)
-      f.write (shaderdecls)
-      f.write (code)
-      f.close ()
-      print ("wrote shader to \"%s\"" % fname, file=sys.stderr)
-
+   if len(sys.argv) < 2:
+      j = get_json('https://www.shadertoy.com/api/v1/shaders?key=NtHKWH', {}, {})
+      print (j['Shaders'])
+      do(j['Results'])
+   do(sys.argv[1:])
