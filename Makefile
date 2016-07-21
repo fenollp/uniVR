@@ -12,12 +12,12 @@ clean: clean-emjs
 distclean: clean
 	$(if $(wildcard bin), rm -r bin)
 
-build: clean
+build:
 	mkdir $@
 	cd build && cmake --DCMAKE_VERBOSE_MAKEFILE=ON ..
 
 
-emjs_base.html: build
+emjs_base.html: build | clean
 	cd build && $(EMCMAKE) cmake -DMODE_emjs_base=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && $(EMMAKE) make
 
 # -DCMAKE_BUILD_TYPE=Release
