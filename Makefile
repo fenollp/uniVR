@@ -4,7 +4,6 @@ all: compile
 
 compile: build
 	cd build && cmake --build . --config Release
-	cp build/$(MODE) bin/nvr_$(MODE)
 
 clean: clean-emjs
 	$(if $(wildcard build), rm -r build)
@@ -18,7 +17,7 @@ build:
 
 
 emjs_base.html: build | clean
-	cd build && $(EMCMAKE) cmake -DMODE_emjs_base=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && $(EMMAKE) make
+	cd build && $(EMCMAKE) cmake --DCMAKE_VERBOSE_MAKEFILE=ON .. && $(EMMAKE) make
 
 # -DCMAKE_BUILD_TYPE=Release
 
