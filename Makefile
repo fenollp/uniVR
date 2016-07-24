@@ -1,34 +1,23 @@
-.PHONY: compile compile_all
+.PHONY: compile
 
 all: compile
 
-modes = shaders boxes fromfile base snowmen
-MODE ?= boxes
-
-compile_all:
-	MODE='shaders' $(MAKE) -C . compile
-	MODE='boxes' $(MAKE) -C . compile
-	MODE='fromfile' $(MAKE) -C . compile
-	MODE='base' $(MAKE) -C . compile
-	MODE='snowmen' $(MAKE) -C . compile
-
 compile: build
-	cd build/ && cmake -DMODE_$(MODE)=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && cmake --build . --config Release
-	cp build/$(MODE) nvr_$(MODE)
+	cd build && cmake --build . --config Release
 
 clean: clean-emjs
-	$(if $(wildcard build/), rm -r build/)
+	$(if $(wildcard build), rm -r build)
 
 distclean: clean
-	$(foreach bin, $(modes), \
-            $(if $(wildcard nvr_$(bin)), rm nvr_$(bin);))
+	$(if $(wildcard bin), rm -r bin)
 
-build: clean
+build:
 	mkdir $@
+	cd build && cmake --DCMAKE_VERBOSE_MAKEFILE=ON ..
 
 
-emjs_base.html: build
-	cd build/ && $(EMCMAKE) cmake -DMODE_emjs_base=ON --DCMAKE_VERBOSE_MAKEFILE=ON .. && $(EMMAKE) make
+emjs_base.html: build | clean
+	cd build && $(EMCMAKE) cmake --DCMAKE_VERBOSE_MAKEFILE=ON .. && $(EMMAKE) make
 
 # -DCMAKE_BUILD_TYPE=Release
 
@@ -37,7 +26,7 @@ FLAGS += --js-library 'lib/emscripten/library_html5video.js'
 #FLAGS += --shell-file template.html
 FLAGS += -s ASSERTIONS=2
 FLAGS += -s DEMANGLE_SUPPORT=1
-FLAGS += -I 'lib/'
+FLAGS += -I 'libnvr/'
 FLAGS += -I 'include/'
 #FLAGS += -Wno-warn-absolute-paths
 FLAGS += -std=c++14
@@ -72,7 +61,7 @@ endif
 
 CCs = dlib/base64/base64_kernel_1.cpp \
       dlib/entropy_decoder/entropy_decoder_kernel_2.cpp \
-      lib/nvr.cc
+      libnvr/nvr.cc
 
 base.html: clean
 	$(EMXX) $(FLAGS) $(CCs) src/main_emjs_base.cc -o $@

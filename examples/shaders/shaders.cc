@@ -134,7 +134,8 @@ static Shader shaders[] = {
 //   Shader("Msj3zD.glsl", "", "", "", ""),//cool 60 nomouse 2d
    Shader("llj3Rz.glsl", "tex09.jpg", "", "", ""), //onlymousex 60 nice
    Shader("XdlGzH.glsl", "tex04.jpg", "", "", ""),//nomouse 50 streetview
-   Shader("Xyptonjtroz.glsl", "", "", "", "")
+   Shader("Xyptonjtroz.glsl", "", "", "", ""),
+   Shader("electron.glsl", "", "", "", "")
 };
 
 

@@ -47,9 +47,9 @@ This code should compile | run with
 * Dlib ≥ 18.10
 * Apple LLVM version 5.1 (clang-503.0.40) (based on LLVM 3.4svn)
 * FreeImage
-* GLUT
-* GLEW
-* OpenGL
+* GLUT `sudo apt-get install libxmu-dev libxi-dev`
+* GLEW `sudo apt-get install libglew-dev`
+* OpenGL `sudo apt-get install freeglut3 freeglut3-dev`
 
 
 ### nvr/*

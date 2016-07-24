@@ -1,3 +1,4 @@
+#include <chrono>
 #include "nvr.hh"
 
 int
@@ -19,9 +20,9 @@ main (int argc, const char* argv[]) {
         nvr::data face;
         size_t i = 0;
         while (true) { // GAME LOOP
-            auto s = std::chrono::high_resolution_clock::now();
+            auto s = std::chrono::steady_clock::now();
             bool ret = ovr.step(face);
-            auto f = std::chrono::high_resolution_clock::now();
+            auto f = std::chrono::steady_clock::now();
             auto t = std::chrono::duration_cast<std::chrono::nanoseconds>(f-s);
             if (!ret)
                 break;
