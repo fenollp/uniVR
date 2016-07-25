@@ -2,6 +2,8 @@ include(../../dlib/cmake)
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
+add_compile_options( -Wno-deprecated )
+
 set(target_name shaders)
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})

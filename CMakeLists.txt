@@ -4,21 +4,19 @@ PROJECT(nvr)
 include_directories(include)
 
 
-add_definitions( -Wall )
-add_definitions( -Wno-deprecated )
-add_definitions( -W -Wextra -pedantic )
-add_definitions( -O3 )
-add_definitions( -march=native )
+add_compile_options( -W -Wall -Wextra -pedantic )
+add_compile_options( -O3 )
+add_compile_options( -march=native )
 
-# add_definitions( -DUSE_SSE2_INSTRUCTIONS=ON )
-# add_definitions( -DUSE_SSE4_INSTRUCTIONS=ON )
-# add_definitions( -DUSE_AVX_INSTRUCTIONS=ON )
+# add_compile_options( -DUSE_SSE2_INSTRUCTIONS=ON )
+# add_compile_options( -DUSE_SSE4_INSTRUCTIONS=ON )
+# add_compile_options( -DUSE_AVX_INSTRUCTIONS=ON )
 
-# add_definitions( -fsanitize=address )
+# add_compile_options( -fsanitize=address )
 # http://clang.llvm.org/docs/UsersManual.html#controlling-code-generation
 
 #This warning is for project developers.  Use -Wno-dev to suppress it.#
-#add_definitions( -Wno-dev )
+#add_compile_options( -Wno-dev )
 
 
 include(CheckCXXCompilerFlag)
