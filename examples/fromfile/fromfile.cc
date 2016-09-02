@@ -1,6 +1,8 @@
 #include <chrono>
 #include "nvr.hh"
 
+#define DEV std::cerr
+
 int
 main (int argc, const char* argv[]) {
     try {
@@ -18,17 +20,17 @@ main (int argc, const char* argv[]) {
         auto fqdn = argv[2];
         auto vid = argv[3];
 
-        std::cout << '{' << std::endl
-                  << "\"vsn\":" << std::endl
-                  << '{' << std::endl
-                  <<   "\"gv\": \"" << gv << '"' << std::endl
-                  << '}' << std::endl
-                  << "\"machine\":" << std::endl
-                  << '{' << std::endl
-                  <<   "\"fqdn\": \"" << fqdn << '"' << std::endl
-                  << '}' << std::endl
-                  << "\"data\":" << std::endl
-                  << '{' << std::endl;
+        DEV << '{' << std::endl
+            << "\"vsn\":" << std::endl
+            << '{' << std::endl
+            <<   "\"gv\": \"" << gv << '"' << std::endl
+            << '}' << std::endl
+            << "\"machine\":" << std::endl
+            << '{' << std::endl
+            <<   "\"fqdn\": \"" << fqdn << '"' << std::endl
+            << '}' << std::endl
+            << "\"data\":" << std::endl
+            << '{' << std::endl;
 
         std::string trained(ldmrks);
         nvr::UniVR ovr;
@@ -49,34 +51,34 @@ main (int argc, const char* argv[]) {
                 break;
 
             if (!is_first)
-                std::cout << ',';
+                DEV << ',';
             else
                 is_first = false;
 
-            std::cout << "\"" << i++ << "\":{"
-                      <<   "\"nanos\":" << t.count() << ','
-                      <<   "\"face\":" << face
-                      <<   "\"ldmrks\": {"
-                      <<     "\"file\": \"" << ldmrks << '"' << ','
-                      <<     "\"data\": {";
+            DEV << "\"" << i++ << "\":{"
+                <<   "\"nanos\":" << t.count() << ','
+                <<   "\"face\":" << face
+                <<   "\"ldmrks\": {"
+                <<     "\"file\": \"" << ldmrks << '"' << ','
+                <<     "\"data\": {";
             bool is_first_ldmrk = true;
             for (int l = 0; l < 2 * LANDMARKS_COUNT; ++l) {
                 if (!is_first_ldmrk)
-                    std::cout << ',';
+                    DEV << ',';
                 else
                     is_first_ldmrk = false;
-                std::cout << '"' << l << '"' << ':' << face.landmarks[l];
+                DEV << '"' << l << '"' << ':' << face.landmarks[l];
             }
-            std::cout <<     '}'
-                      <<   '}';
+            DEV <<     '}'
+                <<   '}';
 
             for (int l = 0; l < LANDMARKS_COUNT * 2; ++l)
-                std::cout << ',' << face.landmarks[l];
-            std::cout << std::endl;
+                DEV << ',' << face.landmarks[l];
+            DEV << std::endl;
 
-            std::cout << "}" << std::endl; // Closes i
+            DEV << "}" << std::endl; // Closes i
         }
-        std::cout << '}' << std::endl; // Closes "data"
+        DEV << '}' << std::endl; // Closes "data"
 
     }
     catch (std::exception& e) {
