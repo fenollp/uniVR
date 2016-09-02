@@ -60,6 +60,35 @@ namespace nvr {
         double eyeX, eyeY, eyeZ;
         // --
         int landmarks[LANDMARKS_COUNT * 2];
+
+        std::ostream& to_json (std::ostream& o) {
+            o << '{'
+              << "\"gx\":" << gx << ','
+              << "\"gy\":" << gy << ','
+              << "\"chin\":" << chin << ','
+
+              << "\"eyeX\":" << eyeX << ','
+              << "\"eyeY\":" << eyeY << ','
+              << "\"eyeZ\":" << eyeZ << ','
+
+              << "\"n\":" << n << ','
+              << "\"er\":" << er << ','
+              << "\"el\":" << el << ','
+              << "\"ar\":" << ar << ','
+              << "\"al\":" << al << ','
+              << "\"das\":" << das << ','
+              << "\"w\":" << w << ','
+              << "\"h\":" << h << ','
+              << "\"headWidth\":" << headWidth << ','
+              << "\"headHeight\":" << headHeight << ','
+              << "\"upperHeadX\":" << upperHeadX << ','
+              << "\"upperHeadY\":" << upperHeadY << ','
+              << "\"headX\":" << headX << ','
+              << "\"headY\":" << headY << ','
+              << "\"headDist\":" << headDist
+              << '}';
+            return o;
+        }
     } data;
 
     std::ostream& operator<< (std::ostream& o, const data& rhs);
