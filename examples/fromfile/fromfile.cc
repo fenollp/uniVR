@@ -24,11 +24,11 @@ main (int argc, const char* argv[]) {
             << "\"vsn\":" << std::endl
             << '{' << std::endl
             <<   "\"gv\": \"" << gv << '"' << std::endl
-            << '}' << std::endl
+            << "}," << std::endl
             << "\"machine\":" << std::endl
             << '{' << std::endl
             <<   "\"fqdn\": \"" << fqdn << '"' << std::endl
-            << '}' << std::endl
+            << "}," << std::endl
             << "\"data\":" << std::endl
             << '{' << std::endl;
 
@@ -55,30 +55,28 @@ main (int argc, const char* argv[]) {
             else
                 is_first = false;
 
-            DEV << "\"" << i++ << "\":{"
+            DEV << '"' << i++ << "\":{"
                 <<   "\"nanos\":" << t.count() << ','
-                <<   "\"face\":" << face
+                <<   "\"face\":" << face << ','
                 <<   "\"ldmrks\": {"
                 <<     "\"file\": \"" << ldmrks << '"' << ','
-                <<     "\"data\": {";
+                <<     "\"count\": " << LANDMARKS_COUNT << ','
+                <<     "\"data\": [";
             bool is_first_ldmrk = true;
             for (int l = 0; l < LANDMARKS_COUNT_XY; ++l) {
                 if (!is_first_ldmrk)
                     DEV << ',';
                 else
                     is_first_ldmrk = false;
-                DEV << '"' << l << '"' << ':' << face.landmarks[l];
+                DEV << face.landmarks[l];
             }
-            DEV <<     '}'
-                <<   '}';
+            DEV <<     ']'
+                <<   '}'; // Closes "ldmrks"
 
-            for (int l = 0; l < LANDMARKS_COUNT_XY; ++l)
-                DEV << ',' << face.landmarks[l];
-            DEV << std::endl;
-
-            DEV << "}" << std::endl; // Closes i
+            DEV << '}' << std::endl; // Closes i
         }
-        DEV << '}' << std::endl; // Closes "data"
+        DEV << '}' << std::endl // Closes "data"
+            << '}';
 
     }
     catch (std::exception& e) {
