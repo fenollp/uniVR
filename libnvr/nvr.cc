@@ -235,7 +235,7 @@ namespace nvr {
             ++count;
         }
 
-        for (int i = 0; i < LANDMARKS_COUNT * 2; i += 2) {
+        for (int i = 0; i < LANDMARKS_COUNT_XY; i += 2) {
             const auto& landmark = face.part(i / 2);
             data.landmarks[i] = landmark.x();
             data.landmarks[i + 1] = landmark.y();

@@ -26,6 +26,7 @@
 namespace nvr {
 
 # define LANDMARKS_COUNT 68
+# define LANDMARKS_COUNT_XY (2 * LANDMARKS_COUNT)
 # if LANDMARKS_COUNT == 68
     /// For a 68-landmarks extractor: different points of interest
     static constexpr size_t LANDMARK_NT = 27;  // Nose
@@ -60,7 +61,7 @@ namespace nvr {
         // --
         double eyeX, eyeY, eyeZ;
         // --
-        int landmarks[LANDMARKS_COUNT * 2];
+        int landmarks[LANDMARKS_COUNT_XY];
     } data;
     //MUST keep operator<< up to date with struct data
     std::ostream& operator<< (std::ostream& o, const data& rhs);

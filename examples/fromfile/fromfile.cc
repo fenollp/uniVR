@@ -62,7 +62,7 @@ main (int argc, const char* argv[]) {
                 <<     "\"file\": \"" << ldmrks << '"' << ','
                 <<     "\"data\": {";
             bool is_first_ldmrk = true;
-            for (int l = 0; l < 2 * LANDMARKS_COUNT; ++l) {
+            for (int l = 0; l < LANDMARKS_COUNT_XY; ++l) {
                 if (!is_first_ldmrk)
                     DEV << ',';
                 else
@@ -72,7 +72,7 @@ main (int argc, const char* argv[]) {
             DEV <<     '}'
                 <<   '}';
 
-            for (int l = 0; l < LANDMARKS_COUNT * 2; ++l)
+            for (int l = 0; l < LANDMARKS_COUNT_XY; ++l)
                 DEV << ',' << face.landmarks[l];
             DEV << std::endl;
 
