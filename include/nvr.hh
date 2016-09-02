@@ -42,6 +42,7 @@ namespace nvr {
 
 # define HEAD_HIST_SZ_ 5
     /// Data exchanged with the 3rd-party application
+    //MUST keep operator<< up to date with struct data
     typedef struct {
         size_t n;
         size_t er, el;
@@ -60,37 +61,8 @@ namespace nvr {
         double eyeX, eyeY, eyeZ;
         // --
         int landmarks[LANDMARKS_COUNT * 2];
-
-        std::ostream& to_json (std::ostream& o) {
-            o << '{'
-              << "\"gx\":" << gx << ','
-              << "\"gy\":" << gy << ','
-              << "\"chin\":" << chin << ','
-
-              << "\"eyeX\":" << eyeX << ','
-              << "\"eyeY\":" << eyeY << ','
-              << "\"eyeZ\":" << eyeZ << ','
-
-              << "\"n\":" << n << ','
-              << "\"er\":" << er << ','
-              << "\"el\":" << el << ','
-              << "\"ar\":" << ar << ','
-              << "\"al\":" << al << ','
-              << "\"das\":" << das << ','
-              << "\"w\":" << w << ','
-              << "\"h\":" << h << ','
-              << "\"headWidth\":" << headWidth << ','
-              << "\"headHeight\":" << headHeight << ','
-              << "\"upperHeadX\":" << upperHeadX << ','
-              << "\"upperHeadY\":" << upperHeadY << ','
-              << "\"headX\":" << headX << ','
-              << "\"headY\":" << headY << ','
-              << "\"headDist\":" << headDist
-              << '}';
-            return o;
-        }
     } data;
-
+    //MUST keep operator<< up to date with struct data
     std::ostream& operator<< (std::ostream& o, const data& rhs);
 
     /// Redefine the following types and capture_opener (in init/2)

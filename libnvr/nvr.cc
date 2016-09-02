@@ -282,15 +282,32 @@ namespace nvr {
 
     std::ostream&
     operator<< (std::ostream& o, const data& rhs) {
-        static size_t i = 0;
-        return o << "data " << i++
-                 << " w:" << rhs.w << " h:" << rhs.h
-                 << " n:" << rhs.n
-                 << " er:" << rhs.er << " el:" << rhs.el
-                 << " ar:" << rhs.ar << " al:" << rhs.al << " das:" << rhs.das
-                 << " chin:" << rhs.chin
-                 << " ears:" << rhs.ears
-                 << " gx:" << rhs.gx << " gy:" << rhs.gy << std::endl;
+        o << '{'
+          << "\"gx\":" << rhs.gx << ','
+          << "\"gy\":" << rhs.gy << ','
+          << "\"chin\":" << rhs.chin << ','
+
+          << "\"eyeX\":" << rhs.eyeX << ','
+          << "\"eyeY\":" << rhs.eyeY << ','
+          << "\"eyeZ\":" << rhs.eyeZ << ','
+
+          << "\"n\":" << rhs.n << ','
+          << "\"er\":" << rhs.er << ','
+          << "\"el\":" << rhs.el << ','
+          << "\"ar\":" << rhs.ar << ','
+          << "\"al\":" << rhs.al << ','
+          << "\"das\":" << rhs.das << ','
+          << "\"w\":" << rhs.w << ','
+          << "\"h\":" << rhs.h << ','
+          << "\"headWidth\":" << rhs.headWidth << ','
+          << "\"headHeight\":" << rhs.headHeight << ','
+          << "\"upperHeadX\":" << rhs.upperHeadX << ','
+          << "\"upperHeadY\":" << rhs.upperHeadY << ','
+          << "\"headX\":" << rhs.headX << ','
+          << "\"headY\":" << rhs.headY << ','
+          << "\"headDist\":" << rhs.headDist
+          << '}';
+        return o;
     }
 
     ///////////////////////////////////////////////////////////////////////////
