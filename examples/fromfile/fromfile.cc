@@ -21,16 +21,16 @@ main (int argc, const char* argv[]) {
         auto vid = argv[3];
 
         DEV << '{' << std::endl
-            << "\"vsn\":" << std::endl
-            << '{' << std::endl
+            << "\"vsn\": {" << std::endl
             <<   "\"gv\": \"" << gv << '"' << std::endl
             << "}," << std::endl
-            << "\"machine\":" << std::endl
-            << '{' << std::endl
+            << "\"machine\": {" << std::endl
             <<   "\"fqdn\": \"" << fqdn << '"' << std::endl
             << "}," << std::endl
-            << "\"data\":" << std::endl
-            << '{' << std::endl;
+            << "\"video\": {" << std::endl
+            <<   "\"file\": \"" << vid << '"' << std::endl
+            << "}," << std::endl
+            << "\"data\": {" << std::endl;
 
         std::string trained(ldmrks);
         nvr::UniVR ovr;
