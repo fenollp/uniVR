@@ -12,11 +12,11 @@ function run {
 
     local tmp=$RANDOM.json
 
-    $FROMFILE \
-        "$gv" \
-        "$fqdn" \
-        "$vid" \
-        2> $tmp
+    $FROMFILE "$vid" \
+              "$gv" \
+              "$fqdn" \
+              "$(basename "$vid")" \
+              2> $tmp
 
     local path="$JSONS/$gv/$(basename "$vid")"
     mkdir -p "$path"

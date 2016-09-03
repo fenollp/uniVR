@@ -6,19 +6,21 @@
 int
 main (int argc, const char* argv[]) {
     try {
-        if (argc != (3 + 1)) {
+        if (argc != (4 + 1)) {
             std::cout << "Call this program like this:" << std::endl
                       << "./$0 "
+                      << " <path/to/video.mp4>"
                       << " <$(git describe --abbrev --dirty --always --tags)>"
                       << " <$(hostname -f)>"
-                      << " <video.mp4>"
+                      << " <name of video.mp4>"
                       << std::endl;
             return 1;
         }
         auto ldmrks = "data/ldmrks68.dat";
-        auto gv = argv[1];
-        auto fqdn = argv[2];
-        auto vid = argv[3];
+        auto video = argv[1];
+        auto gv = argv[2];
+        auto fqdn = argv[3];
+        auto vid = argv[4];
 
         DEV << '{' << std::endl
             << "\"vsn\": {" << std::endl
@@ -35,7 +37,7 @@ main (int argc, const char* argv[]) {
         std::string trained(ldmrks);
         nvr::UniVR ovr;
         auto video_opener = [&](nvr::FrameStream& capture) {
-            return capture.open(vid) && capture.isOpened();
+            return capture.open(video) && capture.isOpened();
         };
         ovr.init(trained, video_opener);
 
