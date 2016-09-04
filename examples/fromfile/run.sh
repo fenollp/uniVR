@@ -8,8 +8,9 @@ function run {
 
     local video="$1"
     local vid="$(basename "$video")"
-    local gv="$(git describe --abbrev --dirty --always --tags)"
-    local gdate="$(git show -s --format=%ci ${gv%%-*})"
+    local gvv="$(git describe --abbrev --dirty --always --tags)"
+    local gv="$(echo "${gvv%%-*}")"
+    local gdate="$(git show -s --format=%ci $gv)"
     local fqdn="$(hostname -f)"
 
     local path="$JSONS/$gv/$vid"
@@ -17,6 +18,7 @@ function run {
 
     $FROMFILE "$video" \
               "$vid" \
+              "$gvv" \
               "$gv" \
               "$gdate" \
               "$fqdn" \

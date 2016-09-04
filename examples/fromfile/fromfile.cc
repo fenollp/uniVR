@@ -6,12 +6,13 @@
 int
 main (int argc, const char* argv[]) {
     try {
-        if (argc != (5 + 1)) {
+        if (argc != (6 + 1)) {
             std::cout << "Call this program like this:" << std::endl
                       << "./$0 "
                       << " <path/to/video.mp4>"
                       << " <name of video.mp4>"
                       << " <$(git describe --abbrev --dirty --always --tags)>"
+                      << " <$(git describe --abbrev --always)>"
                       << " <${$(git show -s --format=%ci $commit)%%-*}>"
                       << " <$(hostname -f)>"
                       << std::endl;
@@ -20,12 +21,14 @@ main (int argc, const char* argv[]) {
         auto ldmrks = "data/ldmrks68.dat";
         auto video = argv[1];
         auto vid = argv[2];
-        auto gv = argv[3];
-        auto gdate = argv[4];
-        auto fqdn = argv[5];
+        auto gvv = argv[3];
+        auto gv = argv[4];
+        auto gdate = argv[5];
+        auto fqdn = argv[6];
 
         DEV << '{' << std::endl
             << "\"vsn\": {" << std::endl
+            <<   "\"gvv\": \"" << gvv << '"' << ',' << std::endl
             <<   "\"gv\": \"" << gv << '"' << ',' << std::endl
             <<   "\"gdate\": \"" << gdate << '"' << std::endl
             << "}," << std::endl
