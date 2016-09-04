@@ -6,25 +6,28 @@
 int
 main (int argc, const char* argv[]) {
     try {
-        if (argc != (4 + 1)) {
+        if (argc != (5 + 1)) {
             std::cout << "Call this program like this:" << std::endl
                       << "./$0 "
                       << " <path/to/video.mp4>"
-                      << " <$(git describe --abbrev --dirty --always --tags)>"
-                      << " <$(hostname -f)>"
                       << " <name of video.mp4>"
+                      << " <$(git describe --abbrev --dirty --always --tags)>"
+                      << " <${$(git show -s --format=%ci $commit)%%-*}>"
+                      << " <$(hostname -f)>"
                       << std::endl;
             return 1;
         }
         auto ldmrks = "data/ldmrks68.dat";
         auto video = argv[1];
-        auto gv = argv[2];
-        auto fqdn = argv[3];
-        auto vid = argv[4];
+        auto vid = argv[2];
+        auto gv = argv[3];
+        auto gdate = argv[4];
+        auto fqdn = argv[5];
 
         DEV << '{' << std::endl
             << "\"vsn\": {" << std::endl
-            <<   "\"gv\": \"" << gv << '"' << std::endl
+            <<   "\"gv\": \"" << gv << '"' << ',' << std::endl
+            <<   "\"gdate\": \"" << gdate << '"' << std::endl
             << "}," << std::endl
             << "\"machine\": {" << std::endl
             <<   "\"fqdn\": \"" << fqdn << '"' << std::endl

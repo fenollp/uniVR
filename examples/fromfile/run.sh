@@ -6,21 +6,21 @@ function run {
     local FROMFILE="${FROMFILE:-./build/bin/fromfile}"
     local JSONS="${JSONS:-../testdata-univr.git/jsons}"
 
+    local video="$1"
+    local vid="$(basename "$video")"
     local gv="$(git describe --abbrev --dirty --always --tags)"
-    local vid="$1"
+    local gdate="$(git show -s --format=%ci ${gv%%-*})"
     local fqdn="$(hostname -f)"
 
-    local tmp=$RANDOM.json
-
-    $FROMFILE "$vid" \
-              "$gv" \
-              "$fqdn" \
-              "$(basename "$vid")" \
-              2> $tmp
-
-    local path="$JSONS/$gv/$(basename "$vid")"
+    local path="$JSONS/$gv/$vid"
     mkdir -p "$path"
-    mv $tmp "$path/$fqdn.json"
+
+    $FROMFILE "$video" \
+              "$vid" \
+              "$gv" \
+              "$gdate" \
+              "$fqdn" \
+              2> "$path/$fqdn.json"
 }
 
 run "$@"
