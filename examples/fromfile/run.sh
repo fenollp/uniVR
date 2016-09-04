@@ -10,7 +10,7 @@ function run {
     local vid="$(basename "$video")"
     local gvv="$(git describe --abbrev --dirty --always --tags)"
     local gv="$(echo "${gvv%%-*}")"
-    local gdate="$(git show -s --format=%ci $gv)"
+    local gdate="$(git show --no-patch --format=%ci $gv)"
     local fqdn="$(hostname -f)"
 
     local path="$JSONS/$gv/$vid"
