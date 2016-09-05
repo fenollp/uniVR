@@ -12,7 +12,7 @@ main (int argc, const char* argv[]) {
                       << " <path/to/video.mp4>"
                       << " <name of video.mp4>"
                       << " <$(git describe --abbrev --dirty --always --tags)>"
-                      << " <$(git describe --abbrev --always)>"
+                      << " <$(git rev-parse --short HEAD)>"
                       << " <${$(git show --no-patch --format=%ci $commit)%%-*}>"
                       << " <$(hostname -f)>"
                       << std::endl;
