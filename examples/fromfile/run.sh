@@ -19,7 +19,7 @@ function run {
 
     local path="$JSONS/$gv/$vid"
     local target="$path/$fqdn.json"
-    [[ -f "$target" ]] && echo Skipping... && return
+    [[ -f "$target" ]] && echo "Skipping $target..." && return
     mkdir -p "$path"
 
     make
