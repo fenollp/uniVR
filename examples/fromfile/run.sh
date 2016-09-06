@@ -41,7 +41,7 @@ for sha in $(git rev-list $START_COMMIT~1...); do
     echo "Processing $sha..."
     git checkout $sha
     for video in "$@"; do
-        run "$1"
+        run "$video"
     done
     echo "Done with $sha"
     git checkout -
