@@ -2,7 +2,6 @@ include(../../dlib/cmake)
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-# Same as MODE_base, except no -Dwindow_debug
 set(target_name fromfile)
 add_executable(${target_name}
   ${target_name}.cc

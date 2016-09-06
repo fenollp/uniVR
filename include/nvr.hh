@@ -151,6 +151,11 @@ namespace nvr {
         void collect_data (data& data, const Landmarks& face,
                            const dlib::rectangle& face_zone);
 
+#ifdef window_debug
+    private:
+        void project_coords (Frame& frame_, const data& data);
+        void display_data (Frame& frame_, const data& data);
+#endif
     };
 
 } // namespace nvr

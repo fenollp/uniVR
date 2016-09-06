@@ -14,7 +14,6 @@ include_directories(${GLEW_INCLUDE_DIRS})
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 find_package(FreeImage REQUIRED)
 include_directories(${FreeImage_INCLUDE_DIRS})
-# add_definitions( -Dwindow_debug )
 add_executable(${target_name}
   ${target_name}.cc
   )

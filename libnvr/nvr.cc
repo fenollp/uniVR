@@ -245,24 +245,25 @@ namespace nvr {
 #ifdef window_debug
 
     void
-    project_coords (Frame& frame_, const data& data) {
-        int w = frame_cols_, h = frame_rows_;
+    UniVR::project_coords (Frame& frame_, const data& data) {
+        int w = frame_cols_;
+        int h = frame_rows_;
         auto c = cv::Point(w/2, h/2);
         auto color = GREEN;
-        auto  a_x_l = cv::Point(c.x - w,  c.y)
-            , a_x_r = cv::Point(c.x + w,  c.y)
-            , a_y_t = cv::Point(c.x,      c.y - h)
-            , a_y_d = cv::Point(c.x,      c.y + h);
+        auto a_x_l = cv::Point(c.x - w,  c.y);
+        auto a_x_r = cv::Point(c.x + w,  c.y);
+        auto a_y_t = cv::Point(c.x,      c.y - h);
+        auto a_y_d = cv::Point(c.x,      c.y + h);
         cv::line(frame_, a_x_l, a_x_r, color, 1, 8, 0);
         cv::line(frame_, a_y_t, a_y_d, color, 1, 8, 0);
-        auto  p_x = cv::Point(data.gx, c.y)
-            , p_y = cv::Point(c.x,     data.gy);
+        auto p_x = cv::Point(data.gx, c.y);
+        auto p_y = cv::Point(c.x, data.gy);
         cv::line(frame_, p_x,p_x, color, 4, 8, 0);
         cv::line(frame_, p_y,p_y, color, 4, 8, 0);
     }
 
     void
-    display_data (Frame& frame_, const data& data) {
+    UniVR::display_data (Frame& frame_, const data& data) {
         textr(frame_, 270, std::to_string(data.gy) + " :gy");
         textr(frame_, 240, std::to_string(data.gx) + " :gx");
         textr(frame_, 210, std::to_string(data.ears) + " :ears");
