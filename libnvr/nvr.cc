@@ -12,10 +12,150 @@
 
 namespace nvr {
 
+    float
+    RGB_to_Y (const dlib::rgb_pixel& p) {
+        return 0.2126 * p.red
+            + 0.7152 * p.green
+            + 0.0722 * p.blue;
+    }
+
+// MGI := Mean Greyscale Intensity
+
+    float
+    UniVR::MGI_whole_img () const {
+        float sum = 0;
+        for (long row = 0; row < img_.nr(); ++row)
+            for (long col = 0; col < img_.nc(); ++col)
+                sum += RGB_to_Y(img_[row][col]);
+        return sum / (img_.nr() * img_.nc());
+    }
+
+    float
+    UniVR::MGI_horizontal_whole_img () const {
+        float sum = 0;
+        for (long row = 0; row < img_.nr(); ++row) {
+            float hz_sum = 0;
+            for (long col = 0; col < img_.nc(); ++col)
+                hz_sum += RGB_to_Y(img_[row][col]);
+            sum += hz_sum / img_.nc();
+        }
+        return sum / img_.nr();
+    }
+
+    float
+    UniVR::MGI_left_right_difference_whole_img () const {
+        float sum_left = 0;
+        float sum_right = 0;
+        for (long row = 0; row < img_.nr(); ++row)
+            for (long col = 0; col < img_.nc(); ++col) {
+                if (col <= img_.nc() / 2)
+                    sum_left += RGB_to_Y(img_[row][col]);
+                else
+                    sum_right += RGB_to_Y(img_[row][col]);
+            }
+        return sum_left - sum_right;
+    }
+
+    float
+    UniVR::MGI_face_img () const {
+        const auto& r = rect_found_;
+        if (r.is_empty())
+            return -1;
+        auto top = std::max(0L, r.top());
+        auto bottom = std::min(img_.nr(), r.bottom());
+        auto left = std::max(0L, r.left());
+        auto right = std::min(img_.nc(), r.right());
+        float sum = 0;
+        for (auto row = top; row < bottom; ++row)
+            for (auto col = left; col < right; ++col)
+                sum += RGB_to_Y(img_[row][col]);
+        return sum / (r.width() * r.height());
+    }
+
+    float
+    UniVR::MGI_horizontal_face_img () const {
+        const auto& r = rect_found_;
+        if (r.is_empty())
+            return -1;
+        auto top = std::max(0L, r.top());
+        auto bottom = std::min(img_.nr(), r.bottom());
+        auto left = std::max(0L, r.left());
+        auto right = std::min(img_.nc(), r.right());
+        float sum = 0;
+        for (long row = top; row < bottom; ++row) {
+            float hz_sum = 0;
+            for (long col = left; col < right; ++col)
+                hz_sum += RGB_to_Y(img_[row][col]);
+            sum += hz_sum / r.width();
+        }
+        return sum / r.height();
+    }
+
+    float
+    UniVR::MGI_left_right_difference_face_img () const {
+        const auto& r = rect_found_;
+        if (r.is_empty())
+            return -1;
+        auto top = std::max(0L, r.top());
+        auto bottom = std::min(img_.nr(), r.bottom());
+        auto left = std::max(0L, r.left());
+        auto right = std::min(img_.nc(), r.right());
+        float sum_left = 0;
+        float sum_right = 0;
+        for (long row = top; row < bottom; ++row)
+            for (long col = left; col < right; ++col) {
+                if (col <= r.width() / 2)
+                    sum_left += RGB_to_Y(img_[row][col]);
+                else
+                    sum_right += RGB_to_Y(img_[row][col]);
+            }
+        return sum_left - sum_right;
+    }
+
+    long
+    UniVR::face_zone_top () const {
+        return rect_found_.top();
+    }
+
+    long
+    UniVR::face_zone_bottom () const {
+        return rect_found_.bottom();
+    }
+
+    long
+    UniVR::face_zone_left () const {
+        return rect_found_.left();
+    }
+
+    long
+    UniVR::face_zone_right () const {
+        return rect_found_.right();
+    }
+
+    unsigned long
+    UniVR::face_zone_width () const {
+        return rect_found_.width();
+    }
+
+    unsigned long
+    UniVR::face_zone_height () const {
+        return rect_found_.height();
+    }
+
+    unsigned long
+    UniVR::face_zone_area () const {
+        return rect_found_.area();
+    }
+
+    bool
+    UniVR::face_zone_is_empty () const {
+        return rect_found_.is_empty();
+    }
+
 #ifdef window_debug
 
     void
-    rectangle (Frame& img, const dlib::rectangle& rect, size_t thickness) {
+    rectangle (Frame& frame, const dlib::rectangle& rect, size_t thickness) {
         if ((  0 >= rect.left() - thickness)
             || 0 >= rect.top() - thickness
             || 0 >= rect.right() - thickness
@@ -24,51 +164,51 @@ namespace nvr {
             return;
         auto zone =
             cv::Rect(rect.left(), rect.top(), rect.width(), rect.height());
-        cv::rectangle(img, zone, WHITE, thickness, 8, 0);
+        cv::rectangle(frame, zone, WHITE, thickness, 8, 0);
     }
 
     void
-    dot (Frame& img, const dlib::point& p, size_t thickness) {
+    dot (Frame& frame, const dlib::point& p, size_t thickness) {
         cv::Point pcv(p.x(), p.y());
         auto color = BLUE;
         auto fface = cv::FONT_HERSHEY_SIMPLEX;
-        cv::putText(img, "+", pcv, fface, .37, color, thickness, 8);
+        cv::putText(frame, "+", pcv, fface, .37, color, thickness, 8);
     }
 
     void
-    dots (Frame& img, const Landmarks& face, size_t thickness) {
+    dots (Frame& frame, const Landmarks& face, size_t thickness) {
         for (size_t k = 0; k < LANDMARKS_COUNT; ++k) {
             const auto& p = face.part(k);
             if (p == dlib::OBJECT_PART_NOT_PRESENT)
                 continue;
-            dot(img, p, thickness);
+            dot(frame, p, thickness);
         }
     }
 
     void // Used by text & textr
-    text_ (Frame& img, const cv::Point& o, const std::string& str) {
+    text_ (Frame& frame, const cv::Point& o, const std::string& str) {
         int fface = cv::FONT_HERSHEY_SIMPLEX;
         double fscale = 0.73;
         int thick = 1;
         auto color = WHITE;
         int baseline = 0;
         auto text = cv::getTextSize(str, fface, fscale, thick, &baseline);
-        cv::rectangle(img, o + cv::Point(0, baseline)
-                      ,    o + cv::Point(text.width, -text.height),
-                      BLACK, CV_FILLED);
-        cv::putText(img, str, o, fface, fscale, color, thick, 8);
+        cv::rectangle(frame, o + cv::Point(0, baseline)
+                      ,      o + cv::Point(text.width, -text.height)
+                      ,BLACK, CV_FILLED);
+        cv::putText(frame, str, o, fface, fscale, color, thick, 8);
     }
 
     void
-    text (Frame& img, size_t pos, const std::string& str) {
-        auto origin = cv::Point(5, img.rows - pos - 5);
-        text_(img, origin, str);
+    text (Frame& frame, size_t pos, const std::string& str) {
+        auto origin = cv::Point(5, frame.rows - pos - 5);
+        text_(frame, origin, str);
     }
 
     void
-    textr (Frame& img, size_t pos, const std::string& str) {
-        auto origin = cv::Point(img.cols - 15*str.size(), img.rows - pos - 5);
-        text_(img, origin, str);
+    textr (Frame& frame, size_t pos, const std::string& str) {
+        auto origin = cv::Point(frame.cols - 15*str.size(), frame.rows - pos - 5);
+        text_(frame, origin, str);
     }
 
 #endif

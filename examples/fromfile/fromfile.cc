@@ -27,6 +27,7 @@ main (int argc, const char* argv[]) {
         auto fqdn = argv[6];
 
         DEV << '{' << std::endl
+            << "\"version\": 2," << std::endl
             << "\"vsn\": {" << std::endl
             <<   "\"gvv\": \"" << gvv << '"' << ',' << std::endl
             <<   "\"gv\": \"" << gv << '"' << ',' << std::endl
@@ -63,12 +64,50 @@ main (int argc, const char* argv[]) {
             else
                 is_first = false;
 
+            const auto& face_box_t = ovr.face_zone_top();
+            const auto& face_box_b = ovr.face_zone_bottom();
+            const auto& face_box_l = ovr.face_zone_left();
+            const auto& face_box_r = ovr.face_zone_right();
+            const auto& face_box_w = ovr.face_zone_width();
+            const auto& face_box_h = ovr.face_zone_height();
+            const auto& face_box_a = ovr.face_zone_area();
+            const auto& face_box_e = ovr.face_zone_is_empty();
+
+            const auto& mgi_whole = ovr.MGI_whole_img();
+            const auto& mgi_whole_hz = ovr.MGI_horizontal_whole_img();
+            const auto& mgi_whole_lr = ovr.MGI_left_right_difference_whole_img();
+            const auto& mgi_face = ovr.MGI_face_img();
+            const auto& mgi_face_hz = ovr.MGI_horizontal_face_img();
+            const auto& mgi_face_lr = ovr.MGI_left_right_difference_face_img();
+
             DEV << '"' << i++ << "\":{"
-                <<   "\"nanos\":" << t.count() << ','
-                <<   "\"face\":" << face << ','
-                <<   "\"ldmrks\": {"
-                <<     "\"file\": \"" << ldmrks << '"' << ','
-                <<     "\"count\": " << LANDMARKS_COUNT << ','
+                <<   "\"nanos\":" << t.count() << ',' << std::endl
+                <<   "\"face\":" << face << std::endl
+                <<   ',' << std::flush
+
+                <<   "\"face_box\": {"
+                <<     "\"t\": " << face_box_t << ','
+                <<     "\"b\": " << face_box_b << ','
+                <<     "\"l\": " << face_box_l << ','
+                <<     "\"r\": " << face_box_r << ','
+                <<     "\"w\": " << face_box_w << ','
+                <<     "\"h\": " << face_box_h << ','
+                <<     "\"a\": " << face_box_a << ','
+                <<     "\"e\": " << face_box_e
+                <<   "}," << std::flush
+
+                <<   "\"mgi\": {"
+                <<     "\"whole\": " << mgi_whole << ','
+                <<     "\"whole_hz\": " << mgi_whole_hz << ','
+                <<     "\"whole_lr\": " << mgi_whole_lr << ','
+                <<     "\"face\": " << mgi_face << ','
+                <<     "\"face_hz\": " << mgi_face_hz << ','
+                <<     "\"face_lr\": " << mgi_face_lr
+                <<   "}," << std::flush
+
+                <<   "\"ldmrks\": {" << std::endl
+                <<     "\"file\": \"" << ldmrks << '"' << ',' << std::endl
+                <<     "\"count\": " << LANDMARKS_COUNT << ',' << std::endl
                 <<     "\"data\": [";
             bool is_first_ldmrk = true;
             for (int l = 0; l < LANDMARKS_COUNT_XY; ++l) {
@@ -79,7 +118,7 @@ main (int argc, const char* argv[]) {
                 DEV << face.landmarks[l];
             }
             DEV <<     ']'
-                <<   '}'; // Closes "ldmrks"
+                <<   '}' << std::flush; // Closes "ldmrks"
 
             DEV << '}' << std::endl; // Closes i
         }

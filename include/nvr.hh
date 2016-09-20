@@ -132,16 +132,39 @@ namespace nvr {
 #ifndef __EMSCRIPTEN__
         void init (const std::string& trained_data);
 #endif
+
+    public:
+        float MGI_whole_img () const;
+        float MGI_horizontal_whole_img () const;
+        float MGI_left_right_difference_whole_img () const;
+        float MGI_face_img () const;
+        float MGI_horizontal_face_img () const;
+        float MGI_left_right_difference_face_img () const;
+
+    public:
+        long face_zone_top () const;
+        long face_zone_bottom () const;
+        long face_zone_left () const;
+        long face_zone_right () const;
+        unsigned long face_zone_width () const;
+        unsigned long face_zone_height () const;
+        unsigned long face_zone_area () const;
+        bool face_zone_is_empty () const;
+
+    public:
         /// step/1: calls next_frame/0 for new data then collect_data/3 &
         ///  updates face with newly processed data
         bool step (data& face);
         void detect_now (); // Force face detection then branches into detect_then_track/0
+
     private:
         bool next_frame (); // Extracts new frame from the capture device
         void maybe_update_rows_cols (); // Maybe downscale & update rr_ & rc_
+
     private:
         dlib::rectangle scaled (const dlib::rectangle& r);
         dlib::point     scaled (const dlib::point& p);
+
     private:
         int norm (const Landmarks& face, int part1, int part2);
         double angle (const Landmarks& face,
