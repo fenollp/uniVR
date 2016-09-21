@@ -12,6 +12,28 @@
 
 namespace nvr {
 
+    inline
+    long
+    rect_top(const dlib::rectangle& r) {
+        return std::max(0L, r.top());
+    }
+
+    inline
+    long rect_bottom(long nr, const dlib::rectangle& r) {
+        return std::min(nr, r.bottom());
+    }
+
+    inline
+    long rect_left(const dlib::rectangle& r) {
+        return std::max(0L, r.left());
+    }
+
+    inline
+    long rect_right(long nc, const dlib::rectangle& r) {
+        return std::min(nc, r.right());
+    }
+
+    inline
     float
     RGB_to_Y (const dlib::rgb_pixel& p) {
         return 0.2126 * p.red
@@ -61,13 +83,11 @@ namespace nvr {
         const auto& r = rect_found_;
         if (r.is_empty())
             return -1;
-        auto top = std::max(0L, r.top());
-        auto bottom = std::min(img_.nr(), r.bottom());
-        auto left = std::max(0L, r.left());
-        auto right = std::min(img_.nc(), r.right());
+        auto bottom = rect_bottom(img_.nr(), r);
+        auto right = rect_right(img_.nc(), r);
         float sum = 0;
-        for (auto row = top; row < bottom; ++row)
-            for (auto col = left; col < right; ++col)
+        for (auto row = rect_top(r); row < bottom; ++row)
+            for (auto col = rect_left(r); col < right; ++col)
                 sum += RGB_to_Y(img_[row][col]);
         return sum / (r.width() * r.height());
     }
@@ -77,14 +97,12 @@ namespace nvr {
         const auto& r = rect_found_;
         if (r.is_empty())
             return -1;
-        auto top = std::max(0L, r.top());
-        auto bottom = std::min(img_.nr(), r.bottom());
-        auto left = std::max(0L, r.left());
-        auto right = std::min(img_.nc(), r.right());
+        auto bottom = rect_bottom(img_.nr(), r);
+        auto right = rect_right(img_.nc(), r);
         float sum = 0;
-        for (long row = top; row < bottom; ++row) {
+        for (long row = rect_top(r); row < bottom; ++row) {
             float hz_sum = 0;
-            for (long col = left; col < right; ++col)
+            for (long col = rect_left(r); col < right; ++col)
                 hz_sum += RGB_to_Y(img_[row][col]);
             sum += hz_sum / r.width();
         }
@@ -96,14 +114,12 @@ namespace nvr {
         const auto& r = rect_found_;
         if (r.is_empty())
             return -1;
-        auto top = std::max(0L, r.top());
-        auto bottom = std::min(img_.nr(), r.bottom());
-        auto left = std::max(0L, r.left());
-        auto right = std::min(img_.nc(), r.right());
+        auto bottom = rect_bottom(img_.nr(), r);
+        auto right = rect_right(img_.nc(), r);
         float sum_left = 0;
         float sum_right = 0;
-        for (long row = top; row < bottom; ++row)
-            for (long col = left; col < right; ++col) {
+        for (long row = rect_top(r); row < bottom; ++row)
+            for (long col = rect_left(r); col < right; ++col) {
                 if (col <= r.width() / 2)
                     sum_left += RGB_to_Y(img_[row][col]);
                 else
@@ -114,22 +130,22 @@ namespace nvr {
 
     long
     UniVR::face_zone_top () const {
-        return rect_found_.top();
+        return rect_top(rect_found_);
     }
 
     long
     UniVR::face_zone_bottom () const {
-        return rect_found_.bottom();
+        return rect_bottom(img_.nr(), rect_found_);
     }
 
     long
     UniVR::face_zone_left () const {
-        return rect_found_.left();
+        return rect_left(rect_found_);
     }
 
     long
     UniVR::face_zone_right () const {
-        return rect_found_.right();
+        return rect_right(img_.nc(), rect_found_);
     }
 
     unsigned long
@@ -154,16 +170,20 @@ namespace nvr {
 
 #ifdef window_debug
 
+    cv::Rect
+    rect_on_frame (const Frame& f, const dlib::rectangle& r) {
+        auto left = rect_left(r);
+        auto top = rect_top(r);
+        auto w = std::min(r.width(), static_cast<unsigned long>(std::abs(f.cols - left)));
+        auto h = std::min(r.height(), static_cast<unsigned long>(std::abs(f.rows - top)));
+        return cv::Rect(left, top, w, h);
+    }
+
     void
     rectangle (Frame& frame, const dlib::rectangle& rect, size_t thickness) {
-        if ((  0 >= rect.left() - thickness)
-            || 0 >= rect.top() - thickness
-            || 0 >= rect.right() - thickness
-            || 0 >= rect.bottom() - thickness)
-            // FIXME: a segfault hides deeper than here…
+        if (rect.is_empty())
             return;
-        auto zone =
-            cv::Rect(rect.left(), rect.top(), rect.width(), rect.height());
+        auto zone = rect_on_frame(frame, rect);
         cv::rectangle(frame, zone, WHITE, thickness, 8, 0);
     }
 
@@ -194,7 +214,7 @@ namespace nvr {
         int baseline = 0;
         auto text = cv::getTextSize(str, fface, fscale, thick, &baseline);
         cv::rectangle(frame, o + cv::Point(0, baseline)
-                      ,      o + cv::Point(text.width, -text.height)
+                      ,      o + cv::Point(text.width, - text.height)
                       ,BLACK, CV_FILLED);
         cv::putText(frame, str, o, fface, fscale, color, thick, 8);
     }
@@ -238,9 +258,9 @@ namespace nvr {
     ///////////////////////////////////////////////////////////////////////////
 
     dlib::rectangle
-    UniVR::scaled (const dlib::rectangle& r) {
-        auto x = r.left();
-        auto y = r.top();
+    UniVR::scaled (const dlib::rectangle& r) const {
+        auto x = rect_left(r);
+        auto y = rect_top(r);
         auto sx = x * rc_;
         auto sy = y * rr_;
         int sw = (x + r.width()) * rc_;
@@ -256,14 +276,14 @@ namespace nvr {
     }
 
     dlib::point
-    UniVR::scaled (const dlib::point& p) {
+    UniVR::scaled (const dlib::point& p) const {
         return dlib::point(p.x() * rc_,  p.y() * rr_);
     }
 
     ///////////////////////////////////////////////////////////////////////////
 
     int
-    UniVR::norm (const Landmarks& face, int part1, int part2) {
+    UniVR::norm (const Landmarks& face, int part1, int part2) const {
         const auto& p1 = scaled(face.part(part1));
         const auto& p2 = scaled(face.part(part2));
         int x = p1.x() - p2.x();
@@ -273,7 +293,7 @@ namespace nvr {
 
     double
     UniVR::angle (const Landmarks& face,
-                  int part1, int part2, int Part1, int Part2) {
+                  int part1, int part2, int Part1, int Part2) const {
         const auto& p1 = scaled(face.part(part1));
         const auto& p2 = scaled(face.part(part2));
         const auto& P1 = scaled(face.part(Part1));
@@ -303,8 +323,9 @@ namespace nvr {
     }
 
     void
-    UniVR::collect_data (data& data, const Landmarks& face,
-                         const dlib::rectangle& face_zone) {
+    UniVR::collect_data (data& data,
+                         const Landmarks& face,
+                         const dlib::rectangle& face_zone) const {
         data.w = frame_cols_;
         data.h = frame_rows_;
         data.n  = norm(face, LANDMARK_NT, LANDMARK_NB);
@@ -323,8 +344,8 @@ namespace nvr {
         // --
         data.headWidth  = face_zone.width();
         data.headHeight = face_zone.height();
-        data.upperHeadX = face_zone.left();
-        data.upperHeadY = face_zone.top();
+        data.upperHeadX = rect_left(face_zone);
+        data.upperHeadY = rect_top(face_zone);
 
         // --
         double angle = data.headWidth * HGPP * PI180;
@@ -388,7 +409,7 @@ namespace nvr {
     UniVR::project_coords (Frame& frame_, const data& data) {
         int w = frame_cols_;
         int h = frame_rows_;
-        auto c = cv::Point(w/2, h/2);
+        auto c = cv::Point(w / 2, h / 2);
         auto color = GREEN;
         auto a_x_l = cv::Point(c.x - w,  c.y);
         auto a_x_r = cv::Point(c.x + w,  c.y);
@@ -654,9 +675,7 @@ namespace nvr {
 #ifdef window_debug
             dots(frame_, face_found, 1);
             do {
-                auto sr = scaled(rect_found_);
-                auto cvrect = cv::Rect(sr.left(), sr.top(),
-                                       sr.width(), sr.height());
+                auto cvrect = rect_on_frame(frame_, scaled(rect_found_));
                 cv::Mat face_img = frame_(cvrect);
                 cv::imshow(WINDOW_3, face_img);
             } while (0);

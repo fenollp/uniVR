@@ -162,17 +162,17 @@ namespace nvr {
         void maybe_update_rows_cols (); // Maybe downscale & update rr_ & rc_
 
     private:
-        dlib::rectangle scaled (const dlib::rectangle& r);
-        dlib::point     scaled (const dlib::point& p);
+        dlib::rectangle scaled (const dlib::rectangle& r) const;
+        dlib::point     scaled (const dlib::point& p) const;
 
     private:
-        int norm (const Landmarks& face, int part1, int part2);
+        int norm (const Landmarks& face, int part1, int part2) const;
         double angle (const Landmarks& face,
-                      int part1, int part2, int Part1, int Part2);
+                      int part1, int part2, int Part1, int Part2) const;
         void detect_then_track ();
         /// Does all the math to extract new data
         void collect_data (data& data, const Landmarks& face,
-                           const dlib::rectangle& face_zone);
+                           const dlib::rectangle& face_zone) const;
 
 #ifdef window_debug
     private:
