@@ -13,7 +13,7 @@ PROJECT(${target_name})
 ADD_EXECUTABLE(${target_name} main.cpp )
 
 # Add the folder containing the dlib folder to the include path
-INCLUDE_DIRECTORIES(../../..)
+include_directories(SYSTEM ../../..)
 
 # Tell cmake to link our target executable to dlib.
 TARGET_LINK_LIBRARIES(${target_name} dlib )

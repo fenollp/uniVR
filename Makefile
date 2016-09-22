@@ -1,6 +1,9 @@
-.PHONY: compile
+.PHONY: compile patch_dlib
 
 all: compile
+
+patch_dlib:
+	./bin/patch_dlib.sh
 
 compile: build
 	cd build && cmake --build . --config Release
@@ -11,8 +14,8 @@ clean: clean-emjs
 distclean: clean
 	$(if $(wildcard bin), rm -r bin)
 
-build:
-	mkdir $@
+build: patch_dlib
+	mkdir -p $@
 	cd build && cmake --DCMAKE_VERBOSE_MAKEFILE=ON ..
 
 

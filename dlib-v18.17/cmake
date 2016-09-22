@@ -69,7 +69,7 @@ endif()
 
 
 # Add folder containing dlib to the include search path.
-INCLUDE_DIRECTORIES(${dlib_path}/..)
+include_directories(SYSTEM ${dlib_path}/..)
 
 # This is really optional, but nice.  It will make sure the build mode 
 # created by cmake is always release by default.
