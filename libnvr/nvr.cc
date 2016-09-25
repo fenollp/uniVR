@@ -178,8 +178,8 @@ namespace nvr {
     rect_on_frame (const Frame& f, const dlib::rectangle& r) {
         auto left = rect_left(r);
         auto top = rect_top(r);
-        auto w = std::min(r.width(), static_cast<unsigned long>(std::abs(f.cols - left)));
-        auto h = std::min(r.height(), static_cast<unsigned long>(std::abs(f.rows - top)));
+        auto w = std::min(static_cast<long>(r.width()), std::abs(f.cols - left));
+        auto h = std::min(static_cast<long>(r.height()), std::abs(f.rows - top));
         return cv::Rect(left, top, w, h);
     }
 

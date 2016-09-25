@@ -1,10 +1,10 @@
 include(../dlib/cmake)
 
-# TODO: diable OpenCV when building with emscripten
+# TODO: disable OpenCV when building with emscripten
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-#add_definitions( -Dwindow_debug )
+# add_definitions( -Dwindow_debug )
 
 add_library(libnvr STATIC
   nvr.cc
