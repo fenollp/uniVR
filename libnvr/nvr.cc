@@ -14,22 +14,25 @@ namespace nvr {
 
     inline
     long
-    rect_top(const dlib::rectangle& r) {
+    rect_top (const dlib::rectangle& r) {
         return std::max(0L, r.top());
     }
 
     inline
-    long rect_bottom(long nr, const dlib::rectangle& r) {
+    long
+    rect_bottom (long nr, const dlib::rectangle& r) {
         return std::min(nr, r.bottom());
     }
 
     inline
-    long rect_left(const dlib::rectangle& r) {
+    long
+    rect_left (const dlib::rectangle& r) {
         return std::max(0L, r.left());
     }
 
     inline
-    long rect_right(long nc, const dlib::rectangle& r) {
+    long
+    rect_right (long nc, const dlib::rectangle& r) {
         return std::min(nc, r.right());
     }
 
@@ -100,9 +103,9 @@ namespace nvr {
         auto bottom = rect_bottom(img_.nr(), r);
         auto right = rect_right(img_.nc(), r);
         float sum = 0;
-        for (long row = rect_top(r); row < bottom; ++row) {
+        for (auto row = rect_top(r); row < bottom; ++row) {
             float hz_sum = 0;
-            for (long col = rect_left(r); col < right; ++col)
+            for (auto col = rect_left(r); col < right; ++col)
                 hz_sum += RGB_to_Y(img_[row][col]);
             sum += hz_sum / r.width();
         }
@@ -118,9 +121,10 @@ namespace nvr {
         auto right = rect_right(img_.nc(), r);
         float sum_left = 0;
         float sum_right = 0;
-        for (long row = rect_top(r); row < bottom; ++row)
-            for (long col = rect_left(r); col < right; ++col) {
-                if (col <= r.width() / 2)
+        auto mid = static_cast<long>(r.width() / 2);
+        for (auto row = rect_top(r); row < bottom; ++row)
+            for (auto col = rect_left(r); col < right; ++col) {
+                if (col <= mid)
                     sum_left += RGB_to_Y(img_[row][col]);
                 else
                     sum_right += RGB_to_Y(img_[row][col]);
