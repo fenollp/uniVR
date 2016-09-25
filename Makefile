@@ -1,5 +1,16 @@
 .PHONY: compile patch_dlib
 
+CMAKE_FLAGS  = -DCMAKE_BUILD_TYPE=Release
+CMAKE_FLAGS += -DENABLE_AVX=ON
+CMAKE_FLAGS += -DENABLE_FAST_MATH=ON
+CMAKE_FLAGS += -DENABLE_SSE=ON
+CMAKE_FLAGS += -DENABLE_SSE2=ON
+CMAKE_FLAGS += -DENABLE_SSE3=ON
+CMAKE_FLAGS += -DENABLE_SSE41=ON
+CMAKE_FLAGS += -DENABLE_SSE42=ON
+CMAKE_FLAGS += -DENABLE_SSSE3=ON
+
+
 all: compile
 
 patch_dlib:
@@ -12,7 +23,6 @@ clean: clean-emjs
 	$(if $(wildcard build), rm -r build)
 
 distclean: clean
-	$(if $(wildcard bin), rm -r bin)
 
 build: patch_dlib
 	mkdir -p $@
@@ -21,8 +31,6 @@ build: patch_dlib
 
 emjs_base.html: build | clean
 	cd build && $(EMCMAKE) cmake --DCMAKE_VERBOSE_MAKEFILE=ON .. && $(EMMAKE) make
-
-# -DCMAKE_BUILD_TYPE=Release
 
 #FLAGS = -v
 FLAGS += --js-library 'lib/emscripten/library_html5video.js'
