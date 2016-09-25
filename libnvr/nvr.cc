@@ -665,8 +665,10 @@ namespace nvr {
         if (rect_found_.is_empty()) {
             if (!zones_.empty())
                 rect_found_ = zones_.back();
-            else
+            else {
+                std::cout << "!zones_" << std::endl;
                 return false;
+            }
         }
 
         if (!rect_found_.is_empty()) {

@@ -1,7 +1,7 @@
 #include "nvr.hh"
 
 int
-main (int argc, const char* argv[]) {
+main (int /*argc*/, const char* /*argv*/[]) {
     try {
         std::string trained("data/ldmrks68.dat");
         nvr::UniVR ovr;
@@ -9,7 +9,7 @@ main (int argc, const char* argv[]) {
         nvr::data face;
         while (true) { // GAME LOOP
             if (!ovr.step(face))
-                break;
+                std::cout << "nvr skipping frame" << std::endl;
             std::cout << face;
             if (cv::waitKey(5) == 'q')
                 break;
