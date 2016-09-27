@@ -563,7 +563,7 @@ load_file (const std::string& filename, GLint types[4]) {
     std::string str( (std::istreambuf_iterator<char>(ifs))
                     , std::istreambuf_iterator<char>());
     std::regex coms("//[^\\n]+\\n");
-    str = std::regex_replace(str, coms, "\n");
+    str = std::regex_replace(str, coms, std::string("\n"));
 
     for (int i = 0; i < 4; ++i) {
         std::string channel = "iChannel" + std::to_string(i) + ";";
