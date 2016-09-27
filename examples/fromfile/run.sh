@@ -36,8 +36,10 @@ function run {
 
 [[ "$(GVV)" == *-dirty ]] && echo Unstaged changes! && exit 2
 
-START_COMMIT=${START_COMMIT:-'testdata_fromfile_format_v0'}
-for sha in $(git rev-list $START_COMMIT~1...); do
+# START_COMMIT=${START_COMMIT:-'testdata_fromfile_format_v2'}
+# for sha in $(git rev-list $START_COMMIT~1...master); do
+[[ -z "$SHA" ]] && echo '$SHA is unset' && exit 3
+sha=$SHA
     echo "Processing $sha..."
     git checkout $sha
     for video in "$@"; do
@@ -45,4 +47,4 @@ for sha in $(git rev-list $START_COMMIT~1...); do
     done
     echo "Done with $sha"
     git checkout -
-done
+# done
