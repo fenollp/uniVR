@@ -3,3 +3,4 @@ build/
 *.html.mem
 *.html
 *.js
+dlib-19.1/dist/
