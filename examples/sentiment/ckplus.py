@@ -7,18 +7,18 @@ import dlib
 import sys
 import os
 import glob
-import cv2
 import math
 import json
 import numpy as np
 
+viz = True  # :: boolean
+if viz:
+    import cv2
 
 if len(sys.argv) != 2:
     print(sys.argv[0], "  <CK+ dataset's folder path>")
     exit()
 
-
-viz = False  # :: boolean
 
 predictor_path = '../../data/ldmrks68.dat'
 ckplus_root = sys.argv[1]
@@ -133,7 +133,7 @@ for txt in glob.glob(os.path.join(ckplus_root, ckplus_emotion, '*', '*', '*.txt'
             Xs.append(float(part.x))
             Ys.append(float(part.y))
             if viz:
-                # ptxt = (int(Ls[PLs]), int(Ls[PLs+1]))
+                # ptxt = (int(xLs[PLs]), int(yLs[PLs]))
                 # cv2.line(wLs, ptxt, ptxt, (0,255,255), 2)
                 pdet = (part.x, part.y)
                 cv2.line(wLs, pdet, pdet, (255,255,0), 2)
@@ -157,7 +157,10 @@ for txt in glob.glob(os.path.join(ckplus_root, ckplus_emotion, '*', '*', '*.txt'
                 # p = (xTip + int(NormLs[PLs+0]), int(yTip + NormLs[PLs+1]))
                 # cv2.line(wLs, p, p, (255,127,255), 4)
                 p = (xTip + int(NormLs[PLs+2]), int(yTip + NormLs[PLs+3]))
-                cv2.line(wLs, p, p, (255,255,255), 4)
+                if part is MARK_NOSE_TIP or part is MARK_NOSE_TOP:
+                    cv2.line(wLs, p, p, (255,0,0), 6)
+                else:
+                    cv2.line(wLs, p, p, (255,255,255), 4)
                 PLs += 4
             cv2.line(wLs, (pTip[0],0), (pTip[0],512), (255,255,255), 1)
             cv2.line(wLs, (0,pTip[1]), (512,pTip[1]), (255,255,255), 1)
