@@ -94,7 +94,7 @@ def normalize(Xs, Ys):
     return landmarks
 
 
-JSON = []
+JSON = {}
 
 for txt in glob.glob(os.path.join(ckplus_root, ckplus_emotion, '*', '*', '*.txt')):
     E, imgs = e_and_imgs_from_txt(txt)
@@ -112,7 +112,7 @@ for txt in glob.glob(os.path.join(ckplus_root, ckplus_emotion, '*', '*', '*.txt'
         # second argument indicates that we should upsample the image 1 time. This
         # will make everything bigger and allow us to detect more faces.
         dets = detector(img, 1)
-        # print("#faces:", len(dets))
+        assert len(dets) > 0
         box = sorted(dets, key=lambda rect: rect.area(), reverse=True)[0]
         shape = predictor(img, box)
 
@@ -180,9 +180,7 @@ for txt in glob.glob(os.path.join(ckplus_root, ckplus_emotion, '*', '*', '*.txt'
         assert 68 == len(Ls)
         fn = fimg.split(os.sep)[-1]
         assert 0 != len(fn)
-        JSON.append({'fn': fn,
-                     'ls': Ls,
-                     'e': E})
+        JSON[fn] = {'ls': Ls, 'e': E}
 
 
 with open(ckplus_json, 'w') as jout:
