@@ -11,7 +11,7 @@ import math
 import json
 import numpy as np
 
-viz = True  # :: boolean
+viz = False  # :: boolean
 if viz:
     import cv2
 
@@ -29,7 +29,13 @@ ckplus_json = os.path.join(ckplus_root, 'ckplus.json')
 MARK_NOSE_TOP = 27
 MARK_NOSE_TIP = 33
 SMOOTHING = 0.000000001
-
+MARK_LEFT = 0
+MARKS_LEFT = [MARK_LEFT, 1, 2, 3]
+MARK_RIGHT = 16
+MARKS_RIGHT = [MARK_RIGHT, 15, 14, 13]
+MARK_TOP = 19
+MARKS_TOP = [18, MARK_TOP, 20, 23, 24, 25]
+MARKS_BOTTOM = [5, 6, 7, 8, 9, 10, 11]
 
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(predictor_path)
@@ -81,17 +87,40 @@ def beta(xTop, yTop, xTip, yTip):
     return b
 
 def normalize(Xs, Ys):
-    delta = - beta(Xs[MARK_NOSE_TOP], Ys[MARK_NOSE_TOP],
-                   Xs[MARK_NOSE_TIP], Ys[MARK_NOSE_TIP])
-    Xmean, Ymean = np.mean(Xs), np.mean(Ys)
-    X, Y = [x - Xmean for x in Xs], [y - Ymean for y in Ys]
-    landmarks = []
-    for x, y in zip(X, Y):
-        landmarks.append(x)
-        landmarks.append(y)
-        landmarks.append(x * math.cos(delta) - y * math.sin(delta))
-        landmarks.append(x * math.sin(delta) + y * math.cos(delta))
-    return landmarks
+    xMean, yMean = np.mean(Xs), np.mean(Ys)
+    # Center on middle of landmarks area
+    xs, ys = [x - xMean for x in Xs], [y - yMean for y in Ys]
+    # Align nose bridge with vertical
+    delta = - beta(xs[MARK_NOSE_TOP], ys[MARK_NOSE_TOP],
+                   xs[MARK_NOSE_TIP], ys[MARK_NOSE_TIP])
+    Coords = []
+    # xMin, xMax, yMin, yMax = 512, -512, 512, -512
+    for x, y, part in zip(xs, ys, [part for part in xrange(0, len(Xs)+1)]):
+        xx = x * math.cos(delta) - y * math.sin(delta)
+        yy = x * math.sin(delta) + y * math.cos(delta)
+        m = math.sqrt(xx ** 2 + yy ** 2)
+        a = math.atan(yy / (xx + SMOOTHING)) * 180 / math.pi
+        Coords.append(m)
+        Coords.append(a)
+        Coords.append(xx)
+        Coords.append(yy)
+        if part is MARK_NOSE_TIP:
+            print('normalized nose tip:', 'x', xx, 'y', yy, 'm', m, 'a', a)
+    #     if part in MARKS_LEFT:
+    #         xMin = min(xMin, xx)
+    #     if part in MARKS_RIGHT:
+    #         xMax = max(xMax, xx)
+    #     if part in MARKS_TOP:
+    #         yMax = max(yMax, yy)
+    #     if part in MARKS_BOTTOM:
+    #         yMin = min(yMin, yy)
+    # print('xMin', xMin, 'xMax', xMax, 'yMin', yMin, 'yMax', yMax)
+    # sx = abs(xMax) + abs(xMin)
+    # sy = abs(yMax) + abs(yMin)
+    # print('|xMax|+|xMin|', sx, '|yMax|+|yMin|', sy)
+    # print('sy/sx', sy / sx)
+    # print('sx/sy', sx / sy)
+    return (int(xMean), int(yMean)), Coords
 
 
 JSON = {}
@@ -120,10 +149,10 @@ for txt in glob.glob(os.path.join(ckplus_root, ckplus_emotion, '*', '*', '*.txt'
             xLs, yLs = landmarks_from_img(fimg)
             assert len(xLs) == 68 and 68 == len(yLs)
 
-        xTip = shape.part(MARK_NOSE_TIP).x
-        yTip = shape.part(MARK_NOSE_TIP).y
         if viz:
             wLs = np.zeros((512, 512, 3), np.uint8)
+            xTip = shape.part(MARK_NOSE_TIP).x
+            yTip = shape.part(MARK_NOSE_TIP).y
             cv2.line(wLs, (xTip,0), (xTip,512), (255,255,255), 1)
             cv2.line(wLs, (0,yTip), (512,yTip), (255,255,255), 1)
 
@@ -136,34 +165,41 @@ for txt in glob.glob(os.path.join(ckplus_root, ckplus_emotion, '*', '*', '*.txt'
                 # ptxt = (int(xLs[PLs]), int(yLs[PLs]))
                 # cv2.line(wLs, ptxt, ptxt, (0,255,255), 2)
                 pdet = (part.x, part.y)
-                cv2.line(wLs, pdet, pdet, (255,255,0), 2)
+                cv2.line(wLs, pdet, pdet, (0,0,255), 2)
             PLs += 2
         assert len(Xs) == 68 and 68 == len(Ys)
 
-        NormLs = normalize(Xs, Ys)
-        assert len(NormLs) == 2 * 2 * 68
-        delta = beta(NormLs[2+4*MARK_NOSE_TOP], NormLs[3+4*MARK_NOSE_TOP],
-                     NormLs[2+4*MARK_NOSE_TIP], NormLs[3+4*MARK_NOSE_TIP])
+        pMean, Normd = normalize(Xs, Ys)
+        assert len(Normd) == 2 * 2 * 68
+        delta = beta(Normd[2+4*MARK_NOSE_TOP], Normd[3+4*MARK_NOSE_TOP],
+                     Normd[2+4*MARK_NOSE_TIP], Normd[3+4*MARK_NOSE_TIP])
         assert 0 == abs(int(delta * 180 / math.pi))
         if viz:
             pTip = (int(Xs[MARK_NOSE_TIP]), int(Ys[MARK_NOSE_TIP]))
             pTop = (int(Xs[MARK_NOSE_TOP]), int(Ys[MARK_NOSE_TOP]))
             cv2.line(wLs, pTip, pTop, (255,255,255), 2)
-            # pTip = (int(Ls[2*MARK_NOSE_TIP]), int(Ls[1+2*MARK_NOSE_TIP]))
-            # pTop = (int(Ls[2*MARK_NOSE_TOP]), int(Ls[1+2*MARK_NOSE_TOP]))
-            # cv2.line(wLs, pTip, pTop, (255,255,255), 1)
+            cv2.line(wLs, (pTip[0],0), (pTip[0],512), (0,0,255), 1)
+            cv2.line(wLs, (0,pTip[1]), (512,pTip[1]), (0,0,255), 1)
+            cv2.line(wLs, (pMean[0],0), (pMean[0],512), (255,255,255), 1)
+            cv2.line(wLs, (0,pMean[1]), (512,pMean[1]), (255,255,255), 1)
             PLs = 0
-            for part in xrange(0, len(NormLs) // 4):
-                # p = (xTip + int(NormLs[PLs+0]), int(yTip + NormLs[PLs+1]))
-                # cv2.line(wLs, p, p, (255,127,255), 4)
-                p = (xTip + int(NormLs[PLs+2]), int(yTip + NormLs[PLs+3]))
+            for part in xrange(0, len(Normd) // 4):
+                xx, yy = int(Normd[PLs+2]), int(Normd[PLs+3])
+                p = (pMean[0] + xx, pMean[1] + yy)
                 if part is MARK_NOSE_TIP or part is MARK_NOSE_TOP:
-                    cv2.line(wLs, p, p, (255,0,0), 6)
+                    cv2.line(wLs, p, p, (255,0,0), 4)
                 else:
-                    cv2.line(wLs, p, p, (255,255,255), 4)
+                    cv2.line(wLs, p, p, (255,255,255), 2)
+                if part is MARK_LEFT:
+                    cv2.line(wLs, pMean, (pMean[0]+xx, pMean[1]+yy), (255,0,0), 2)
+                    print('B left:', 'x', xx, 'y', yy, 'm', Normd[PLs], 'a', Normd[PLs+1])
+                if part is MARK_RIGHT:
+                    cv2.line(wLs, pMean, (pMean[0]+xx, pMean[1]+yy), (0,255,0), 2)
+                    print('G right:', 'x', xx, 'y', yy, 'm', Normd[PLs], 'a', Normd[PLs+1])
+                if part is MARK_TOP:
+                    cv2.line(wLs, pMean, (pMean[0]+xx, pMean[1]+yy), (0,0,255), 2)
+                    print('R top:', 'x', xx, 'y', yy, 'm', Normd[PLs], 'a', Normd[PLs+1])
                 PLs += 4
-            cv2.line(wLs, (pTip[0],0), (pTip[0],512), (255,255,255), 1)
-            cv2.line(wLs, (0,pTip[1]), (512,pTip[1]), (255,255,255), 1)
 
         if viz:
             win.add_overlay(shape)
@@ -176,9 +212,12 @@ for txt in glob.glob(os.path.join(ckplus_root, ckplus_emotion, '*', '*', '*.txt'
 
         Ls = []
         PLs = 0
-        for part in xrange(0, len(NormLs) // 4):
+        for part in xrange(0, len(Normd) // 4):
             # MIGHT loose interesting precision! (float -> int)
-            Ls.append({'x': int(NormLs[PLs+2]), 'y': int(NormLs[PLs+3])})
+            Ls.append({'m': int(Normd[PLs + 0]),
+                       'a': int(Normd[PLs + 1]),
+                       'x': int(Normd[PLs + 2]),
+                       'y': int(Normd[PLs + 3])})
             PLs += 4
         assert 68 == len(Ls)
         fn = fimg.split(os.sep)[-1]
