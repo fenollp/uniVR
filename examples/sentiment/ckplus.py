@@ -25,7 +25,9 @@ ckplus_root = sys.argv[1]
 ckplus_emotion = 'Emotion'
 ckplus_images = 'cohn-kanade-images'
 ckplus_landmarks = 'Landmarks'
+ckplus_facs = 'FACS'
 ckplus_json = os.path.join(ckplus_root, 'ckplus.json')
+
 MARK_NOSE_TOP = 27
 MARK_NOSE_TIP = 33
 SMOOTHING = 0.000000001
@@ -44,8 +46,7 @@ if viz:
 
 
 def e_and_imgs_from_txt(txt):
-    txt_filename = txt.split(os.sep)[-1]
-    dir1, dir2, last, _constdottxt = txt_filename.split('_')
+    dir1, dir2, last, _constdottxt = txt.split(os.sep)[-1].split('_')
     imgs_root = os.path.join(ckplus_root, ckplus_images, dir1, dir2)
     pad = len(last)
     name = lambda idx: dir1 + '_' + dir2 + '_' + str(idx).zfill(pad) + '.png'
@@ -79,6 +80,18 @@ def landmarks_from_img(img):
             yLs.append(float(y))
     return xLs, yLs
 
+def facs_from_txt(txt):
+    dir1, dir2, last, _constdottxt = txt.split(os.sep)[-1].split('_')
+    fname = '_'.join([dir1, dir2, last, 'facs']) + '.txt'
+    path = os.path.join(ckplus_root, ckplus_facs, dir1, dir2, fname)
+    with open(path, 'r') as ftxt:
+        AUs = []
+        for line in ftxt:
+            au = 10 * float(line.strip().split()[0])
+            assert au == int(au)
+            au = int(au)
+            AUs.append(au)
+        return AUs
 
 def beta(xTop, yTop, xTip, yTip):
     b = math.atan((yTop - yTip) / (xTop - xTip + SMOOTHING))
@@ -126,8 +139,11 @@ def normalize(Xs, Ys):
 JSON = {}
 
 for txt in glob.glob(os.path.join(ckplus_root, ckplus_emotion, '*', '*', '*.txt')):
+    print(txt)
     E, imgs = e_and_imgs_from_txt(txt)
     print('\t', 'E', E_to_emotion(E), 'imgs', len(imgs))
+    FACS = facs_from_txt(txt)
+    print('\t', 'FACS', len(FACS), FACS)
 
     for fimg in imgs:
         print('Processing', fimg)
@@ -222,7 +238,7 @@ for txt in glob.glob(os.path.join(ckplus_root, ckplus_emotion, '*', '*', '*.txt'
         assert 68 == len(Ls)
         fn = fimg.split(os.sep)[-1]
         assert 0 != len(fn)
-        JSON[fn] = {'ls': Ls, 'e': E}
+        JSON[fn] = {'ls': Ls, 'e': E, 'facs': FACS}
 
 
 with open(ckplus_json, 'w') as jout:
