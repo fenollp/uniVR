@@ -6,12 +6,12 @@ from skimage import io
 import utils as u
 import numpy as np
 
-import dlib
 import sys
 import os
+import json
 import glob
 import math
-import json
+import dlib
 
 viz = True  # :: boolean
 if viz:
@@ -19,7 +19,7 @@ if viz:
 
 if len(sys.argv) != 2:
     print(sys.argv[0], "  <CK+ dataset's folder path>")
-    exit()
+    exit(1)
 
 
 ckplus_root = sys.argv[1]

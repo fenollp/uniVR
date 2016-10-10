@@ -33,6 +33,7 @@ def detectors():
     predictor = dlib.shape_predictor('../../data/ldmrks68.dat')
     return detector, predictor
 
+
 def E_to_emotion(E):
     return {0: 'neutral',
             1: 'anger',
@@ -44,11 +45,13 @@ def E_to_emotion(E):
             7: 'surprise'
     }[E].upper()
 
+
 def beta(xTop, yTop, xTip, yTip):
     b = math.atan((yTop - yTip) / (xTop - xTip + SMOOTHING))
     b += math.pi/2 if b < 0 else -math.pi/2
     print('delta to nose:', "{:.3f}".format(b * 180 / math.pi))
     return b
+
 
 def normalize(Xs, Ys):
     xMean, yMean = np.mean(Xs), np.mean(Ys)
@@ -85,3 +88,11 @@ def normalize(Xs, Ys):
     # print('sy/sx', sy / sx)
     # print('sx/sy', sx / sy)
     return (int(xMean), int(yMean)), Coords
+
+
+def polars(Coords):
+    L = []
+    for coord in Coords:
+        L.append(coord['m'])
+        L.append(coord['a'])
+    return L
