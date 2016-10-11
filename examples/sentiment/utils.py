@@ -87,7 +87,9 @@ def normalize(Xs, Ys):
     # print('|xMax|+|xMin|', sx, '|yMax|+|yMin|', sy)
     # print('sy/sx', sy / sx)
     # print('sx/sy', sx / sy)
-    return (int(xMean), int(yMean)), Coords
+    newDelta = beta(Coords[2+4*MARK_NOSE_TOP], Coords[3+4*MARK_NOSE_TOP],
+                    Coords[2+4*MARK_NOSE_TIP], Coords[3+4*MARK_NOSE_TIP])
+    return newDelta, (int(xMean), int(yMean)), Coords
 
 
 def polars(Coords):

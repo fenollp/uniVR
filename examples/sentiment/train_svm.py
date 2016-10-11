@@ -83,7 +83,7 @@ if viz:
                 Xs.append(float(p[0]))
                 Ys.append(float(p[1]))
                 cv2.line(img, p, p, (0,0,255), 2)
-            pMean, Normd = u.normalize(Xs, Ys)
+            _newDelta, pMean, Normd = u.normalize(Xs, Ys)
             i, Ls = 0, []
             for part in xrange(0, len(Normd) // 4):
                 p = (int(Normd[i+2]), int(Normd[i+3]))

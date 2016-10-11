@@ -121,11 +121,9 @@ for txt in glob.glob(os.path.join(ckplus_root, ckplus_emotion, '*', '*', '*.txt'
             PLs += 2
         assert len(Xs) == 68 and 68 == len(Ys)
 
-        pMean, Normd = u.normalize(Xs, Ys)
+        newDelta, pMean, Normd = u.normalize(Xs, Ys)
         assert len(Normd) == 2 * 2 * 68
-        delta = u.beta(Normd[2+4*u.MARK_NOSE_TOP], Normd[3+4*u.MARK_NOSE_TOP],
-                       Normd[2+4*u.MARK_NOSE_TIP], Normd[3+4*u.MARK_NOSE_TIP])
-        assert 0 == abs(int(delta * 180 / math.pi))
+        assert 0 == abs(int(newDelta * 180 / math.pi))
         if viz:
             pTip = (int(Xs[u.MARK_NOSE_TIP]), int(Ys[u.MARK_NOSE_TIP]))
             pTop = (int(Xs[u.MARK_NOSE_TOP]), int(Ys[u.MARK_NOSE_TOP]))
