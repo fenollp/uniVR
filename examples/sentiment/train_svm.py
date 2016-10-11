@@ -18,7 +18,8 @@ if len(sys.argv) != 2:
 
 viz = True
 train_v_test = 0.8
-Es = [0, 1, 2, 3, 4, 5, 6, 7]
+#Es = [0, 1, 2, 3, 4, 5, 6, 7]
+Es = [1, 3, 5, 7]
 # seed random here
 
 def get_items(E):
@@ -48,10 +49,10 @@ def make_sets():
     return trainX, trainY, testX, testY
 
 # Set the classifier as a support vector machines with polynomial kernel
-clf = SVC(kernel='linear', probability=True, tol=1e-3)#, verbose = True)
-
+clf = SVC(kernel='linear', probability=True)#, verbose = True)
 scores = []
-for i in xrange(1, 10+1):
+for i in [1]:
+# for i in xrange(1, 10+1):
     print(i)
     trainX, trainY, testX, testY = make_sets()
     print('training')
