@@ -77,50 +77,50 @@ for i in [1]:
 print('mean accuracy:', np.mean(scores))
 
 
-if viz:
-    import cv2
-    facer, landmarker = u.detectors()
-    cam = cv2.VideoCapture(0)
-    if not cam.isOpened():
-        print('!cam')
+if not viz: exit()
+import cv2
+facer, landmarker = u.detectors()
+cam = cv2.VideoCapture(0)
+if not cam.isOpened():
+    print('!cam')
+    exit()
+while True:
+    err, img = cam.read()
+    if not err:
+        print('!err')
         exit()
-    while True:
-        err, img = cam.read()
-        if not err:
-            print('!err')
-            exit()
 
-        for box in facer(img, 1):
-            # cv2.rectangle(img, (int(box.left()),int(box.top())), (int(box.right()),int(box.bottom())), (255,255,255), 1)
-            shape = landmarker(img, box)
-            Xs, Ys = [], []
-            for part in shape.parts():
-                p = (part.x, part.y)
-                Xs.append(float(p[0]))
-                Ys.append(float(p[1]))
-                cv2.line(img, p, p, (0,0,255), 2)
-            _newDelta, pMean, Normd = u.normalize(Xs, Ys)
-            i, Ls = 0, []
-            for part in xrange(0, len(Normd) // 4):
-                p = (int(pMean[0] + Normd[i+2]), int(pMean[1] + Normd[i+3]))
-                Ls.append({'m': int(Normd[i + 0]),
-                           'a': int(Normd[i + 1]),
-                           'x': int(Normd[i + 2]),
-                           'y': int(Normd[i + 3])})
-                cv2.line(img, p, p, (255,0,0), 2)
-                i += 4
-            # [E] = clf.predict([u.polars(Ls)])
-            # print('predicted', E, u.E_to_emotion(E))
-            # cv2.putText(img, u.E_to_emotion(E), (0,0), cv2.FONT_HERSHEY_SIMPLEX, .5, (255,255,255), 1)
-            [preds] = clf.predict_log_proba([u.polars(Ls)])
-            Preds = [(i, pred) for i, pred in enumerate(preds)]
-            p = (0, 0)
-            for (j, pred) in sorted(Preds, key=lambda (_,x): x, reverse=True):
-                E = Es[j]
-                p = (p[0], p[1] + 20)
-                s = u.E_to_emotion(E) + ': ' + str(pred)
-                cv2.putText(img, s, p, cv2.FONT_HERSHEY_SIMPLEX, .5, (255,255,255), 1)
+    for box in facer(img, 1):
+        # cv2.rectangle(img, (int(box.left()),int(box.top())), (int(box.right()),int(box.bottom())), (255,255,255), 1)
+        shape = landmarker(img, box)
+        Xs, Ys = [], []
+        for part in shape.parts():
+            p = (part.x, part.y)
+            Xs.append(float(p[0]))
+            Ys.append(float(p[1]))
+            cv2.line(img, p, p, (0,0,255), 2)
+        _newDelta, pMean, Normd = u.normalize(Xs, Ys)
+        i, Ls = 0, []
+        for part in xrange(0, len(Normd) // 4):
+            p = (int(pMean[0] + Normd[i+2]), int(pMean[1] + Normd[i+3]))
+            Ls.append({'m': int(Normd[i + 0]),
+                       'a': int(Normd[i + 1]),
+                       'x': int(Normd[i + 2]),
+                       'y': int(Normd[i + 3])})
+            cv2.line(img, p, p, (255,0,0), 2)
+            i += 4
+        # [E] = clf.predict([u.polars(Ls)])
+        # print('predicted', E, u.E_to_emotion(E))
+        # cv2.putText(img, u.E_to_emotion(E), (0,0), cv2.FONT_HERSHEY_SIMPLEX, .5, (255,255,255), 1)
+        [preds] = clf.predict_log_proba([u.polars(Ls)])
+        Preds = [(i, pred) for i, pred in enumerate(preds)]
+        p = (0, 0)
+        for (j, pred) in sorted(Preds, key=lambda (_,x): x, reverse=True):
+            E = Es[j]
+            p = (p[0], p[1] + 20)
+            s = u.E_to_emotion(E) + ': ' + str(pred)
+            cv2.putText(img, s, p, cv2.FONT_HERSHEY_SIMPLEX, .5, (255,255,255), 1)
 
-        cv2.imshow('sentiment', img)
-        if cv2.waitKey(1) == ord('q'):
-            break
+    cv2.imshow('sentiment', img)
+    if cv2.waitKey(1) == ord('q'):
+        break
