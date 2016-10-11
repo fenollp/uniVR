@@ -13,7 +13,7 @@ import glob
 import math
 import dlib
 
-viz = True  # :: boolean
+viz = False  # :: boolean
 if viz:
     import cv2
 
@@ -39,8 +39,9 @@ def e_and_imgs_from_txt(txt):
     imgs_root = os.path.join(ckplus_root, ckplus_images, dir1, dir2)
     pad = len(last)
     name = lambda idx: dir1 + '_' + dir2 + '_' + str(idx).zfill(pad) + '.png'
-    ## Take the last images of the sequence. MIGHT fix too much on face!
-    imgs = [os.path.join(imgs_root, name(i)) for i in range(int(last) // 2, int(last) + 1)]
+    # ## Take the last images of the sequence. MIGHT fix too much on face!
+    # imgs = [os.path.join(imgs_root, name(i)) for i in range(int(last) // 2, int(last) + 1)]
+    imgs = [os.path.join(imgs_root, name(i)) for i in xrange(1, int(last) + 1)]
     with open(txt, 'r') as ftxt:
         E = int(float(ftxt.read().strip()))
         return E, imgs
