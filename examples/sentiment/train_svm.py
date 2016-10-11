@@ -21,14 +21,6 @@ train_v_test = 0.8
 Es = [0, 1, 2, 3, 4, 5, 6, 7]
 # seed random here
 
-def best_log_predict(preds):
-    m, idx = preds[0], 0
-    for i, pred in enumerate(preds[1::]):
-        if pred > m:
-            m = pred
-            idx = i + 1
-    return idx
-
 def get_items(E):
     items = []
     with open(sys.argv[1], 'r') as fjson:
@@ -106,14 +98,13 @@ if viz:
             # print('predicted', E, u.E_to_emotion(E))
             # cv2.putText(img, u.E_to_emotion(E), (0,0), cv2.FONT_HERSHEY_SIMPLEX, .5, (255,255,255), 1)
             [preds] = clf.predict_log_proba([u.polars(Ls)])
-            bestE_idx = best_log_predict(preds)
+            Preds = [(i, pred) for i, pred in enumerate(preds)]
             p = (0, 0)
-            for j, pred in enumerate(preds):
+            for (j, pred) in sorted(Preds, key=lambda (_,x): x, reverse=True):
                 E = Es[j]
                 p = (p[0], p[1] + 20)
                 s = u.E_to_emotion(E) + ': ' + str(pred)
-                c = (255,255,255) if j is bestE_idx else (0,0,0)
-                cv2.putText(img, s, p, cv2.FONT_HERSHEY_SIMPLEX, .5, c, 1)
+                cv2.putText(img, s, p, cv2.FONT_HERSHEY_SIMPLEX, .5, (255,255,255), 1)
 
         cv2.imshow('sentiment', img)
         if cv2.waitKey(1) == ord('q'):
