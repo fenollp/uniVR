@@ -137,19 +137,19 @@ for txt in glob.glob(os.path.join(ckplus_root, ckplus_emotion, '*', '*', '*.txt'
             PLs = 0
             for part in xrange(0, len(Normd) // 4):
                 xx, yy = int(Normd[PLs+2]), int(Normd[PLs+3])
-                p = (pMean[0] + xx, pMean[1] + yy)
+                p = (pMean[0]+xx, pMean[1]+yy)
                 if part is u.MARK_NOSE_TIP or part is u.MARK_NOSE_TOP:
                     cv2.line(wLs, p, p, (255,0,0), 4)
                 else:
                     cv2.line(wLs, p, p, (255,255,255), 2)
                 if part is u.MARK_LEFT:
-                    cv2.line(wLs, pMean, (pMean[0]+xx, pMean[1]+yy), (255,0,0), 2)
+                    cv2.line(wLs, pMean, p, (255,0,0), 2)
                     print('B left:', 'x', xx, 'y', yy, 'm', Normd[PLs], 'a', Normd[PLs+1])
                 if part is u.MARK_RIGHT:
-                    cv2.line(wLs, pMean, (pMean[0]+xx, pMean[1]+yy), (0,255,0), 2)
+                    cv2.line(wLs, pMean, p, (0,255,0), 2)
                     print('G right:', 'x', xx, 'y', yy, 'm', Normd[PLs], 'a', Normd[PLs+1])
                 if part is u.MARK_TOP:
-                    cv2.line(wLs, pMean, (pMean[0]+xx, pMean[1]+yy), (0,0,255), 2)
+                    cv2.line(wLs, pMean, p, (0,0,255), 2)
                     print('R top:', 'x', xx, 'y', yy, 'm', Normd[PLs], 'a', Normd[PLs+1])
                 PLs += 4
 
