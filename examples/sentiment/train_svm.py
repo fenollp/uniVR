@@ -18,7 +18,16 @@ if len(sys.argv) != 2:
 
 viz = True
 train_v_test = 0.8
+Es = [0, 1, 2, 3, 4, 5, 6, 7]
 # seed random here
+
+def best_log_predict(preds):
+    m, idx = preds[0], 0
+    for i, pred in enumerate(preds[1::]):
+        if pred > m:
+            m = pred
+            idx = i + 1
+    return idx
 
 def get_items(E):
     items = []
@@ -28,7 +37,7 @@ def get_items(E):
                 items.append((img, data))
     random.shuffle(items)
     count = len(items)
-    print(u.E_to_emotion(E), 'count', count)
+    print(E, u.E_to_emotion(E), 'count', count)
     train = items[:int(count * train_v_test)]
     test  = items[-int(count * (1 - train_v_test)):]
     return train, test
@@ -36,7 +45,7 @@ def get_items(E):
 def make_sets():
     trainX, testX = [], []
     trainY, testY = [], []
-    for E in xrange(0, 7+1):
+    for E in Es:
         train, test = get_items(E)
         for (img, data) in train:
             trainX.append(u.polars(data['ls']))
@@ -86,17 +95,25 @@ if viz:
             _newDelta, pMean, Normd = u.normalize(Xs, Ys)
             i, Ls = 0, []
             for part in xrange(0, len(Normd) // 4):
-                p = (int(Normd[i+2]), int(Normd[i+3]))
+                p = (int(pMean[0] + Normd[i+2]), int(pMean[1] + Normd[i+3]))
                 Ls.append({'m': int(Normd[i + 0]),
                            'a': int(Normd[i + 1]),
                            'x': int(Normd[i + 2]),
                            'y': int(Normd[i + 3])})
                 cv2.line(img, p, p, (255,0,0), 2)
                 i += 4
-            [E] = clf.predict([u.polars(Ls)])
-            print('predicted', E)
-            loc = (int(box.left()), int(box.top()-20))
-            cv2.putText(img, u.E_to_emotion(E), loc , cv2.FONT_HERSHEY_SIMPLEX, .5, (255,255,255), 1)
+            # [E] = clf.predict([u.polars(Ls)])
+            # print('predicted', E, u.E_to_emotion(E))
+            # cv2.putText(img, u.E_to_emotion(E), (0,0), cv2.FONT_HERSHEY_SIMPLEX, .5, (255,255,255), 1)
+            [preds] = clf.predict_log_proba([u.polars(Ls)])
+            bestE_idx = best_log_predict(preds)
+            p = (0, 0)
+            for j, pred in enumerate(preds):
+                E = Es[j]
+                p = (p[0], p[1] + 20)
+                s = u.E_to_emotion(E) + ': ' + str(pred)
+                c = (255,255,255) if j is bestE_idx else (0,0,0)
+                cv2.putText(img, s, p, cv2.FONT_HERSHEY_SIMPLEX, .5, c, 1)
 
         cv2.imshow('sentiment', img)
         if cv2.waitKey(1) == ord('q'):
