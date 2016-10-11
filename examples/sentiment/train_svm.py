@@ -18,16 +18,26 @@ if len(sys.argv) != 2:
 
 viz = True
 train_v_test = 0.8
-#Es = [0, 1, 2, 3, 4, 5, 6, 7]
+# Es = [0, 1, 2, 3, 4, 5, 6, 7]
 Es = [1, 3, 5, 7]
+ckplus_use_only_last_from_each_sequence = False
 # seed random here
 
-def get_items(E):
-    items = []
-    with open(sys.argv[1], 'r') as fjson:
-        for img, data in json.load(fjson).iteritems():
-            if E == data['e']:
-                items.append((img, data))
+def get_items(E, whole):
+    items0 = []
+    for (img, data) in whole:
+        if E == data['e']:
+            items0.append((img, data))
+    if ckplus_use_only_last_from_each_sequence:
+        h = {} # CK+ specific: get only most expressive of CK+ sequence.
+        for (img, data) in items0:
+            key = '_'.join(img.split('_')[:2])
+            val = h.get(key, None)
+            if val == None or val[0] < img:
+                h[key] = (img, data)
+        items = h.values()
+    else:
+        items = items0
     random.shuffle(items)
     count = len(items)
     print(E, u.E_to_emotion(E), 'count', count)
@@ -36,10 +46,14 @@ def get_items(E):
     return train, test
 
 def make_sets():
+    whole = []
+    with open(sys.argv[1], 'r') as fjson:
+        for img, data in json.load(fjson).iteritems():
+            whole.append((img, data))
     trainX, testX = [], []
     trainY, testY = [], []
     for E in Es:
-        train, test = get_items(E)
+        train, test = get_items(E, whole)
         for (img, data) in train:
             trainX.append(u.polars(data['ls']))
             trainY.append(data['e'])
@@ -77,7 +91,7 @@ if viz:
             exit()
 
         for box in facer(img, 1):
-            cv2.rectangle(img, (int(box.left()),int(box.top())), (int(box.right()),int(box.bottom())), (255,255,255), 1)
+            # cv2.rectangle(img, (int(box.left()),int(box.top())), (int(box.right()),int(box.bottom())), (255,255,255), 1)
             shape = landmarker(img, box)
             Xs, Ys = [], []
             for part in shape.parts():
