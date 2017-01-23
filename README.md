@@ -16,7 +16,11 @@ He also did a [TED talk](http://youtu.be/0H1zrLZwPjQ?t=3m41s) about it.
 ## TODO
 
 1. HOG and/or landmarks on Y and Cb & Cr as an attempt at palliating bad lighting.
-1. Minimum head size for detectors is around 80px. Pick x320 xor x480 and reduce pyramid size for speed.
+1. Minimum head size for detectors is around 80px. Pick x240 xor x480 and reduce pyramid size for speed.
+    * As of 2015 (from Wikipedia on Webcams):
+        - low-end: 320x240
+        - medium-end: 640x480
+        - high-end: 1280x720 or even 1920x1080
 1. Try a Kalman filter on landmarks (68 * x,y,vx,vy) as a better logic for calling HOG less.
 
 
