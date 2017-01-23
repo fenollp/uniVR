@@ -52,6 +52,20 @@ This code should compile | run with
 * OpenGL `sudo apt-get install freeglut3 freeglut3-dev`
 
 
+### Testing
+
+Categories of data:
+1. dim
+1. bright
+1. lighting changes
+1. moving object
+1. stationary object
+1. dropped frames
+1. low resolution
+1. similar background shapes
+1. similar background colors
+
+
 ### nvr/*
 
 `cd nvr && MODE=snowmen make -j && ./snowmen shape_predictor_68_face_landmarks.dat`
