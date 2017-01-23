@@ -12,6 +12,14 @@ Then it blows your mind, thank you.
 Johnny Chung Lee did this with his “[Head Tracking for Desktop VR Displays using the WiiRemote](http://www.youtube.com/watch?v=Jd3-eiid-Uw&t=2m30s)” project.
 He also did a [TED talk](http://youtu.be/0H1zrLZwPjQ?t=3m41s) about it.
 
+
+## TODO
+
+1. HOG and/or landmarks on Y and Cb & Cr as an attempt at palliating bad lighting.
+1. Minimum head size for detectors is around 80px. Pick x320 xor x480 and reduce pyramid size for speed.
+1. Try a Kalman filter on landmarks (68 * x,y,vx,vy) as a better logic for calling HOG less.
+
+
 #### Comparison of some algorithms
 * [Comparison of feature descriptors](http://computer-vision-talks.com/articles/2011-01-28-comparison-of-feature-descriptors/)
     * => LAZY > SURF >> BRIEF
