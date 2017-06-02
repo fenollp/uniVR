@@ -1,5 +1,10 @@
 # uniVR • [Bitbucket](https://bitbucket.org/fenollp/univr)
 
+cv2.SolvePnP pose estimation
+https://github.com/spmallick/learnopencv/blob/master/HeadPose/headPose.py#L45
+https://github.com/davisking/dlib/compare/master...spmallick:master#diff-9f5fa861ca7c9467af4d0e448e6085d6R158
+
+
 One laptop, one webcam, one head.  
 Move your head in front of the screen to “see in 3D” (3D desktop, 3D-computed
 movies, whatever).
