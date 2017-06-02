@@ -1,5 +1,9 @@
 # uniVR • [Bitbucket](https://bitbucket.org/fenollp/univr)
 
+maybe use Kalman filters?
+http://www.bzarg.com/p/how-a-kalman-filter-works-in-pictures/
+
+
 One laptop, one webcam, one head.  
 Move your head in front of the screen to “see in 3D” (3D desktop, 3D-computed
 movies, whatever).
