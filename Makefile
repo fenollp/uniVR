@@ -1,4 +1,4 @@
-.PHONY: compile patch_dlib
+.PHONY: compile
 
 CMAKE_FLAGS  = -DCMAKE_BUILD_TYPE=Release
 CMAKE_FLAGS += -DENABLE_AVX=ON
@@ -13,9 +13,6 @@ CMAKE_FLAGS += -DENABLE_SSSE3=ON
 
 all: compile
 
-patch_dlib:
-	./bin/patch_dlib.sh
-
 compile: build
 	cd build && cmake --build . --config Release
 
@@ -24,7 +21,7 @@ clean: clean-emjs
 
 distclean: clean
 
-build: patch_dlib
+build:
 	mkdir -p $@
 	cd build && cmake --DCMAKE_VERBOSE_MAKEFILE=ON ..
 
