@@ -25,8 +25,22 @@
 
 namespace nvr {
 
-# define LANDMARKS_COUNT 68
+# ifndef LANDMARKS_COUNT
+#  define LANDMARKS_COUNT 5  // 5 or 68
+# endif
 # define LANDMARKS_COUNT_XY (2 * LANDMARKS_COUNT)
+
+# if LANDMARKS_COUNT == 5
+    static constexpr char LANDMARKS_DAT[] =
+        "data/5/shape_predictor_5_face_landmarks.dat";
+
+    // static constexpr size_t LANDMARK_NT = 27;  // Nose
+    // static constexpr size_t LANDMARK_NB = 30;
+    // static constexpr size_t LANDMARK_LER = 42; // Left eye
+    // static constexpr size_t LANDMARK_LEL = 45;
+    // static constexpr size_t LANDMARK_RER = 36; // Right eye
+    // static constexpr size_t LANDMARK_REL = 39;
+# endif
 
 # if LANDMARKS_COUNT == 68
     static constexpr char LANDMARKS_DAT[] =

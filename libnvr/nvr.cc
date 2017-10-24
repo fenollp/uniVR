@@ -332,6 +332,7 @@ namespace nvr {
                          const dlib::rectangle& face_zone) const {
         data.w = frame_cols_;
         data.h = frame_rows_;
+#if LANDMARKS_COUNT == 68
         data.n  = norm(face, LANDMARK_NT, LANDMARK_NB);
         data.er = norm(face, LANDMARK_RER, LANDMARK_REL);
         data.el = norm(face, LANDMARK_LER, LANDMARK_LEL);
@@ -342,6 +343,7 @@ namespace nvr {
         data.das = std::abs(data.ar - data.al);
         data.chin = norm(face, LANDMARK_CR, LANDMARK_CL);
         data.ears = norm(face, LANDMARK_JR, LANDMARK_JL);
+#endif
         auto g = scaled(center(face.get_rect()));
         data.gx = g.x();
         data.gy = g.y();
