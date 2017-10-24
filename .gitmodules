@@ -2,3 +2,11 @@
 	path = dlib
 	url = https://github.com/davisking/dlib
 	tag = v19.7
+[submodule "data/68"]
+	path = data/68
+	url = fenollp@bitbucket.org:fenollp/data.shape_predictor_68_face_landmarks.git
+	tag = 1.0.0
+[submodule "data/5"]
+	path = data/5
+	url = fenollp@bitbucket.org:fenollp/data.shape_predictor_5_face_landmarks.git
+	tag = 1.0.0
