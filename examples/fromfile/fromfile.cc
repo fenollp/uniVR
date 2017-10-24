@@ -18,7 +18,7 @@ main (int argc, const char* argv[]) {
                       << std::endl;
             return 1;
         }
-        auto ldmrks = "data/ldmrks68.dat";
+        auto ldmrks = nvr::LANDMARKS_DAT;
         auto video = argv[1];
         auto vid = argv[2];
         auto gvv = argv[3];
@@ -41,12 +41,11 @@ main (int argc, const char* argv[]) {
             << "}," << std::endl
             << "\"data\": {" << std::endl;
 
-        std::string trained(ldmrks);
-        nvr::UniVR ovr;
         auto video_opener = [&](nvr::FrameStream& capture) {
             return capture.open(video) && capture.isOpened();
         };
-        ovr.init(trained, video_opener);
+        nvr::UniVR ovr;
+        ovr.init(video_opener);
 
         nvr::data face;
         size_t i = 1;

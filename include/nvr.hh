@@ -27,7 +27,11 @@ namespace nvr {
 
 # define LANDMARKS_COUNT 68
 # define LANDMARKS_COUNT_XY (2 * LANDMARKS_COUNT)
+
 # if LANDMARKS_COUNT == 68
+    static constexpr char LANDMARKS_DAT[] =
+        "data/68/shape_predictor_68_face_landmarks.dat";
+
     /// For a 68-landmarks extractor: different points of interest
     static constexpr size_t LANDMARK_NT = 27;  // Nose
     static constexpr size_t LANDMARK_NB = 30;
@@ -66,7 +70,7 @@ namespace nvr {
     //MUST keep operator<< up to date with struct data
     std::ostream& operator<< (std::ostream& o, const data& rhs);
 
-    /// Redefine the following types and capture_opener (in init/2)
+    /// Redefine the following types and capture_opener (in init/1)
     ///  so as to use your own video capturing technology
 
     // Somewhat public types
@@ -119,18 +123,17 @@ namespace nvr {
         std::deque<Frame> rects_found_; // Frames of past rect_found_s
         std::deque<dlib::rectangle> zones_; // Last BACKLOG_SZ zones detected
         size_t I_, Ds_; // I_: counter to drop detections
-        bool inited_; // Set to true after a call to init/1
+        bool inited_; // Set to true after a call to init/0
         int rc_, rr_; // Ratio of camera frame over pyramied-down img
         bool detected_; // Whether detector_ successfully found something for tracker_
 
     public:
         UniVR ();
         ~UniVR ();
-        /// init/1,2: builds the capture & loads trained landmarks
-        void init (const std::string& trained_data,
-                   std::function<bool(FrameStream&)> capture_opener);
+        /// init/0,1: builds the capture & loads trained landmarks
+        void init (std::function<bool(FrameStream&)> capture_opener);
 #ifndef __EMSCRIPTEN__
-        void init (const std::string& trained_data);
+        void init ();
 #endif
 
     public:

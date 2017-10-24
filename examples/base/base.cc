@@ -3,9 +3,8 @@
 int
 main (int /*argc*/, const char* /*argv*/[]) {
     try {
-        std::string trained("data/ldmrks68.dat");
         nvr::UniVR ovr;
-        ovr.init(trained);
+        ovr.init();
         nvr::data face;
         while (true) { // GAME LOOP
             if (!ovr.step(face))

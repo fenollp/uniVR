@@ -635,7 +635,7 @@ main (int argc, char *argv[]) {
 
     redisplay(1000/60);
 
-    ovr.init("data/ldmrks68.dat");  // UniVR init
+    ovr.init();  // UniVR init
 
     glutMainLoop();
 

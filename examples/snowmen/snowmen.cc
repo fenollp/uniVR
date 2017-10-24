@@ -203,9 +203,8 @@ main (int argc, const char *argv[]) {
     glEnable(GL_DEPTH_TEST);
 
     // UniVR init
-    std::string trained("src/main_snowmen.cc");
     std::cout << "init..." << std::endl;
-    ovr.init(trained);
+    ovr.init();
     std::cout << "init... done!" << std::endl;
 
     glutMainLoop();

@@ -25,7 +25,7 @@ main (int argc, char *argv[]) {
         std::cout << "readyState " << readyState << std::endl;
         return 0 == readyState;
     };
-    ovr.init("data/ldmrks68.dat", cap_opener);
+    ovr.init(cap_opener);
 
     int fps = -1;
     bool simulate_infinite_loop = true;

@@ -3,7 +3,7 @@ include_directories( ../../libnvr/ . )
 add_compile_options( -v )
 #  add_compile_options( --js-library 'libnvr/emscripten/library_html5video.js )
 add_definitions( --preload-file 'data/crate.bmp' )
-add_definitions( --preload-file 'data/ldmrks68.dat' )
+add_definitions( --preload-file 'data/68/shape_predictor_68_face_landmarks.dat' )
 add_definitions( -s TOTAL_MEMORY='218103808' )
 # --memory-init-file 0
 set(CMAKE_EXECUTABLE_SUFFIX ".html")

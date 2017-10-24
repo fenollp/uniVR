@@ -433,7 +433,7 @@ main (int argc, char *argv[]) {
 
     InitGL("data/crate.bmp", winWidth, winHeight);
 
-    ovr.init("data/ldmrks68.dat");  // UniVR init
+    ovr.init();  // UniVR init
 
     glutMainLoop();
     return 0;

@@ -39,7 +39,7 @@ FLAGS += -I 'include/'
 #FLAGS += -Wno-warn-absolute-paths
 FLAGS += -std=c++14
 FLAGS += --preload-file 'data/crate.bmp'
-FLAGS += --preload-file 'data/ldmrks68.dat'
+FLAGS += --preload-file 'data/68/shape_predictor_68_face_landmarks.dat'
 FLAGS += -I '.'
 #FLAGS += -s LEGACY_GL_EMULATION=1
 FLAGS += -Wall
