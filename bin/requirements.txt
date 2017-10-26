@@ -1,0 +1,2 @@
+dlib==19.7.0
+scikit-image=0.13.1
