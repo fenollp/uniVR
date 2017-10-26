@@ -34,12 +34,11 @@ namespace nvr {
     static constexpr char LANDMARKS_DAT[] =
         "data/5/shape_predictor_5_face_landmarks.dat";
 
-    // static constexpr size_t LANDMARK_NT = 27;  // Nose
-    // static constexpr size_t LANDMARK_NB = 30;
-    // static constexpr size_t LANDMARK_LER = 42; // Left eye
-    // static constexpr size_t LANDMARK_LEL = 45;
-    // static constexpr size_t LANDMARK_RER = 36; // Right eye
-    // static constexpr size_t LANDMARK_REL = 39;
+    static constexpr size_t LANDMARK_NB = 4; // Nose bottom
+    static constexpr size_t LANDMARK_LER = 3; // Left eye
+    static constexpr size_t LANDMARK_LEL = 2;
+    static constexpr size_t LANDMARK_RER = 0; // Right eye
+    static constexpr size_t LANDMARK_REL = 1;
 # endif
 
 # if LANDMARKS_COUNT == 68
