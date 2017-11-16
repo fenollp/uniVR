@@ -1,5 +1,6 @@
 # uniVR • [Bitbucket](https://bitbucket.org/fenollp/univr)
 https://github.com/1adrianb/face-alignment
+the kaggle dataset created with it: https://www.kaggle.com/selfishgene/youtube-faces-with-facial-keypoints
 One laptop, one webcam, one head.  
 Move your head in front of the screen to “see in 3D” (3D desktop, 3D-computed
 movies, whatever).
