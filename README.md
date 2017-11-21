@@ -2,6 +2,7 @@
 
 maybe use Kalman filters?
 http://www.bzarg.com/p/how-a-kalman-filter-works-in-pictures/
+for rotations: https://github.com/TadasBaltrusaitis/OpenFace/issues/288
 
 
 One laptop, one webcam, one head.  
