@@ -355,7 +355,7 @@ namespace nvr {
         data.headHeight = face_zone.height();
         data.upperHeadX = rect_left(face_zone);
         data.upperHeadY = rect_top(face_zone);
-#elseif LANDMARKS_COUNT == 5
+#elif LANDMARKS_COUNT == 5
         auto eye_zone = dlib::rectangle(
             face.part(LANDMARK_LEL).x(), // l
             std::max(face.part(LANDMARK_LEL).y(), face.part(LANDMARK_RER).y()), // t
