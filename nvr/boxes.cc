@@ -9,10 +9,11 @@
 #include "mediapipe/framework/port/opencv_video_inc.h"
 #include "mediapipe/framework/port/parse_text_proto.h"
 
+#define GRAPHS "nvr/graphs/"
 #if !defined(MEDIAPIPE_DISABLE_GPU)
-constexpr char kGraph[] = "nvr/boxes_gpu.pbtxt";
+constexpr char kGraph[] = GRAPHS "boxes_gpu.pbtxt";
 #else
-constexpr char kGraph[] = "nvr/boxes_cpu.pbtxt";
+constexpr char kGraph[] = GRAPHS "boxes_cpu.pbtxt";
 #endif
 #include "mediapipe_xpu.h"
 

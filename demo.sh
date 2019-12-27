@@ -18,7 +18,7 @@ esac
 
 echo Creating CPU pipes from GPU version...
 pwd="$(dirname "$0")"
-for gpu in "$pwd"/nvr/*_gpu.pbtxt; do
+for gpu in "$pwd"/nvr/graphs/*_gpu.pbtxt; do
   # Turns IMAGE_GPU:... into IMAGE:...
   # as well as use_gpu: true into use_gpu: false
   cat   "$gpu" |

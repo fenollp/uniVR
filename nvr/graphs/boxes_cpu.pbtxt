@@ -38,7 +38,7 @@ node {
   output_stream: "TENSORS:detection_tensors"
   node_options: {
     [type.googleapis.com/mediapipe.TfLiteInferenceCalculatorOptions] {
-      model_path: "nvr/face_detection_front.tflite"
+      model_path: "nvr/models/face_detection_front.tflite"
     }
   }
 }
@@ -136,15 +136,31 @@ node {
   }
 }
 
+node {
+  calculator: "FaceDetectionsToNVRCalculator"
+  input_stream: "DETECTIONS:heads"
+  output_stream: "NORM_LANDMARKS:nvr"
+}
+
+node {
+  calculator: "LandmarksToRenderDataCalculator"
+  input_stream: "NORM_LANDMARKS:nvr"
+  output_stream: "RENDER_DATA:nvr_render_data"
+  node_options: {
+    [type.googleapis.com/mediapipe.LandmarksToRenderDataCalculatorOptions] {
+      thickness: 4
+    }
+  }
+}
+
 
 ## rendering
 
 node {
   calculator: "AnnotationOverlayCalculator"
   input_stream: "INPUT_FRAME:input_frame"
-
   input_stream: "head_detections_render_data"
-
+  input_stream: "nvr_render_data"
   output_stream: "OUTPUT_FRAME:output_frame"
 }
 
