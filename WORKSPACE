@@ -335,3 +335,25 @@ git_repository(
     remote = "https://github.com/google/mediapipe.git",
     shallow_since = "1576866593 -0800",
 )
+
+## OpenGL
+
+http_archive(
+    name = "khronos_opengl_registry",
+    build_file = "@//third_party:gl.BUILD",
+    sha256 = "ab2a4679f6909aba63f9fd4b3859bc51653a20fc64e325a3603ef7c73b9abe64",
+    strip_prefix = "OpenGL-Registry-master",
+    urls = ["https://github.com/KhronosGroup/OpenGL-Registry/archive/master.zip"],
+)
+
+http_archive(
+    name = "glfw",
+    build_file = "@//third_party:glfw.BUILD",
+    sha256 = "1092f6815d1f6d1f67479d2dad6057172b471122d911e7a7ea2be120956ffaa4",
+    strip_prefix = "glfw-3.3",
+    urls = ["https://github.com/glfw/glfw/archive/3.3.zip"],
+    # 3.3 contains https://github.com/glfw/glfw/commit/a397195d3fd14b3e94026bce684e6b5f392f5015
+    # strip_prefix = "glfw-a397195d3fd14b3e94026bce684e6b5f392f5015",
+    # urls = ["https://github.com/glfw/glfw/archive/a397195d3fd14b3e94026bce684e6b5f392f5015.tar.gz"],
+    # sha256 = "72ca890717a17caac274beee7ae326f32301e89ca7fa645eb446d3d49a9ffd60",
+)

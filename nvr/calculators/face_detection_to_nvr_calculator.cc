@@ -12,7 +12,6 @@ namespace mediapipe {
 namespace {
 
 constexpr char kDetectionsTag[] = "DETECTIONS";
-constexpr char kNormLandmarksTag[] = "NORM_LANDMARKS";
 
 typedef std::vector<Detection> Detections;
 
@@ -26,13 +25,16 @@ class FaceDetectionsToNVRCalculator : public CalculatorBase {
   static ::mediapipe::Status GetContract(CalculatorContract* cc) {
     RET_CHECK(cc->Inputs().HasTag(kDetectionsTag));
     cc->Inputs().Tag(kDetectionsTag).Set<Detections>();
-    RET_CHECK(cc->Outputs().HasTag(kNormLandmarksTag));
-    cc->Outputs().Tag(kNormLandmarksTag).Set<NormalizedLandmarkList>();
+    RET_CHECK_EQ(cc->Outputs().NumEntries(), 0);
+    RET_CHECK_EQ(cc->InputSidePackets().NumEntries(), 1);
+    RET_CHECK_EQ(cc->OutputSidePackets().NumEntries(), 0);
+    cc->InputSidePackets().Index(0).Set<NormalizedLandmarkList*>();
     return ::mediapipe::OkStatus();
   }
 
   ::mediapipe::Status Open(CalculatorContext* cc) override {
     cc->SetOffset(TimestampDiff(0));
+    ptr_ = cc->InputSidePackets().Index(0).Get<NormalizedLandmarkList*>();
     return ::mediapipe::OkStatus();
   }
 
@@ -41,10 +43,10 @@ class FaceDetectionsToNVRCalculator : public CalculatorBase {
     if (detections.empty()) return ::mediapipe::OkStatus();
     LOG(INFO) << "#detections: " << detections.size();
 
-    int largest;
+    int largest = -1;
     auto face_width = std::numeric_limits<float>::min();
     auto face_height = std::numeric_limits<float>::min();
-    for (int id = 0; id < detections.size(); ++id) {
+    for (size_t id = 0; id < detections.size(); ++id) {
       const auto& det = detections[id];
       const auto& loc = det.location_data();
       RET_CHECK_EQ(loc.format(), LocationData::RELATIVE_BOUNDING_BOX);
@@ -54,6 +56,7 @@ class FaceDetectionsToNVRCalculator : public CalculatorBase {
         LOG(INFO) << "detection[" << largest << "]: " << det.score(0);
       }
     }
+    RET_CHECK_NE(largest, -1);
 
     NormalizedLandmark landmark;
     {
@@ -93,11 +96,12 @@ class FaceDetectionsToNVRCalculator : public CalculatorBase {
 
     auto nvr = absl::make_unique<NormalizedLandmarkList>();
     *nvr->add_landmark() = landmark;
-    cc->Outputs()
-        .Tag(kNormLandmarksTag)
-        .Add(nvr.release(), cc->InputTimestamp());
+    *ptr_ = *nvr.release();
     return ::mediapipe::OkStatus();
   }
+
+ private:
+  NormalizedLandmarkList* ptr_ = nullptr;
 };
 REGISTER_CALCULATOR(FaceDetectionsToNVRCalculator);
 
