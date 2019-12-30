@@ -5,20 +5,55 @@ cc_library(
     hdrs = ["mediapipe_xpu.h"],
 )
 
+cc_binary(
+    name = "bx",
+    srcs = ["bx.cc"],
+    linkopts = [
+        "-lGLEW",
+        "-lGL",
+        "-lGLU",
+        "-lglut",
+    ],
+    deps = [
+        "@glfw",
+        "@khronos_opengl_registry//:gl_headers",
+    ],
+)
+
+cc_binary(
+    name = "bxs",
+    srcs = ["bxs.cc"],
+    linkopts = [
+        "-lGLEW",
+        "-lGL",
+        "-lGLU",
+        "-lglut",
+    ],
+    deps = [
+        "@glfw",
+        "@khronos_opengl_registry//:gl_headers",
+    ],
+)
+
+cc_binary(
+    name = "tut",
+    srcs = ["tut.cc"],
+    linkopts = [
+        "-lGLEW",
+        # "-lGL",
+    ],
+    deps = [
+        "@glfw",
+        "@khronos_opengl_registry//:gl_headers",
+    ],
+)
+
 [
     [
         cc_binary(
             name = "boxes" + suffix,
             srcs = ["boxes.cc"],
             # data = [":boxes_graph" + suffix],
-            # linkopts = ["-lGLEW"],
-            # linkopts = ["-lGLEW","-lglu"],
-            linkopts = [
-                "-lGLEW",
-                "-lGL",
-                "-lGLU",
-                "-lglut",
-            ],
             deps = xpu_deps + [
                 ":mediapipe_xpu",
                 "//nvr/calculators:opencv_window_calculator",
@@ -60,7 +95,10 @@ cc_library(
         ),
     ]
     for suffix, xpu_deps in {
-        "_cpu": [],
+        "_cpu": [
+            # Brings in GL headers & libs so we can get rid of GLEW
+            "@mediapipe//mediapipe/gpu:gl_base",
+        ],
         "_gpu": [
             # Linux only.
             # Must have a GPU with EGL support:

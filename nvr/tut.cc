@@ -1,36 +1,18 @@
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include "mediapipe/framework/formats/image_frame.h"
-#include "mediapipe/framework/formats/image_frame_opencv.h"
-#include "mediapipe/framework/formats/landmark.pb.h"
-#include "mediapipe/framework/port/commandlineflags.h"
-#include "mediapipe/framework/port/file_helpers.h"
-#include "mediapipe/framework/port/opencv_highgui_inc.h"
-#include "mediapipe/framework/port/opencv_imgproc_inc.h"
-#include "mediapipe/framework/port/opencv_video_inc.h"
-#include "mediapipe/framework/port/parse_text_proto.h"
-
-#if defined(MEDIAPIPE_DISABLE_GPU)
-#include "mediapipe/gpu/gl_base.h"  // Finds OpenGL headers
-#endif
+#define GLEW_STATIC
+#include <GL/glew.h>
 
 #include <GLFW/glfw3.h>
 
-#define GRAPHS "nvr/graphs/"
-#if !defined(MEDIAPIPE_DISABLE_GPU)
-constexpr char kGraph[] = GRAPHS "boxes_gpu.pbtxt";
-#else
-constexpr char kGraph[] = GRAPHS "boxes_cpu.pbtxt";
-#endif
-#include "mediapipe_xpu.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-#define NAME "nvr_boxes"
-#define WIDTH 640
-#define HEIGHT 480
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
 
-DEFINE_string(input_video_path, "", "Full path of video to load.");
-DEFINE_bool(without_window, false, "Do not setup opencv window.");
+constexpr int wWidth = 1024;
+constexpr int wHeight = 768;
 
 static const std::string fragmentShaderCode = R"(
 #version 330 core
@@ -43,9 +25,9 @@ out vec3 color;
 
 void main(){
 
-  // Output color = color specified in the vertex shader, 
-  // interpolated between all 3 surrounding vertices
-  color = fragmentColor;
+	// Output color = color specified in the vertex shader, 
+	// interpolated between all 3 surrounding vertices
+	color = fragmentColor;
 
 }
 )";
@@ -62,21 +44,21 @@ out vec3 fragmentColor;
 // Values that stay constant for the whole mesh.
 uniform mat4 MVP;
 
-void main(){  
+void main(){	
 
-  // Output position of the vertex, in clip space : MVP * position
-  gl_Position =  MVP * vec4(vertexPosition_modelspace,1);
+	// Output position of the vertex, in clip space : MVP * position
+	gl_Position =  MVP * vec4(vertexPosition_modelspace,1);
 
-  // The color of each vertex will be interpolated
-  // to produce the color of each fragment
-  fragmentColor = vertexColor;
+	// The color of each vertex will be interpolated
+	// to produce the color of each fragment
+	fragmentColor = vertexColor;
 }
 )";
 
-::mediapipe::NormalizedLandmarkList nvr;
-
-constexpr int wWidth = 1024;
-constexpr int wHeight = 768;
+constexpr float eyeStep = 0.3;
+float eyeX = 0;  // 4;
+float eyeY = 0;  // 3;
+float eyeZ = -3;
 
 GLuint LoadShaders() {
   GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
@@ -85,7 +67,7 @@ GLuint LoadShaders() {
   GLint Result = GL_FALSE;
   int InfoLogLength;
 
-  LOG(INFO) << "Compiling vertex shader";
+  std::cout << "Compiling vertex shader\n";
   const char* vSrc = vertexShaderCode.c_str();
   glShaderSource(VertexShaderID, 1, (const GLchar**)&vSrc, NULL);
   glCompileShader(VertexShaderID);
@@ -97,10 +79,10 @@ GLuint LoadShaders() {
     std::vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
     glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL,
                        &VertexShaderErrorMessage[0]);
-    LOG(INFO) << &VertexShaderErrorMessage[0];
+    std::cout << &VertexShaderErrorMessage[0] << std::endl;
   }
 
-  LOG(INFO) << "Compiling fragment shader";
+  std::cout << "Compiling fragment shader\n";
   const char* fSrc = fragmentShaderCode.c_str();
   glShaderSource(FragmentShaderID, 1, (const GLchar**)&fSrc, NULL);
   glCompileShader(FragmentShaderID);
@@ -112,11 +94,11 @@ GLuint LoadShaders() {
     std::vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
     glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL,
                        &FragmentShaderErrorMessage[0]);
-    LOG(INFO) << &FragmentShaderErrorMessage[0];
+    std::cout << &FragmentShaderErrorMessage[0] << std::endl;
   }
 
   // Link the program
-  LOG(INFO) << "Linking program";
+  std::cout << "Linking program\n";
   GLuint ProgramID = glCreateProgram();
   glAttachShader(ProgramID, VertexShaderID);
   glAttachShader(ProgramID, FragmentShaderID);
@@ -129,7 +111,7 @@ GLuint LoadShaders() {
     std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
     glGetProgramInfoLog(ProgramID, InfoLogLength, NULL,
                         &ProgramErrorMessage[0]);
-    LOG(INFO) << &ProgramErrorMessage[0];
+    std::cout << &ProgramErrorMessage[0] << std::endl;
   }
 
   glDetachShader(ProgramID, VertexShaderID);
@@ -142,52 +124,26 @@ GLuint LoadShaders() {
 }
 
 static void error_callback(int error, const char* description) {
-  LOG(ERROR) << description;
+  std::cerr << description << std::endl;
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action,
                          int mods) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
+
+  if (key == GLFW_KEY_UP) eyeY += -eyeStep;
+  if (key == GLFW_KEY_DOWN) eyeY += eyeStep;
+  if (key == GLFW_KEY_RIGHT) eyeX += eyeStep;
+  if (key == GLFW_KEY_LEFT) eyeX += -eyeStep;
 }
 
-::mediapipe::Status RunMPPGraph() {
-  std::string pbtxt;
-  MP_RETURN_IF_ERROR(mediapipe::file::GetContents(kGraph, &pbtxt));
-  auto config =
-      mediapipe::ParseTextProtoOrDie<mediapipe::CalculatorGraphConfig>(pbtxt);
-  LOG(INFO) << "Initialize the calculator graph.";
-  std::string windowName;
-  if (!FLAGS_without_window) windowName = NAME;
-  bool window_was_closed = false;
-  std::map<std::string, ::mediapipe::Packet> input_side_packets = {
-      {"window_name", ::mediapipe::MakePacket<std::string>(windowName)},
-      {"window_was_closed", ::mediapipe::MakePacket<bool*>(&window_was_closed)},
-      {"nvr",
-       ::mediapipe::MakePacket<::mediapipe::NormalizedLandmarkList*>(&nvr)},
-  };
-  mediapipe::CalculatorGraph graph;
-  MP_RETURN_IF_ERROR(graph.Initialize(config, input_side_packets));
-  MAYBE_INIT_GPU(graph);
-
-  LOG(INFO) << "Load the video.";
-  cv::VideoCapture capture;
-  const bool load_video = !FLAGS_input_video_path.empty();
-  if (load_video) {
-    capture.open(FLAGS_input_video_path);
-    // capture.set(cv::CAP_PROP_FPS, 2);
-  } else {
-    capture.open(0);
+int main(void) {
+  // Initialise GLFW
+  if (!glfwInit()) {
+    std::cerr << "Failed to initialize GLFW\n";
+    return -1;
   }
-  RET_CHECK(capture.isOpened());
-
-  LOG(INFO) << "Start running the calculator graph.";
-  MP_RETURN_IF_ERROR(graph.StartRun({}));
-
-  LOG(INFO) << "Start grabbing and processing frames.";
-  size_t frame_timestamp = 0;
-
-  RET_CHECK(glfwInit());
 
   glfwWindowHint(GLFW_SAMPLES, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -197,22 +153,38 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action,
 
   GLFWwindow* window = glfwCreateWindow(wWidth, wHeight, "boxes", NULL, NULL);
   if (window == NULL) {
+    std::cerr
+        << "Failed to open GLFW window. If you have an Intel GPU, they are "
+           "not 3.3 compatible. Try the 2.1 version of the tutorials.\n";
     glfwTerminate();
-    LOG(FATAL) << "!window";
+    return -1;
   }
   glfwMakeContextCurrent(window);
 
-  LOG(INFO) << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION);
-  LOG(INFO) << "Renderer: " << glGetString(GL_RENDERER);
-  LOG(INFO) << "OpenGL version supported " << glGetString(GL_VERSION);
+  // Initialize GLEW
+  glewExperimental = true;  // Needed for core profile
+  if (glewInit() != GLEW_OK) {
+    std::cerr << "Failed to initialize GLEW\n";
+    glfwTerminate();
+    return -1;
+  }
+
+  std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION)
+            << std::endl
+            << "Renderer: " << glGetString(GL_RENDERER) << std::endl
+            << "OpenGL version supported " << glGetString(GL_VERSION)
+            << std::endl;
 
   glfwSetErrorCallback(error_callback);
   glfwSetKeyCallback(window, key_callback);
+
+  // Ensure we can capture the escape key being pressed below
   glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
   // Dark blue background
   glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
+  // Enable depth test
   glEnable(GL_DEPTH_TEST);
   // Accept fragment if it closer to the camera than the former one
   glDepthFunc(GL_LESS);
@@ -221,7 +193,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action,
   glGenVertexArrays(1, &VertexArrayID);
   glBindVertexArray(VertexArrayID);
 
+  // Create and compile our GLSL program from the shaders
   GLuint programID = LoadShaders();
+
+  // Get a handle for our "MVP" uniform
   GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 
   // Projection matrix : 45� Field of View, 4:3 ratio, display range : 0.1 unit
@@ -274,36 +249,12 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action,
   glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data),
                g_color_buffer_data, GL_STATIC_DRAW);
 
-  float eyeX = 4, eyeY = 3, eyeZ = -3;
-  while (!window_was_closed && !glfwWindowShouldClose(window)) {
-    double t = (double)cvGetTickCount();
-
-    cv::Mat camera_frame_raw;
-    capture >> camera_frame_raw;
-    if (camera_frame_raw.empty()) {
-      LOG(INFO) << "EOV";
-      break;
-    }
-    cv::Mat input_frame;
-    cv::cvtColor(camera_frame_raw, input_frame, cv::COLOR_BGR2RGB);
-    if (!load_video)
-      cv::flip(input_frame, input_frame, /*flipcode=HORIZONTAL*/ 1);
-
-    auto ts = mediapipe::Timestamp(frame_timestamp++);
-    ADD_INPUT_FRAME("input_frame", input_frame, ts);
-
-    // LOG(INFO) << "nvr: " << nvr.DebugString();
-
+  while (!glfwWindowShouldClose(window)) {
+    // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(programID);
 
-    LOG(INFO) << "nvr.landmark_size() = " << nvr.landmark_size();
-    if (nvr.landmark_size() == 1) {
-      eyeX = 5 - nvr.landmark(0).x();
-      eyeY = nvr.landmark(0).y();
-      eyeZ = nvr.landmark(0).z();
-    }
-    LOG(INFO) << "eye x|y|z: " << eyeX << "|" << eyeY << "|" << eyeZ;
+    // Use our shader
+    glUseProgram(programID);
 
     // Camera matrix
     glm::mat4 View = glm::lookAt(
@@ -314,6 +265,9 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action,
     // Our ModelViewProjection : multiplication of our 3 matrices
     // Remember, matrix multiplication is the other way around
     glm::mat4 MVP = Projection * View * Model;
+
+    // Send our transformation to the currently bound shader,
+    // in the "MVP" uniform
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
     // 1rst attribute buffer : vertices
@@ -340,37 +294,26 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action,
                           (void*)0   // array buffer offset
     );
 
-    // 12*3 indices starting at 0 -> 12 triangles
-    glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
+    // Draw the triangle !
+    glDrawArrays(GL_TRIANGLES, 0,
+                 12 * 3);  // 12*3 indices starting at 0 -> 12 triangles
 
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
 
+    // Swap buffers
     glfwSwapBuffers(window);
     glfwPollEvents();
-
-    t = (double)cvGetTickCount() - t;
-    LOG(INFO) << t / ((double)cvGetTickFrequency() * 1000.) << " ms";
   }
 
-  LOG(INFO) << "Shutting down.";
-
+  // Cleanup VBO and shader
   glDeleteBuffers(1, &vertexbuffer);
   glDeleteBuffers(1, &colorbuffer);
   glDeleteProgram(programID);
   glDeleteVertexArrays(1, &VertexArrayID);
+
+  // Close OpenGL window and terminate GLFW
   glfwTerminate();
 
-  MP_RETURN_IF_ERROR(graph.CloseAllInputStreams());
-  return graph.WaitUntilDone();
-}
-
-int main(int argc, char** argv) {
-  google::InitGoogleLogging(argv[0]);
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
-  ::mediapipe::Status run_status = RunMPPGraph();
-  if (!run_status.ok())
-    LOG(FATAL) << "Failed to run the graph: " << run_status.message() << " !!";
-  LOG(INFO) << "Success!";
   return 0;
 }

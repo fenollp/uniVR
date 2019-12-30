@@ -63,9 +63,11 @@ class FaceDetectionsToNVRCalculator : public CalculatorBase {
       const auto& det = detections[largest];
       const auto& loc = det.location_data();
       const auto& rbb = loc.relative_bounding_box();
-      LOG(INFO) << "rbb: " << rbb.DebugString();
-      // const auto& rks = loc.relative_keypoints();
-      // LOG(INFO) << "rks: " << rks.DebugString();
+      // LOG(INFO) << "rbb: " << rbb.DebugString();
+      //// const auto& rks = loc.relative_keypoints();
+      //// LOG(INFO) << "rks: " << rks.DebugString();
+
+      // https://github.com/dannyxyz22/ehci/blob/1de0e7cb9395f12e1f523056a42f3bd86e70b083/samples/boxView3d.cpp#L312
 
 // #define VIEWPORT_WIDTH 640  // Try 1280x720
 // #define VIEWPORT_HEIGHT 480
@@ -92,7 +94,7 @@ class FaceDetectionsToNVRCalculator : public CalculatorBase {
       landmark.set_y(7 * normY);
       landmark.set_z(1 + 5 * head_dist);
     }
-    LOG(INFO) << landmark.DebugString();
+    // LOG(INFO) << landmark.DebugString();
 
     auto nvr = absl::make_unique<NormalizedLandmarkList>();
     *nvr->add_landmark() = landmark;
