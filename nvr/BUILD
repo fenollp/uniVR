@@ -5,49 +5,6 @@ cc_library(
     hdrs = ["mediapipe_xpu.h"],
 )
 
-cc_binary(
-    name = "bx",
-    srcs = ["bx.cc"],
-    linkopts = [
-        "-lGLEW",
-        "-lGL",
-        "-lGLU",
-        "-lglut",
-    ],
-    deps = [
-        "@glfw",
-        "@khronos_opengl_registry//:gl_headers",
-    ],
-)
-
-cc_binary(
-    name = "bxs",
-    srcs = ["bxs.cc"],
-    linkopts = [
-        "-lGLEW",
-        "-lGL",
-        "-lGLU",
-        "-lglut",
-    ],
-    deps = [
-        "@glfw",
-        "@khronos_opengl_registry//:gl_headers",
-    ],
-)
-
-cc_binary(
-    name = "tut",
-    srcs = ["tut.cc"],
-    linkopts = [
-        "-lGLEW",
-        # "-lGL",
-    ],
-    deps = [
-        "@glfw",
-        "@khronos_opengl_registry//:gl_headers",
-    ],
-)
-
 [
     [
         cc_binary(

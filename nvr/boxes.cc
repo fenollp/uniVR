@@ -25,10 +25,6 @@ constexpr char kGraph[] = GRAPHS "boxes_cpu.pbtxt";
 #endif
 #include "mediapipe_xpu.h"
 
-#define NAME "nvr_boxes"
-#define WIDTH 640
-#define HEIGHT 480
-
 DEFINE_string(input_video_path, "", "Full path of video to load.");
 DEFINE_bool(without_window, false, "Do not setup opencv window.");
 
@@ -75,8 +71,12 @@ void main(){
 
 ::mediapipe::NormalizedLandmarkList nvr;
 
+constexpr char wName[] = "boxes";
 constexpr int wWidth = 1024;
 constexpr int wHeight = 768;
+
+constexpr int max_samples_count = 5;
+typedef std::deque<float> Floats;
 
 GLuint LoadShaders() {
   GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
@@ -151,6 +151,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action,
     glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
+float Mean(const Floats& xs) {
+  return std::accumulate(xs.begin(), xs.end(), 0.0f) / xs.size();
+}
+
 ::mediapipe::Status RunMPPGraph() {
   std::string pbtxt;
   MP_RETURN_IF_ERROR(mediapipe::file::GetContents(kGraph, &pbtxt));
@@ -158,7 +162,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action,
       mediapipe::ParseTextProtoOrDie<mediapipe::CalculatorGraphConfig>(pbtxt);
   LOG(INFO) << "Initialize the calculator graph.";
   std::string windowName;
-  if (!FLAGS_without_window) windowName = NAME;
+  if (!FLAGS_without_window) windowName = "mediapipe " + std::string(wName);
   bool window_was_closed = false;
   std::map<std::string, ::mediapipe::Packet> input_side_packets = {
       {"window_name", ::mediapipe::MakePacket<std::string>(windowName)},
@@ -195,7 +199,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action,
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  GLFWwindow* window = glfwCreateWindow(wWidth, wHeight, "boxes", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(wWidth, wHeight, wName, NULL, NULL);
   if (window == NULL) {
     glfwTerminate();
     LOG(FATAL) << "!window";
@@ -274,7 +278,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action,
   glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data),
                g_color_buffer_data, GL_STATIC_DRAW);
 
-  float eyeX = 4, eyeY = 3, eyeZ = -3;
+  Floats eyeXs = {4}, eyeYs = {3}, eyeZs = {-3};
   while (!window_was_closed && !glfwWindowShouldClose(window)) {
     double t = (double)cvGetTickCount();
 
@@ -299,10 +303,16 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action,
 
     LOG(INFO) << "nvr.landmark_size() = " << nvr.landmark_size();
     if (nvr.landmark_size() == 1) {
-      eyeX = 5 - nvr.landmark(0).x();
-      eyeY = nvr.landmark(0).y();
-      eyeZ = nvr.landmark(0).z();
+      eyeXs.push_back(1.5 * (5 - nvr.landmark(0).x()));
+      eyeYs.push_back(1.5 * (nvr.landmark(0).y()));
+      eyeZs.push_back(1.5 * (nvr.landmark(0).z()));
     }
+    while (eyeXs.size() > max_samples_count) {
+      eyeXs.pop_front();
+      eyeYs.pop_front();
+      eyeZs.pop_front();
+    }
+    auto eyeX = Mean(eyeXs), eyeY = Mean(eyeYs), eyeZ = Mean(eyeZs);
     LOG(INFO) << "eye x|y|z: " << eyeX << "|" << eyeY << "|" << eyeZ;
 
     // Camera matrix
