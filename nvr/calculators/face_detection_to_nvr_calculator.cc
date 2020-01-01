@@ -51,10 +51,7 @@ class FaceDetectionsToNVRCalculator : public CalculatorBase {
       const auto& loc = det.location_data();
       RET_CHECK_EQ(loc.format(), LocationData::RELATIVE_BOUNDING_BOX);
       const auto& rbb = loc.relative_bounding_box();
-      if (rbb.width() > face_width && rbb.height() > face_height) {
-        largest = id;
-        LOG(INFO) << "detection[" << largest << "]: " << det.score(0);
-      }
+      if (rbb.width() > face_width && rbb.height() > face_height) largest = id;
     }
     RET_CHECK_NE(largest, -1);
 

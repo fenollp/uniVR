@@ -39,7 +39,7 @@ out vec3 color;
 
 void main(){
 
-  // Output color = color specified in the vertex shader, 
+  // Output color = color specified in the vertex shader,
   // interpolated between all 3 surrounding vertices
   color = fragmentColor;
 
@@ -58,7 +58,7 @@ out vec3 fragmentColor;
 // Values that stay constant for the whole mesh.
 uniform mat4 MVP;
 
-void main(){  
+void main(){
 
   // Output position of the vertex, in clip space : MVP * position
   gl_Position =  MVP * vec4(vertexPosition_modelspace,1);
@@ -184,6 +184,7 @@ float Mean(const Floats& xs) {
     capture.open(0);
   }
   RET_CHECK(capture.isOpened());
+  const double invCaptureFPS = 1.0 / capture.get(cv::CAP_PROP_FPS);
 
   LOG(INFO) << "Start running the calculator graph.";
   MP_RETURN_IF_ERROR(graph.StartRun({}));
@@ -293,7 +294,8 @@ float Mean(const Floats& xs) {
     if (!load_video)
       cv::flip(input_frame, input_frame, /*flipcode=HORIZONTAL*/ 1);
 
-    auto ts = mediapipe::Timestamp(frame_timestamp++);
+    const auto ts =
+        mediapipe::Timestamp::FromSeconds(frame_timestamp++ * invCaptureFPS);
     ADD_INPUT_FRAME("input_frame", input_frame, ts);
 
     // LOG(INFO) << "nvr: " << nvr.DebugString();
