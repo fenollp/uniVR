@@ -1,16 +1,15 @@
 input_stream: "input_frame"
 
 node {
-  calculator: "FlowLimiterCalculator"
-  input_stream: "input_frame"
-  input_stream: "FINISHED:heads"
-  input_stream_info: {
-    tag_index: "FINISHED"
-    back_edge: true
+  calculator: "PacketResamplerCalculator"
+  input_stream: "DATA:input_frame"
+  output_stream: "DATA:throttled_input_frame"
+  node_options: {
+    [type.googleapis.com/mediapipe.PacketResamplerCalculatorOptions] {
+      frame_rate: 4
+    }
   }
-  output_stream: "throttled_input_frame"
 }
-
 
 node: {
   calculator: "ImageTransformationCalculator"
@@ -124,21 +123,22 @@ node {
 
 
 node {
-  calculator: "DetectionsToRenderDataCalculator"
+  calculator: "ObjectTrackingSubgraph"
+  input_stream: "VIDEO:input_frame"
   input_stream: "DETECTIONS:heads"
-  output_stream: "RENDER_DATA:head_detections_render_data"
-  node_options: {
-    [type.googleapis.com/mediapipe.DetectionsToRenderDataCalculatorOptions] {
-      thickness: 2
-      color { r: 255 g: 0 b: 0 }
-      produce_empty_packet: true
-    }
-  }
+  output_stream: "DETECTIONS:tracked_heads"
+}
+
+node {
+  calculator: "RendererSubgraph"
+  input_stream: "IMAGE:input_frame"
+  input_stream: "DETECTIONS:tracked_heads"
+  output_stream: "IMAGE:output_frame"
 }
 
 node {
   calculator: "FaceDetectionsToNVRCalculator"
-  input_stream: "DETECTIONS:heads"
+  input_stream: "DETECTIONS:tracked_heads"
   input_side_packet: "nvr"
 }
 
@@ -155,15 +155,6 @@ node {
 
 
 ## rendering
-
-node {
-  calculator: "AnnotationOverlayCalculator"
-  input_stream: "INPUT_FRAME:input_frame"
-  input_stream: "head_detections_render_data"
-  # input_stream: "nvr_render_data"
-  output_stream: "OUTPUT_FRAME:output_frame"
-}
-
 
 node {
   calculator: "OpenCvWindowCalculator"
