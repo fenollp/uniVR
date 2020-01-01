@@ -1,3 +1,5 @@
+/bazel-*
+
 build/
 *.data
 *.html.mem
