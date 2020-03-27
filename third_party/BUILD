@@ -13,6 +13,9 @@
 # limitations under the License.
 #
 
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_android//android:rules.bzl", "android_library")
+
 licenses(["notice"])  # Apache License 2.0
 
 exports_files(["LICENSE"])
@@ -46,30 +49,6 @@ cc_library(
         ],
         "//conditions:default": [
             "@linux_opencv//:opencv",
-        ],
-    }),
-)
-
-cc_library(
-    name = "pytorch",
-    visibility = ["//visibility:public"],
-    deps = select({
-        "//mediapipe:android_x86": [
-        ],
-        "//mediapipe:android_x86_64": [
-        ],
-        "//mediapipe:android_armeabi": [
-        ],
-        "//mediapipe:android_arm": [
-        ],
-        "//mediapipe:android_arm64": [
-        ],
-        "//mediapipe:ios": [
-        ],
-        "//mediapipe:macos": [
-        ],
-        "//conditions:default": [
-            "@linux_pytorch//:pytorch",
         ],
     }),
 )

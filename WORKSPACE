@@ -17,11 +17,11 @@ http_archive(
 load("@bazel_skylib//lib:versions.bzl", "versions")
 
 versions.check(
-    minimum_bazel_version = "0.24.1",
+    minimum_bazel_version = "1.0.0",
     maximum_bazel_version = "1.2.1",
 )
 
-# ABSL cpp library lts_2019_08_08.
+# ABSL cpp library lts_2020_02_25
 http_archive(
     name = "com_google_absl",
     patch_args = [
@@ -31,10 +31,10 @@ http_archive(
     patches = [
         "@//third_party:com_google_absl_f863b622fe13612433fdf43f76547d5edda0c93001.diff",
     ],
-    sha256 = "8100085dada279bf3ee00cd064d43b5f55e5d913be0dfe2906f06f8f28d5b37e",
-    strip_prefix = "abseil-cpp-20190808",
+    sha256 = "728a813291bdec2aa46eab8356ace9f75ac2ed9dfe2df5ab603c4e6c09f1c353",
+    strip_prefix = "abseil-cpp-20200225",
     urls = [
-        "https://github.com/abseil/abseil-cpp/archive/20190808.tar.gz",
+        "https://github.com/abseil/abseil-cpp/archive/20200225.tar.gz",
     ],
 )
 
@@ -85,6 +85,14 @@ http_archive(
     url = "https://github.com/google/glog/archive/v0.3.5.zip",
 )
 
+# easyexif
+http_archive(
+    name = "easyexif",
+    build_file = "@//third_party:easyexif.BUILD",
+    strip_prefix = "easyexif-master",
+    url = "https://github.com/mayanklahiri/easyexif/archive/master.zip",
+)
+
 # libyuv
 http_archive(
     name = "libyuv",
@@ -116,19 +124,24 @@ http_archive(
     ],
 )
 
-# 2019-11-21
-_TENSORFLOW_GIT_COMMIT = "f482488b481a799ca07e7e2d153cf47b8e91a60c"
+# 2020-02-12
+# The last commit before TensorFlow switched to Bazel 2.0
+_TENSORFLOW_GIT_COMMIT = "77e9ffb9b2bfb1a4f7056e62d84039626923e328"
 
-_TENSORFLOW_SHA256 = "8d9118c2ce186c7e1403f04b96982fe72c184060c7f7a93e30a28dca358694f0"
+_TENSORFLOW_SHA256 = "176ccd82f7dd17c5e117b50d353603b129c7a6ccbfebd522ca47cc2a40f33f13"
 
 http_archive(
     name = "org_tensorflow",
     patch_args = [
         "-p1",
     ],
-    # Patch https://github.com/tensorflow/tensorflow/commit/e3a7bdbebb99352351a19e2e403136166aa52934
+    # A compatibility patch
     patches = [
-        "@//third_party:org_tensorflow_e3a7bdbebb99352351a19e2e403136166aa52934.diff",
+        "@//third_party:org_tensorflow_528e22eae8bf3206189a066032c66e9e5c9b4a61.diff",
+        # Updates for XNNPACK: https://github.com/tensorflow/tensorflow/commit/cfc31e324c8de6b52f752a39cb161d99d853ca99
+        "@//third_party:org_tensorflow_cfc31e324c8de6b52f752a39cb161d99d853ca99.diff",
+        # CpuInfo's build rule fixes.
+        "@//third_party:org_tensorflow_9696366bcadab23a25c773b3ed405bac8ded4d0d.diff",
     ],
     sha256 = _TENSORFLOW_SHA256,
     strip_prefix = "tensorflow-%s" % _TENSORFLOW_GIT_COMMIT,
@@ -331,9 +344,9 @@ http_archive(
 
 git_repository(
     name = "mediapipe",
-    commit = "a007fdccb6a88920e99a9154e5679024b12b9f6d",
+    commit = "1722d4b8a25ad7c919576f9b1bab4ffa7a9299bc",
     remote = "https://github.com/google/mediapipe.git",
-    shallow_since = "1576866593 -0800",
+    shallow_since = "1584743331 -0700",
 )
 
 ## OpenGL
@@ -341,7 +354,7 @@ git_repository(
 http_archive(
     name = "khronos_opengl_registry",
     build_file = "@//third_party:gl.BUILD",
-    sha256 = "ab2a4679f6909aba63f9fd4b3859bc51653a20fc64e325a3603ef7c73b9abe64",
+    sha256 = "eb817e69b65f1ed6bb08df7fe5a26977f72ce59483d86def335f320a7208abdc",
     strip_prefix = "OpenGL-Registry-master",
     urls = ["https://github.com/KhronosGroup/OpenGL-Registry/archive/master.zip"],
 )

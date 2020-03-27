@@ -35,9 +35,9 @@ constexpr char kClosed[] = "CLOSED";
 //
 // node {
 //   calculator: "AnnotationOverlayCalculator"
-//   input_stream: "INPUT_FRAME_GPU:input_frame"
+//   input_stream: "IMAGE_GPU:input_frame"
 //   input_stream: "some_rect_render_data"
-//   output_stream: "OUTPUT_FRAME_GPU:output_frame"
+//   output_stream: "IMAGE_GPU:output_frame"
 // }
 //
 // node {
