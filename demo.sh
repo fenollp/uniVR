@@ -2,6 +2,11 @@
 set -eu
 set -o pipefail
 
+BAZEL="${BAZEL:-bazelisk}"
+if ! command -v "$BAZEL" >/dev/null 2>&1; then
+  BAZEL=bazel
+fi
+
 XPU="${XPU:-gpu}"
 DEF=''
 case "$XPU" in
@@ -29,7 +34,7 @@ done
 set -x
 # GLOG_v=2 \
 GLOG_logtostderr=1 \
-  bazel run \
+  "$BAZEL" run \
   --run_under="cd $PWD && " \
   --platform_suffix="-$XPU" \
   -c     opt $DEF \
