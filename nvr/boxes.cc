@@ -15,7 +15,7 @@
 #include "mediapipe/gpu/gl_base.h"  // Finds OpenGL headers
 #endif
 
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 
 #define GRAPHS "nvr/graphs/"
 #if !defined(MEDIAPIPE_DISABLE_GPU)
