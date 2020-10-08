@@ -11,7 +11,7 @@ XPU="${XPU:-gpu}"
 DEF=''
 case "$XPU" in
   cpu)   DEF='--define MEDIAPIPE_DISABLE_GPU=1' ;;
-  gpu)   DEF='--copt -DMESA_EGL_NO_X11_HEADERS' ;;
+  gpu)   DEF='--copt -DMESA_EGL_NO_X11_HEADERS --copt -DEGL_NO_X11' ;;
   *)   echo "XPU = gpu | cpu, not: $XPU" && exit 2 ;;
 esac
 
