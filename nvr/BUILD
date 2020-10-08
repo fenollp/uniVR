@@ -1,5 +1,7 @@
 # load("@mediapipe//framework/tool:mediapipe_graph.bzl", "mediapipe_binary_graph")
 
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
 cc_library(
     name = "mediapipe_xpu",
     hdrs = ["mediapipe_xpu.h"],
@@ -46,7 +48,7 @@ cc_library(
                 "@mediapipe//mediapipe/calculators/util:detection_letterbox_removal_calculator",
                 "@mediapipe//mediapipe/calculators/util:detections_to_render_data_calculator",
                 "@mediapipe//mediapipe/calculators/util:non_max_suppression_calculator",
-                "@glfw",
+                "//third_party:glfw",
                 "@khronos_opengl_registry//:gl_headers",
             ],
         ),

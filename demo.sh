@@ -2,11 +2,16 @@
 set -eu
 set -o pipefail
 
+BAZEL="${BAZEL:-bazelisk}"
+if ! command -v "$BAZEL" >/dev/null 2>&1; then
+  BAZEL=bazel
+fi
+
 XPU="${XPU:-gpu}"
 DEF=''
 case "$XPU" in
   cpu)   DEF='--define MEDIAPIPE_DISABLE_GPU=1' ;;
-  gpu)   DEF='--copt -DMESA_EGL_NO_X11_HEADERS' ;;
+  gpu)   DEF='--copt -DMESA_EGL_NO_X11_HEADERS --copt -DEGL_NO_X11' ;;
   *)   echo "XPU = gpu | cpu, not: $XPU" && exit 2 ;;
 esac
 
@@ -29,7 +34,7 @@ done
 set -x
 # GLOG_v=2 \
 GLOG_logtostderr=1 \
-  bazel run \
+  "$BAZEL" run \
   --run_under="cd $PWD && " \
   --platform_suffix="-$XPU" \
   -c     opt $DEF \
