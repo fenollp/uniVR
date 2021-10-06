@@ -37,14 +37,15 @@ http_archive(
 
 http_archive(
     name = "rules_cc",
-    strip_prefix = "rules_cc-master",
-    urls = ["https://github.com/bazelbuild/rules_cc/archive/master.zip"],
+    strip_prefix = "rules_cc-main",
+    urls = ["https://github.com/bazelbuild/rules_cc/archive/main.zip"],
 )
 
 http_archive(
     name = "rules_foreign_cc",
-    strip_prefix = "rules_foreign_cc-master",
-    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/master.zip",
+    strip_prefix = "rules_foreign_cc-ea571fcdd1a3b46570632e41701225de33e86206",
+    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/ea571fcdd1a3b46570632e41701225de33e86206.zip",
+    sha256 = "3f710eb0ae96f7f87357da74dcf96819fada5c2ad4ef12c74294f41bf880c378",
 )
 
 load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
