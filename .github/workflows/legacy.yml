@@ -1,0 +1,37 @@
+name: Build legacy binaries
+on:
+  push: {}
+  pull_request: {}
+
+jobs:
+  # TODO on_ubuntu_with_emscripten:
+  # TODO on_macos_with_clang:
+
+  on_ubuntu_with_gcc:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - run: sudo apt-get update -qq
+    - run: sudo apt-get install -y build-essential cmake
+    - run: sudo apt-get install -y libopenblas-dev liblapack-dev  # dlib
+    - run: sudo apt-get install -y libopencv-dev  # read from webcam libopencv-core-dev?
+    - run: sudo apt-get install -y libfreeimage-dev  # FreeImage
+    - run: sudo apt-get install -y freeglut3-dev libxmu-dev libxi-dev  # GLUT
+    - run: sudo apt-get install -y libglew-dev  # GLEW
+    - run: make
+    - run: ls -lh build/bin
+
+#   set -e
+#   git clone git@bitbucket.org:fenollp/testdata-univr.git ../testdata-univr.git
+#   cd ../testdata-univr.git
+#   UNIVR_GIT=../univr make
+#   git add jsons/
+#   git status
+#   git stash
+#   git pull origin master
+#   git stash pop
+#   git status
+#   git config --global user.name "Bitbucket CircleCI"
+#   git config --global user.email you@example.com
+#   git commit -am 'C runs'
+#   git push origin master # BB deploy keys are readonly

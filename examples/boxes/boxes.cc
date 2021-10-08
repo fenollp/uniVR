@@ -40,7 +40,7 @@ size_t dropper = 0;
 
 
 void DrawGLScene () {
-    double t = (double)cvGetTickCount();
+    // double t = (double)cvGetTickCount();
     ++dropper;
     if (10*dropper == 20) {
         ovr.step(data);
@@ -258,8 +258,8 @@ void DrawGLScene () {
     // Double buffered => swap the buffers to display what just got drawn
     glutSwapBuffers();
 
-    t = (double)cvGetTickCount() - t;
-    printf("\tframe time = %gms\n", t/((double)cvGetTickFrequency()*1000.));
+    // t = (double)cvGetTickCount() - t;
+    // printf("\tframe time = %gms\n", t/((double)cvGetTickFrequency()*1000.));
 }
 
 GLuint LoadTexture (const std::string& bmp) {
