@@ -1,0 +1,54 @@
+name: Build current binaries
+on:
+  push: {}
+  pull_request: {}
+
+env:
+  BAZELISK_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DEBIAN_FRONTEND: noninteractive
+  USE_BAZEL_VERSION: '4.0.0'
+
+jobs:
+  build_on_ubuntu_with_gcc:
+    name: Build on ubuntu with GCC
+    runs-on: ubuntu-latest
+    steps:
+    - run: |
+        sudo apt update
+        sudo apt install -y --no-install-recommends \
+            build-essential \
+            ca-certificates \
+            clang \
+            curl \
+            git \
+            gzip \
+            libgl1-mesa-dev \
+            python3 \
+            software-properties-common \
+            tar \
+            unzip \
+            xorg-dev
+        sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+#     - run: |
+#         sudo add-apt-repository -y ppa:openjdk-r/ppa
+#         sudo apt update
+#         sudo apt install -y --no-install-recommends openjdk-8-jdk
+# ARG BAZEL_VERSION=4.0.0
+# RUN \
+#     --mount=type=cache,target=/root/.cache/bazel \
+#     set -ux \
+#  && mkdir /bazel \
+#  && curl -fsSLo /bazel/installer.sh "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh" \
+#  && curl -fsSLo /bazel/LICENSE.txt "https://raw.githubusercontent.com/bazelbuild/bazel/master/LICENSE" \
+#  && chmod +x /bazel/installer.sh \
+#  && /bazel/installer.sh \
+#  && rm /bazel/installer.sh \
+    - run: bazelisk version
+
+    - uses: actions/checkout@v2
+
+    - run: bazelisk build --platform_suffix=-cpu -c opt --define MEDIAPIPE_DISABLE_GPU=1 nvr:boxes_cpu
+    - run: ls -lh bazel-bin/nvr/boxes_cpu
+
+    - run: bazelisk build --platform_suffix=-gpu -c opt --copt -DMESA_EGL_NO_X11_HEADERS --copt -DEGL_NO_X11 nvr:boxes_gpu
+    - run: ls -lh bazel-bin/nvr/boxes_gpu
