@@ -51,7 +51,7 @@ void DrawGLScene () {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear scene & depthb
     glLoadIdentity();  // Reset The View
 
-    printf("X %lf\tY %lf\tZ %lf\n", data.eyeX,data.eyeY,data.eyeZ);//
+    //printf("X %lf\tY %lf\tZ %lf\n", data.eyeX,data.eyeY,data.eyeZ);//
     gluLookAt(data.eyeX, data.eyeY, data.eyeZ,
               0, 0, 0, 0, 1, 0); //+ 5*headDist
 
