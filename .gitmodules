@@ -1,7 +1,7 @@
 [submodule "dlib"]
 	path = dlib
 	url = https://github.com/davisking/dlib
-	tag = v19.7
+	tag = v19.22
 [submodule "data/68"]
 	path = data/68
 	url = https://github.com/fenollp/data.shape_predictor_68_face_landmarks
