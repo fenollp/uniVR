@@ -30,12 +30,14 @@ cc_library(
         # "include/opencv2/**/*.h*",
         # For OpenCV 4.x
         "include/opencv4/opencv2/**/*.h*",
+        "include/x86_64-linux-gnu/opencv4/opencv2/cvconfig.h",
     ]),
     includes = [
         # For OpenCV 3.x
         # "include/",
         # For OpenCV 4.x
         "include/opencv4/",
+        "include/x86_64-linux-gnu/opencv4/",
     ],
     linkstatic = 1,
     visibility = ["//visibility:public"],
