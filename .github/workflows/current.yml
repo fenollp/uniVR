@@ -18,21 +18,49 @@ jobs:
         sudo apt install -y --no-install-recommends \
             build-essential \
             ca-certificates \
-            clang \
             curl \
+            ffmpeg \
             git \
-            gzip \
-            libgl1-mesa-dev \
-            python3 \
+            libegl1-mesa-dev \
+            libgles2-mesa-dev \
+            libopencv-calib3d-dev \
+            libopencv-core-dev \
+            libopencv-features2d-dev \
+            libopencv-highgui-dev \
+            libopencv-imgproc-dev \
+            libopencv-video-dev \
+            mesa-common-dev \
+            mesa-utils \
+            python3-dev \
+            python3-opencv \
+            python3-pip \
             software-properties-common \
-            tar \
             unzip \
-            xorg-dev
+            wget
+#  && add-apt-repository -y ppa:openjdk-r/ppa \
+#  && apt update \
+#  && apt install -y openjdk-8-jdk
+# RUN set -ux \
+#  && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8 \
         sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
         pip3 install --upgrade setuptools
         pip3 install wheel
         pip3 install numpy
+        pip3 install future
         pip3 install six==1.14.0
+
+            # ca-certificates \
+            # clang \
+            # curl \
+            # git \
+            # gzip \
+            # libgl1-mesa-dev \
+            # python3 \
+            # software-properties-common \
+            # tar \
+            # unzip \
+            # xorg-dev
+
 #     - run: |
 #         sudo add-apt-repository -y ppa:openjdk-r/ppa
 #         sudo apt update
