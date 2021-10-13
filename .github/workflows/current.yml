@@ -24,6 +24,7 @@ jobs:
             libegl1-mesa-dev \
             libgles2-mesa-dev \
             libopencv-calib3d-dev \
+            libopencv-contrib-dev \
             libopencv-core-dev \
             libopencv-features2d-dev \
             libopencv-highgui-dev \
