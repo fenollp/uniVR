@@ -38,6 +38,7 @@ jobs:
       with:
         path: build
         key: legacy-${{ runner.os }}
+    - run: ls -lh build/bin
     - run: make
     - run: ls -lh build/bin
 
