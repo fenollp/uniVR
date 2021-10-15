@@ -25,6 +25,7 @@ jobs:
             libegl1-mesa-dev \
             libgl1-mesa-dev \
             libgles2-mesa-dev \
+            libglm-dev \
             libopencv-calib3d-dev \
             libopencv-contrib-dev \
             libopencv-core-dev \
@@ -51,6 +52,11 @@ jobs:
         pip3 install six==1.14.0
 
     - uses: actions/checkout@v2
+
+    - uses: actions/cache@v2
+      with:
+        path: /home/runner/.cache/bazel
+        key: current-${{ runner.os }}
 
     - run: bazelisk build --platform_suffix=-cpu -c opt --define MEDIAPIPE_DISABLE_GPU=1 nvr:boxes_cpu
     - run: ls -lh bazel-bin/nvr/boxes_cpu

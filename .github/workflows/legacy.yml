@@ -13,9 +13,6 @@ jobs:
   on_ubuntu_with_gcc:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: true
     - run: |
         sudo apt update
             # libopenblas-dev liblapack-dev  # dlib
@@ -34,6 +31,9 @@ jobs:
             libopencv-dev \
             libxi-dev \
             libxmu-dev
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
     - uses: actions/cache@v2
       with:
         path: build
