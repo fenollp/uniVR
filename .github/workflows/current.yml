@@ -1,4 +1,4 @@
-name: Build current binaries
+name: Current binaries
 on:
   push: {}
   pull_request: {}
@@ -6,11 +6,10 @@ on:
 env:
   BAZELISK_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   DEBIAN_FRONTEND: noninteractive
-  USE_BAZEL_VERSION: '4.0.0'
+  USE_BAZEL_VERSION: '3.7.2'
 
 jobs:
-  build_on_ubuntu_with_gcc:
-    name: Build on ubuntu with GCC
+  on_ubuntu_with_gcc:
     runs-on: ubuntu-latest
     steps:
     - run: |

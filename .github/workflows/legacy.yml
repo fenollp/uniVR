@@ -1,4 +1,4 @@
-name: Build legacy binaries
+name: Legacy binaries
 on:
   push: {}
   pull_request: {}
