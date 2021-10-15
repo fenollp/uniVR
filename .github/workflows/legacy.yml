@@ -40,7 +40,8 @@ jobs:
         path: build
         key: legacy-${{ runner.os }}
     # Fix Dependencies file [...] is newer than depends file [...].
-    - run: find build -exec touch {} +
+    - run: find build -type f -exec touch {} +
+    - run: find build -type f -name '*.internal' -exec touch {} +
 
     - run: ls -lh build/bin
     - run: make

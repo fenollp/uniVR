@@ -57,7 +57,7 @@ jobs:
         path: /home/runner/.cache/bazel
         key: current-${{ runner.os }}
     # Fix "time stamp [...] is [...] in the future"
-    - run: find /home/runner/.cache/bazel -exec touch {} +
+    - run: find /home/runner/.cache/bazel -type f -exec touch {} + || true
 
     - run: bazelisk build --platform_suffix=-cpu -c opt --define MEDIAPIPE_DISABLE_GPU=1 nvr:boxes_cpu
     - run: ls -lh bazel-bin/nvr/boxes_cpu
