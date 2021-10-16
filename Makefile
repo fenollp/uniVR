@@ -13,21 +13,19 @@ CMAKE_FLAGS += -DENABLE_SSSE3=ON
 
 all: compile
 
-compile: build
-	cd build && cmake --build . --config Release
+compile:
+	cmake -Bbuild -DCMAKE_VERBOSE_MAKEFILE=ON
+	cmake --build build --config Release
 
 clean: clean-emjs
 	$(if $(wildcard build), rm -r build)
 
 distclean: clean
 
-build:
-	mkdir -p $@
-	cd build && cmake --DCMAKE_VERBOSE_MAKEFILE=ON ..
 
-
-emjs_base.html: build | clean
-	cd build && $(EMCMAKE) cmake --DCMAKE_VERBOSE_MAKEFILE=ON .. && $(EMMAKE) make
+emjs_base.html: clean
+	cmake -Bbuild -DCMAKE_VERBOSE_MAKEFILE=ON
+	$(EMCMAKE) cmake --build build -DCMAKE_VERBOSE_MAKEFILE=ON && $(EMMAKE) make
 
 #FLAGS = -v
 FLAGS += --js-library 'lib/emscripten/library_html5video.js'

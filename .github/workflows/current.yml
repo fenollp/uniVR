@@ -1,0 +1,66 @@
+name: Current binaries
+on:
+  push: {}
+  pull_request: {}
+
+env:
+  BAZELISK_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DEBIAN_FRONTEND: noninteractive
+  USE_BAZEL_VERSION: '3.7.2'
+
+jobs:
+  on_ubuntu_with_gcc:
+    runs-on: ubuntu-latest
+    steps:
+    - run: |
+        sudo apt update
+        sudo apt install -y --no-install-recommends \
+            build-essential \
+            ca-certificates \
+            curl \
+            ffmpeg \
+            git \
+            gzip \
+            libegl1-mesa-dev \
+            libgl1-mesa-dev \
+            libgles2-mesa-dev \
+            libglm-dev \
+            libopencv-calib3d-dev \
+            libopencv-contrib-dev \
+            libopencv-core-dev \
+            libopencv-features2d-dev \
+            libopencv-highgui-dev \
+            libopencv-imgproc-dev \
+            libopencv-video-dev \
+            mesa-common-dev \
+            mesa-utils \
+            python3 \
+            python3-dev \
+            python3-opencv \
+            python3-pip \
+            software-properties-common \
+            tar \
+            unzip \
+            wget \
+            xorg-dev
+        sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+        pip3 install --upgrade setuptools
+        pip3 install wheel
+        pip3 install numpy
+        pip3 install future
+        pip3 install six==1.14.0
+
+    - uses: actions/checkout@v2
+
+    - uses: actions/cache@v2
+      with:
+        path: /home/runner/.cache/bazel
+        key: current-${{ runner.os }}
+    # Fix "time stamp [...] is [...] in the future"
+    - run: find /home/runner/.cache/bazel -type f -exec touch {} + || true
+
+    - run: bazelisk build --platform_suffix=-cpu -c opt --define MEDIAPIPE_DISABLE_GPU=1 nvr:boxes_cpu
+    - run: ls -lh bazel-bin/nvr/boxes_cpu
+
+    - run: bazelisk build --platform_suffix=-gpu -c opt --copt -DMESA_EGL_NO_X11_HEADERS --copt -DEGL_NO_X11 nvr:boxes_gpu
+    - run: ls -lh bazel-bin/nvr/boxes_gpu

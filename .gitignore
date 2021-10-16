@@ -1,6 +1,6 @@
 /bazel-*
 
-build/
+/build
 *.data
 *.html.mem
 *.html

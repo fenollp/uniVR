@@ -1,0 +1,65 @@
+name: Legacy binaries
+on:
+  push: {}
+  pull_request: {}
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+
+jobs:
+  # TODO on_ubuntu_with_emscripten:
+  # TODO on_macos_with_clang:
+
+  on_ubuntu_with_gcc:
+    runs-on: ubuntu-20.04
+    steps:
+    - run: |
+        sudo apt update
+            # libopenblas-dev liblapack-dev  # dlib
+            # libopencv-dev  # read from webcam libopencv-core-dev?
+            # libfreeimage-dev  # FreeImage
+            # freeglut3-dev libxmu-dev libxi-dev  # GLUT
+            # libglew-dev  # GLEW
+        sudo apt install -y --no-install-recommends \
+            build-essential \
+            cmake \
+            freeglut3-dev \
+            libfreeimage-dev \
+            libglew-dev \
+            liblapack-dev \
+            libopenblas-dev \
+            libopencv-dev \
+            libxi-dev \
+            libxmu-dev
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - uses: actions/cache@v2
+      with:
+        path: build
+        key: legacy-${{ runner.os }}
+    # Fix Dependencies file [...] is newer than depends file [...].
+    - run: find build -type f -exec touch {} +
+    - run: find build -type f -name '*.internal' -exec touch {} +
+    - run: find build/libnvr/dlib_build -type f -exec touch {} +
+    - run: find build/libnvr/dlib_build -type f -name '*.internal' -exec touch {} +
+
+    - run: ls -lh build/bin
+    - run: make
+    - run: ls -lh build/bin
+
+#   set -e
+#   git clone git@bitbucket.org:fenollp/testdata-univr.git ../testdata-univr.git
+#   cd ../testdata-univr.git
+#   UNIVR_GIT=../univr make
+#   git add jsons/
+#   git status
+#   git stash
+#   git pull origin master
+#   git stash pop
+#   git status
+#   git config --global user.name "Bitbucket CircleCI"
+#   git config --global user.email you@example.com
+#   git commit -am 'C runs'
+#   git push origin master # BB deploy keys are readonly
