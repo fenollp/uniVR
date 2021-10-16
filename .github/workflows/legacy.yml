@@ -42,8 +42,8 @@ jobs:
     # Fix Dependencies file [...] is newer than depends file [...].
     - run: find build -type f -exec touch {} +
     - run: find build -type f -name '*.internal' -exec touch {} +
-    - run: find libnvr/dlib_build -type f -exec touch {} +
-    - run: find libnvr/dlib_build -type f -name '*.internal' -exec touch {} +
+    - run: find build/libnvr/dlib_build -type f -exec touch {} +
+    - run: find build/libnvr/dlib_build -type f -name '*.internal' -exec touch {} +
 
     - run: ls -lh build/bin
     - run: make
