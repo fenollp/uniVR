@@ -47,7 +47,6 @@ jobs:
         find build/libnvr/dlib_build -type f -exec touch {} +
         find build/libnvr/dlib_build -type f -name '*.internal' -exec touch {} +
 
-    - run: ls -lh build/bin
     - run: make
     - run: ls -lh build/bin
 

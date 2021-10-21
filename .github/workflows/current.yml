@@ -54,8 +54,12 @@ jobs:
 
     - uses: actions/cache@v2
       with:
-        path: /home/runner/.cache/bazel
+        path: |
+          /home/runner/.cache/bazel
+          !/home/runner/.cache/bazel/_bazel_runner/install
         key: current-${{ runner.os }}
+      # Excluded path /home/runner/.cache/bazel/_bazel_runner/install to work around:
+      #   FATAL: corrupt installation: file '/home/runner/.cache/bazel/_bazel_runner/install/46850c2a96e4b4b07623822a03209f74/A-server.jar' is missing or modified.  Please remove '/home/runner/.cache/bazel/_bazel_runner/install/46850c2a96e4b4b07623822a03209f74' and try again.
     - name: Fix "time stamp [...] is [...] in the future"
       run: |
         [[ -d $HOME/.cache/bazel ]] || exit 0
