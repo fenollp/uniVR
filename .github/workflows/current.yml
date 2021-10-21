@@ -54,10 +54,16 @@ jobs:
 
     - uses: actions/cache@v2
       with:
-        path: /home/runner/.cache/bazel
+        path: |
+          /home/runner/.cache/bazel
+          !/home/runner/.cache/bazel/_bazel_runner/install
         key: current-${{ runner.os }}
-    # Fix "time stamp [...] is [...] in the future"
-    - run: find /home/runner/.cache/bazel -type f -exec touch {} + || true
+      # Excluded path /home/runner/.cache/bazel/_bazel_runner/install to work around:
+      #   FATAL: corrupt installation: file '/home/runner/.cache/bazel/_bazel_runner/install/46850c2a96e4b4b07623822a03209f74/A-server.jar' is missing or modified.  Please remove '/home/runner/.cache/bazel/_bazel_runner/install/46850c2a96e4b4b07623822a03209f74' and try again.
+    - name: Fix "time stamp [...] is [...] in the future"
+      run: |
+        [[ -d $HOME/.cache/bazel ]] || exit 0
+        find $HOME/.cache/bazel -type f -exec touch {} + || true
 
     - run: bazelisk build --platform_suffix=-cpu -c opt --define MEDIAPIPE_DISABLE_GPU=1 nvr:boxes_cpu
     - run: ls -lh bazel-bin/nvr/boxes_cpu
