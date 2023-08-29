@@ -332,9 +332,11 @@ namespace nvr {
                          const dlib::rectangle& face_zone) const {
         data.w = frame_cols_;
         data.h = frame_rows_;
-        data.n  = norm(face, LANDMARK_NT, LANDMARK_NB);
         data.er = norm(face, LANDMARK_RER, LANDMARK_REL);
         data.el = norm(face, LANDMARK_LER, LANDMARK_LEL);
+
+#if LANDMARKS_COUNT == 68
+        data.n  = norm(face, LANDMARK_NT, LANDMARK_NB);
         data.ar = std::abs(angle(face, LANDMARK_NT, LANDMARK_NB
                                  ,     LANDMARK_RER, LANDMARK_REL));
         data.al = std::abs(angle(face, LANDMARK_LER, LANDMARK_LEL
@@ -342,14 +344,29 @@ namespace nvr {
         data.das = std::abs(data.ar - data.al);
         data.chin = norm(face, LANDMARK_CR, LANDMARK_CL);
         data.ears = norm(face, LANDMARK_JR, LANDMARK_JL);
+#endif
+
         auto g = scaled(center(face.get_rect()));
         data.gx = g.x();
         data.gy = g.y();
         // --
+#if LANDMARKS_COUNT == 68
         data.headWidth  = face_zone.width();
         data.headHeight = face_zone.height();
         data.upperHeadX = rect_left(face_zone);
         data.upperHeadY = rect_top(face_zone);
+#elif LANDMARKS_COUNT == 5
+        auto eye_zone = dlib::rectangle(
+            face.part(LANDMARK_LEL).x(), // l
+            std::max(face.part(LANDMARK_LEL).y(), face.part(LANDMARK_RER).y()), // t
+            face.part(LANDMARK_RER).x(), // r
+            face.part(LANDMARK_NB).y() // b
+            );
+        data.headWidth  = eye_zone.width();
+        data.headHeight = eye_zone.height();
+        data.upperHeadX = rect_left(eye_zone);
+        data.upperHeadY = rect_top(eye_zone);
+#endif
 
         // --
         double angle = data.headWidth * HGPP * PI180;
