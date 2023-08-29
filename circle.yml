@@ -1,0 +1,35 @@
+machine:
+  environment:
+    CHANGED: 'git --no-pager diff --name-only HEAD origin/master'
+  # hosts:
+  #   circleci.runs.jobs: 127.0.0.1
+
+dependencies:
+  pre:
+    - sudo apt-get update -qq
+    - sudo apt-get install -y build-essential cmake
+    - sudo apt-get install -y libopenblas-dev liblapack-dev  # dlib
+    - sudo apt-get install -y libopencv-dev  # read from webcam libopencv-core-dev?
+    - sudo apt-get install -y libfreeimage-dev  # FreeImage
+    - sudo apt-get install -y freeglut3-dev libxmu-dev libxi-dev  # GLUT
+    - sudo apt-get install -y libglew-dev  # GLEW
+
+test:
+  pre:
+    - $CHANGED
+    - make
+    # - |
+    #   set -e
+    #   git clone git@bitbucket.org:fenollp/testdata-univr.git ../testdata-univr.git
+    #   cd ../testdata-univr.git
+    #   UNIVR_GIT=../univr make
+    #   git add jsons/
+    #   git status
+    #   git stash
+    #   git pull origin master
+    #   git stash pop
+    #   git status
+    #   git config --global user.name "Bitbucket CircleCI"
+    #   git config --global user.email you@example.com
+    #   git commit -am 'C runs'
+    #   git push origin master # BB deploy keys are readonly
